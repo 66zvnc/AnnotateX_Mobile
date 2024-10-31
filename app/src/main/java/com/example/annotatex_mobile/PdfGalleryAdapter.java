@@ -1,23 +1,29 @@
 package com.example.annotatex_mobile;
 
 import android.content.Context;
-import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import java.util.List;
 
 public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.ViewHolder> {
+    private static final String TAG = "PdfGalleryAdapter";
     private Context context;
     private List<Book> bookList;
     private OnPdfClickListener listener;
 
     public interface OnPdfClickListener {
-        void onPdfClick(Book book);  // Pass the Book object
-
+        void onPdfClick(Book book);
         void onPdfClick(String pdfUrl);
     }
 
@@ -38,16 +44,75 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Book book = bookList.get(position);
 
-        // Check if the Book has a Bitmap cover image
         if (book.hasBitmapCover()) {
-            // Set the Bitmap as the image if it exists
             holder.imageView.setImageBitmap(book.getCoverImageBitmap());
         } else {
-            // Set the resource ID if there's no Bitmap
             holder.imageView.setImageResource(book.getImageResId());
         }
 
         holder.itemView.setOnClickListener(v -> listener.onPdfClick(book));
+
+        // Set up three-dot menu icon click
+        holder.menuIcon.setOnClickListener(v -> showPopupMenu(v, book));
+    }
+
+    private void showPopupMenu(View view, Book book) {
+        PopupMenu popupMenu = new PopupMenu(context, view);
+        MenuInflater inflater = popupMenu.getMenuInflater();
+        inflater.inflate(R.menu.item_book_menu, popupMenu.getMenu());
+
+        popupMenu.setOnMenuItemClickListener(item -> onMenuItemClick(item, book));
+        popupMenu.show();
+    }
+
+    private boolean onMenuItemClick(MenuItem item, Book book) {
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.menu_view_details) {
+            listener.onPdfClick(book);
+            return true;
+        } else if (itemId == R.id.menu_share) {
+            // Implement share functionality here
+            // e.g., shareBook(book);
+            return true;
+        } else if (itemId == R.id.menu_delete) {
+            deleteBook(book);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void deleteBook(Book book) {
+        // Delete the book from Firebase Storage
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference pdfRef = storage.getReferenceFromUrl(book.getPdfUrl());
+
+        pdfRef.delete().addOnSuccessListener(aVoid -> {
+            Log.d(TAG, "Successfully deleted from Firebase Storage");
+
+            // Delete from Firestore
+            FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+            firestore.collection("books")
+                    .whereEqualTo("pdfUrl", book.getPdfUrl())
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                            String docId = task.getResult().getDocuments().get(0).getId();
+                            firestore.collection("books").document(docId).delete()
+                                    .addOnSuccessListener(aVoid1 -> Log.d(TAG, "Successfully deleted from Firestore"))
+                                    .addOnFailureListener(e -> Log.e(TAG, "Failed to delete from Firestore", e));
+                        }
+                    });
+
+            // Remove from local list and notify the adapter
+            int position = bookList.indexOf(book);
+            if (position != -1) {
+                bookList.remove(position);
+                notifyItemRemoved(position);
+            }
+
+        }).addOnFailureListener(e -> Log.e(TAG, "Failed to delete from Firebase Storage", e));
     }
 
     @Override
@@ -57,10 +122,12 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
+        ImageView menuIcon;  // Added menu icon
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imageView);
+            menuIcon = itemView.findViewById(R.id.menu_icon);
         }
     }
 }

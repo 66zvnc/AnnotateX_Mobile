@@ -5,25 +5,29 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -35,22 +39,26 @@ public class PdfViewerFragment extends Fragment {
     private static final String TAG = "PdfViewerFragment";
 
     private String pdfUrl;
-    private boolean shouldLoadPdf = true;
-
+    private boolean shouldLoadPdf = true; // Flag to control PDF loading
     private FirebaseStorage storage;
     private FirebaseFirestore firestore;
     private FirebaseAuth auth;
 
-    private Dialog uploadDialog;
-    private ProgressBar uploadProgressBar;
-    private TextView uploadProgressPercent;
+    private Dialog addBookInfoDialog;
+    private Uri coverImageUri;
 
-    private final ActivityResultLauncher<Intent> pdfFileLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
-                    Uri pdfUri = result.getData().getData();
-                    uploadPdfToFirebase(pdfUri);
+                    coverImageUri = result.getData().getData();
+                    try {
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), coverImageUri);
+                        ImageView coverPreviewImage = addBookInfoDialog.findViewById(R.id.coverPreviewImage);
+                        coverPreviewImage.setImageBitmap(bitmap);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
     );
@@ -63,8 +71,8 @@ public class PdfViewerFragment extends Fragment {
         return fragment;
     }
 
-    public void setShouldLoadPdf(boolean shouldLoadPdf) {
-        this.shouldLoadPdf = shouldLoadPdf;
+    public void setShouldLoadPdf(boolean shouldLoad) {
+        this.shouldLoadPdf = shouldLoad;
     }
 
     @Override
@@ -99,71 +107,78 @@ public class PdfViewerFragment extends Fragment {
         pdfFileLauncher.launch(Intent.createChooser(intent, "Select PDF"));
     }
 
-    private void showUploadDialog() {
-        uploadDialog = new Dialog(requireContext());
-        uploadDialog.setContentView(R.layout.upload_progress_dialog);
-        uploadDialog.setCancelable(false);
+    private final ActivityResultLauncher<Intent> pdfFileLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                    Uri pdfUri = result.getData().getData();
+                    showAddBookInfoDialog(pdfUri);
+                }
+            }
+    );
 
-        uploadProgressBar = uploadDialog.findViewById(R.id.uploadProgressBar);
-        uploadProgressPercent = uploadDialog.findViewById(R.id.uploadProgressPercent);
+    private void showAddBookInfoDialog(Uri pdfUri) {
+        addBookInfoDialog = new Dialog(requireContext());
+        addBookInfoDialog.setContentView(R.layout.dialog_add_book_info);
 
-        uploadDialog.show();
+        ImageView coverPreviewImage = addBookInfoDialog.findViewById(R.id.coverPreviewImage);
+        Button selectCoverButton = addBookInfoDialog.findViewById(R.id.selectCoverButton);
+        EditText bookTitleInput = addBookInfoDialog.findViewById(R.id.bookTitleInput);
+        EditText bookDescriptionInput = addBookInfoDialog.findViewById(R.id.bookDescriptionInput);
+        Button confirmButton = addBookInfoDialog.findViewById(R.id.confirmButton);
+
+        selectCoverButton.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            imagePickerLauncher.launch(intent);
+        });
+
+        confirmButton.setOnClickListener(v -> {
+            String title = bookTitleInput.getText().toString().trim();
+            String description = bookDescriptionInput.getText().toString().trim();
+
+            if (title.isEmpty() || coverImageUri == null) {
+                Toast.makeText(requireContext(), "Title and cover image are required.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            uploadPdfToFirebase(pdfUri, title, description, coverImageUri);
+            addBookInfoDialog.dismiss();
+        });
+
+        addBookInfoDialog.show();
     }
 
-    private void uploadPdfToFirebase(Uri pdfUri) {
-        if (pdfUri != null) {
-            showUploadDialog();
+    private void uploadPdfToFirebase(Uri pdfUri, String title, String description, Uri coverImageUri) {
+        StorageReference pdfRef = storage.getReference().child("uploads/" + System.currentTimeMillis() + ".pdf");
 
-            StorageReference pdfRef = storage.getReference().child("uploads/" + System.currentTimeMillis() + ".pdf");
-
-            pdfRef.putFile(pdfUri)
-                    .addOnProgressListener(snapshot -> {
-                        double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
-                        uploadProgressBar.setProgress((int) progress);
-                        uploadProgressPercent.setText((int) progress + "%");
-                    })
-                    .addOnSuccessListener(taskSnapshot -> pdfRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                        Log.d(TAG, "Uploaded PDF URL: " + uri.toString());
-                        savePdfMetadataToFirestore(uri.toString(), pdfUri);
-                        downloadAndOpenPdfWithPSPDFKit(uri.toString());
-                        uploadDialog.dismiss();
-                    }))
-                    .addOnFailureListener(e -> {
-                        Log.e(TAG, "Failed to upload PDF", e);
-                        uploadDialog.dismiss();
-                    });
-        }
+        pdfRef.putFile(pdfUri).addOnSuccessListener(taskSnapshot -> pdfRef.getDownloadUrl().addOnSuccessListener(pdfDownloadUrl -> {
+            uploadCoverImageToFirebase(pdfDownloadUrl.toString(), title, description, coverImageUri);
+        })).addOnFailureListener(e -> Log.e(TAG, "Failed to upload PDF", e));
     }
 
-    private void savePdfMetadataToFirestore(String pdfUrl, Uri pdfUri) {
+    private void uploadCoverImageToFirebase(String pdfUrl, String title, String description, Uri coverImageUri) {
+        StorageReference coverRef = storage.getReference().child("covers/" + System.currentTimeMillis() + ".jpg");
+
+        coverRef.putFile(coverImageUri).addOnSuccessListener(taskSnapshot -> coverRef.getDownloadUrl().addOnSuccessListener(coverUrl -> {
+            saveBookMetadataToFirestore(pdfUrl, title, description, coverUrl.toString());
+        })).addOnFailureListener(e -> Log.e(TAG, "Failed to upload cover image", e));
+    }
+
+    private void saveBookMetadataToFirestore(String pdfUrl, String title, String description, String coverUrl) {
         String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : "Unknown";
-        Bitmap coverImage = extractCoverImage(pdfUri);  // Extract the cover image
-        String title = "Unknown Title"; // Replace with title extraction if possible
-        String author = "Unknown Author"; // Replace with author extraction if possible
 
         Map<String, Object> bookData = new HashMap<>();
         bookData.put("userId", userId);
         bookData.put("pdfUrl", pdfUrl);
         bookData.put("title", title);
-        bookData.put("author", author);
+        bookData.put("description", description);
+        bookData.put("coverUrl", coverUrl);
         bookData.put("timestamp", System.currentTimeMillis());
 
         firestore.collection("books").add(bookData)
-                .addOnSuccessListener(documentReference -> {
-                    Log.d(TAG, "Book metadata saved with ID: " + documentReference.getId());
-
-                    LibraryFragment libraryFragment = (LibraryFragment) getParentFragmentManager().findFragmentByTag("LibraryFragment");
-                    if (libraryFragment != null) {
-                        libraryFragment.addBookToLibrary(new Book(coverImage, pdfUrl, title, author, "No description available."));
-                    }
-                })
+                .addOnSuccessListener(documentReference -> Log.d(TAG, "Book metadata saved with ID: " + documentReference.getId()))
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to save book metadata", e));
-    }
-
-    private Bitmap extractCoverImage(Uri pdfUri) {
-        // Placeholder implementation - Replace with actual cover extraction logic
-        Bitmap bitmap = Bitmap.createBitmap(100, 150, Bitmap.Config.ARGB_8888);
-        return bitmap;
     }
 
     private void downloadAndOpenPdfWithPSPDFKit(String url) {

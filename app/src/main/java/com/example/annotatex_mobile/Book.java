@@ -6,6 +6,7 @@ import java.io.Serializable;
 public class Book implements Serializable {
     private int imageResId;
     private Bitmap coverImageBitmap;
+    private String coverImageUrl;
     private String pdfUrl;
     private String title;
     private String author;
@@ -29,12 +30,25 @@ public class Book implements Serializable {
         this.description = description;
     }
 
+    // Constructor for URL-based image
+    public Book(String coverImageUrl, String pdfUrl, String title, String author, String description) {
+        this.coverImageUrl = coverImageUrl;
+        this.pdfUrl = pdfUrl;
+        this.title = title;
+        this.author = author;
+        this.description = description;
+    }
+
     public int getImageResId() {
         return imageResId;
     }
 
     public Bitmap getCoverImageBitmap() {
         return coverImageBitmap;
+    }
+
+    public String getCoverImageUrl() {
+        return coverImageUrl;
     }
 
     public String getPdfUrl() {
@@ -53,7 +67,13 @@ public class Book implements Serializable {
         return description;
     }
 
+    // Check if the book has a Bitmap cover image
     public boolean hasBitmapCover() {
         return coverImageBitmap != null;
+    }
+
+    // Check if the book has a URL cover image
+    public boolean hasUrlCover() {
+        return coverImageUrl != null;
     }
 }

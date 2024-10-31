@@ -1,4 +1,3 @@
-// LibraryFragment.java
 package com.example.annotatex_mobile;
 
 import android.content.Intent;
@@ -29,6 +28,9 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
     private PdfGalleryAdapter adapter;
     private List<Book> bookList;
     private View bookOfTheDayContainer;
+    private TextView bodTitle; // Declare bodTitle
+    private ImageView bodImage; // Declare bodImage
+    private MaterialButton bodButton; // Declare bodButton
     private boolean isBookOfTheDayVisible = true;
     private FirebaseFirestore firestore;
 
@@ -43,9 +45,9 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
 
         // Initialize the Book of the Day container and UI elements
         bookOfTheDayContainer = view.findViewById(R.id.bookOfTheDayContainer);
-        TextView bodTitle = bookOfTheDayContainer.findViewById(R.id.textView);
-        ImageView bodImage = bookOfTheDayContainer.findViewById(R.id.imageView);
-        MaterialButton bodButton = bookOfTheDayContainer.findViewById(R.id.mReadBookBtn);
+        bodTitle = bookOfTheDayContainer.findViewById(R.id.textView); // Initialize bodTitle
+        bodImage = bookOfTheDayContainer.findViewById(R.id.imageView); // Initialize bodImage
+        bodButton = bookOfTheDayContainer.findViewById(R.id.mReadBookBtn); // Initialize bodButton
 
         // Initialize book list and adapter
         bookList = new ArrayList<>();
@@ -85,7 +87,7 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
             }
         });
 
-        // Load books from Firestore
+        // Load books from Firestore and add predefined books
         loadBooksFromFirestore();
 
         return view;
@@ -104,26 +106,39 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
                     String description = "No description available";
 
                     // Create a Book object
-                    Book book = new Book(R.drawable.book_handle, pdfUrl, title, author, description);
+                    Book book = new Book(R.drawable.default_cover, pdfUrl, title, author, description);
 
                     // Add the book to the list
                     bookList.add(book);
                 }
+
+                // Add predefined books if Firestore has loaded successfully
+                addPredefinedBooks();
+
                 adapter.notifyDataSetChanged();
 
                 // Set the first book as Book of the Day if available
                 if (!bookList.isEmpty()) {
                     Book bookOfTheDay = bookList.get(0);
-                    TextView bodTitle = bookOfTheDayContainer.findViewById(R.id.textView);
-                    ImageView bodImage = bookOfTheDayContainer.findViewById(R.id.imageView);
                     bodTitle.setText("Today's Book: " + bookOfTheDay.getTitle());
-                    bodImage.setImageResource(bookOfTheDay.getImageResId());
+                    if (bookOfTheDay.hasBitmapCover()) {
+                        bodImage.setImageBitmap(bookOfTheDay.getCoverImageBitmap());
+                    } else {
+                        bodImage.setImageResource(bookOfTheDay.getImageResId());
+                    }
                 }
 
             } else {
                 Log.e(TAG, "Error getting documents: ", task.getException());
             }
         });
+    }
+
+    private void addPredefinedBooks() {
+        // Add predefined books here if necessary
+        bookList.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "James Clear", "What the rich teach their kids about money."));
+        bookList.add(new Book(R.drawable.book_2, "url_to_pdf_2", "Atomic Habits", "Robert T. Kiyosaki", "An easy & proven way to build good habits."));
+        // Add more predefined books as needed
     }
 
     @Override
