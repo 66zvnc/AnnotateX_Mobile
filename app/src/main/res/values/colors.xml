@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="dark_pink">#7209b7</color>
+    <color name="mindaro">#d9ed92</color>
+    <color name="light_green">#b5e48c</color>
+    <color name="light_green2">#99d98c</color>
+    <color name="emerald">#76c893</color>
+    <color name="keppel">#52b69a</color>
+    <color name="verdigris">#34a0a4</color>
+    <color name="bondi_blue">#168aad</color>
+    <color name="cerulean">#1a759f</color>
+    <color name="lapis_lazuli">#1e6091</color>
+    <color name="indigo_dye">#184e77</color>
+    <color name="book_handle">#5E222222</color>
+</resources>

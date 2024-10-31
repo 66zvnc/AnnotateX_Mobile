@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AnnotateX_Mobile</string>
+    <string name="pdf_viewer_fragment">PDF Viewer Fragment</string>
+</resources>

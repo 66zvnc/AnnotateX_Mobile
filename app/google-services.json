@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "44416607910",
+    "firebase_url": "https://annotation-890ff-default-rtdb.firebaseio.com",
+    "project_id": "annotation-890ff",
+    "storage_bucket": "annotation-890ff.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44416607910:android:2081dfca1b0b47f0c83667",
+        "android_client_info": {
+          "package_name": "com.example.annotatex_mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "44416607910-jmti2bsvm4nulpm7sb1mt3j31mur58oo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.annotatex_mobile",
+            "certificate_hash": "b786aef539f2519b4c11da5721fecbc6bab3d351"
+          }
+        },
+        {
+          "client_id": "44416607910-6f3fece3sbfsq0diis28mavqapk5n9mc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpo5RpGH8nfA7p0TAbA6j2bN11nwAKdMg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "44416607910-6f3fece3sbfsq0diis28mavqapk5n9mc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,39 @@
+<resources>
+    <!-- Custom PSPDFKit theme -->
+    <style name="MyApp_PSPDFKitTheme" parent="PSPDFKit.Theme.Default">
+        <!-- Primary colors for the toolbar and highlights -->
+        <item name="colorPrimary">@color/light_green2</item>
+        <item name="colorPrimaryDark">@color/verdigris</item>
+        <item name="colorAccent">@color/dark_pink</item>
+
+        <!-- Main toolbar style for consistent toolbar appearance -->
+        <item name="pspdf__mainToolbarStyle">@style/MyApp_MainToolbarStyle</item>
+
+        <!-- Action bar icon style to customize toolbar icons -->
+        <item name="pspdf__actionBarIconsStyle">@style/MyApp_ActionBarIconsStyle</item>
+
+        <!-- Custom background color for contextual toolbars (e.g., annotation toolbar) -->
+        <item name="pspdf__contextualToolbarStyle">@style/MyApp_ContextualToolbarStyle</item>
+    </style>
+
+    <!-- Main toolbar style with refined colors for background and text -->
+    <style name="MyApp_MainToolbarStyle">
+        <item name="pspdf__backgroundColor">@color/light_green2</item>
+        <item name="pspdf__textColor">@color/white</item>
+        <item name="pspdf__toolbarTheme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+        <item name="pspdf__toolbarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+    </style>
+
+    <!-- Icon style for action bar icons to improve readability and appearance -->
+    <style name="MyApp_ActionBarIconsStyle">
+        <item name="pspdf__iconsColor">@color/white</item>
+        <item name="pspdf__iconsColorActivated">@color/verdigris</item>
+    </style>
+
+    <!-- Contextual toolbar style for annotation and selection toolbars -->
+    <style name="MyApp_ContextualToolbarStyle">
+        <item name="pspdf__backgroundColor">@color/dark_pink</item>
+        <item name="pspdf__iconsColor">@color/white</item>
+        <item name="pspdf__iconsColorActivated">@color/mindaro</item>
+    </style>
+</resources>
