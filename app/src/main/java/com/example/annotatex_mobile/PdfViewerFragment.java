@@ -2,6 +2,7 @@ package com.example.annotatex_mobile;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,26 +12,20 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
-import com.pspdfkit.ui.special_mode.controller.AnnotationTool;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -88,7 +83,6 @@ public class PdfViewerFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pdf_viewer, container, false);
 
-        // Set up the Upload button to open file chooser
         Button uploadButton = view.findViewById(R.id.uploadButton);
         uploadButton.setOnClickListener(v -> openFileChooser());
 
@@ -130,7 +124,7 @@ public class PdfViewerFragment extends Fragment {
                     })
                     .addOnSuccessListener(taskSnapshot -> pdfRef.getDownloadUrl().addOnSuccessListener(uri -> {
                         Log.d(TAG, "Uploaded PDF URL: " + uri.toString());
-                        savePdfMetadataToFirestore(uri.toString());
+                        savePdfMetadataToFirestore(uri.toString(), pdfUri);
                         downloadAndOpenPdfWithPSPDFKit(uri.toString());
                         uploadDialog.dismiss();
                     }))
@@ -141,23 +135,35 @@ public class PdfViewerFragment extends Fragment {
         }
     }
 
-    private void savePdfMetadataToFirestore(String pdfUrl) {
-        String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
-        if (userId == null) {
-            Log.e(TAG, "User is not authenticated. Cannot save PDF metadata.");
-            return;
-        }
+    private void savePdfMetadataToFirestore(String pdfUrl, Uri pdfUri) {
+        String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : "Unknown";
+        Bitmap coverImage = extractCoverImage(pdfUri);  // Extract the cover image
+        String title = "Unknown Title"; // Replace with title extraction if possible
+        String author = "Unknown Author"; // Replace with author extraction if possible
 
-        CollectionReference booksCollection = firestore.collection("books");
+        Map<String, Object> bookData = new HashMap<>();
+        bookData.put("userId", userId);
+        bookData.put("pdfUrl", pdfUrl);
+        bookData.put("title", title);
+        bookData.put("author", author);
+        bookData.put("timestamp", System.currentTimeMillis());
 
-        Map<String, Object> pdfData = new HashMap<>();
-        pdfData.put("userId", userId);
-        pdfData.put("pdfUrl", pdfUrl);
-        pdfData.put("timestamp", System.currentTimeMillis());
+        firestore.collection("books").add(bookData)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d(TAG, "Book metadata saved with ID: " + documentReference.getId());
 
-        booksCollection.add(pdfData)
-                .addOnSuccessListener(documentReference -> Log.d(TAG, "PDF metadata saved with ID: " + documentReference.getId()))
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to save PDF metadata", e));
+                    LibraryFragment libraryFragment = (LibraryFragment) getParentFragmentManager().findFragmentByTag("LibraryFragment");
+                    if (libraryFragment != null) {
+                        libraryFragment.addBookToLibrary(new Book(coverImage, pdfUrl, title, author, "No description available."));
+                    }
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to save book metadata", e));
+    }
+
+    private Bitmap extractCoverImage(Uri pdfUri) {
+        // Placeholder implementation - Replace with actual cover extraction logic
+        Bitmap bitmap = Bitmap.createBitmap(100, 150, Bitmap.Config.ARGB_8888);
+        return bitmap;
     }
 
     private void downloadAndOpenPdfWithPSPDFKit(String url) {
@@ -176,7 +182,7 @@ public class PdfViewerFragment extends Fragment {
     private void openPdfWithPSPDFKit(Uri fileUri) {
         PdfActivityConfiguration configuration = new PdfActivityConfiguration.Builder(requireContext())
                 .theme(R.style.MyApp_PSPDFKitTheme)
-                .enableAnnotationEditing() // Enables default annotation tools
+                .enableAnnotationEditing()
                 .disableOutline()
                 .disableSearch()
                 .build();

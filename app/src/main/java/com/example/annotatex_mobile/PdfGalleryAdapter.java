@@ -1,7 +1,7 @@
-// PdfGalleryAdapter.java
 package com.example.annotatex_mobile;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +37,16 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Book book = bookList.get(position);
-        holder.imageView.setImageResource(book.getImageResId());
+
+        // Check if the Book has a Bitmap cover image
+        if (book.hasBitmapCover()) {
+            // Set the Bitmap as the image if it exists
+            holder.imageView.setImageBitmap(book.getCoverImageBitmap());
+        } else {
+            // Set the resource ID if there's no Bitmap
+            holder.imageView.setImageResource(book.getImageResId());
+        }
+
         holder.itemView.setOnClickListener(v -> listener.onPdfClick(book));
     }
 
