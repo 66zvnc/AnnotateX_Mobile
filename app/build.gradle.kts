@@ -59,6 +59,8 @@ dependencies {
     implementation ("com.airbnb.android:lottie:6.6.0")
     implementation ("androidx.core:core-ktx:1.13.1")
     implementation ("com.google.android.gms:play-services-location:21.3.0")
+    implementation ("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
 
 
 

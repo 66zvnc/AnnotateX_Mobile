@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -18,9 +19,9 @@ import java.util.List;
 
 public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.ViewHolder> {
     private static final String TAG = "PdfGalleryAdapter";
-    private Context context;
-    private List<Book> bookList;
-    private OnPdfClickListener listener;
+    private final Context context;
+    private final List<Book> bookList;
+    private final OnPdfClickListener listener;
 
     public interface OnPdfClickListener {
         void onPdfClick(Book book);
@@ -44,9 +45,12 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Book book = bookList.get(position);
 
+        // Load the correct cover image based on the cover image type
         if (book.hasBitmapCover()) {
             holder.imageView.setImageBitmap(book.getCoverImageBitmap());
-        } else {
+        } else if (book.hasUrlCover()) {
+            Glide.with(context).load(book.getCoverImageUrl()).into(holder.imageView);
+        } else if (book.hasResIdCover()) {
             holder.imageView.setImageResource(book.getImageResId());
         }
 
@@ -73,7 +77,6 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
             return true;
         } else if (itemId == R.id.menu_share) {
             // Implement share functionality here
-            // e.g., shareBook(book);
             return true;
         } else if (itemId == R.id.menu_delete) {
             deleteBook(book);
@@ -84,7 +87,6 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
     }
 
     private void deleteBook(Book book) {
-        // Delete the book from Firebase Storage
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference pdfRef = storage.getReferenceFromUrl(book.getPdfUrl());
 
@@ -102,6 +104,8 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
                             firestore.collection("books").document(docId).delete()
                                     .addOnSuccessListener(aVoid1 -> Log.d(TAG, "Successfully deleted from Firestore"))
                                     .addOnFailureListener(e -> Log.e(TAG, "Failed to delete from Firestore", e));
+                        } else {
+                            Log.e(TAG, "No document found in Firestore matching the pdfUrl");
                         }
                     });
 
@@ -122,7 +126,7 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
-        ImageView menuIcon;  // Added menu icon
+        ImageView menuIcon;  // Menu icon for three-dot menu
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

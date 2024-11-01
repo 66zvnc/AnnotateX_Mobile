@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import java.io.Serializable;
 
 public class Book implements Serializable {
-    private int imageResId;
+    private int imageResId = -1; // Default to -1 to indicate no resource ID
     private Bitmap coverImageBitmap;
     private String coverImageUrl;
     private String pdfUrl;
@@ -74,6 +74,11 @@ public class Book implements Serializable {
 
     // Check if the book has a URL cover image
     public boolean hasUrlCover() {
-        return coverImageUrl != null;
+        return coverImageUrl != null && !coverImageUrl.isEmpty();
+    }
+
+    // Check if the book has a resource ID cover image
+    public boolean hasResIdCover() {
+        return imageResId != -1;
     }
 }

@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -28,9 +29,9 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
     private PdfGalleryAdapter adapter;
     private List<Book> bookList;
     private View bookOfTheDayContainer;
-    private TextView bodTitle; // Declare bodTitle
-    private ImageView bodImage; // Declare bodImage
-    private MaterialButton bodButton; // Declare bodButton
+    private TextView bodTitle;
+    private ImageView bodImage;
+    private MaterialButton bodButton;
     private boolean isBookOfTheDayVisible = true;
     private FirebaseFirestore firestore;
 
@@ -45,9 +46,9 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
 
         // Initialize the Book of the Day container and UI elements
         bookOfTheDayContainer = view.findViewById(R.id.bookOfTheDayContainer);
-        bodTitle = bookOfTheDayContainer.findViewById(R.id.textView); // Initialize bodTitle
-        bodImage = bookOfTheDayContainer.findViewById(R.id.imageView); // Initialize bodImage
-        bodButton = bookOfTheDayContainer.findViewById(R.id.mReadBookBtn); // Initialize bodButton
+        bodTitle = bookOfTheDayContainer.findViewById(R.id.textView);
+        bodImage = bookOfTheDayContainer.findViewById(R.id.imageView);
+        bodButton = bookOfTheDayContainer.findViewById(R.id.mReadBookBtn);
 
         // Initialize book list and adapter
         bookList = new ArrayList<>();
@@ -103,10 +104,11 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
                     String pdfUrl = document.getString("pdfUrl");
                     String title = document.getString("title");
                     String author = document.getString("author");
-                    String description = "No description available";
+                    String description = document.getString("description");
+                    String coverUrl = document.getString("coverUrl");
 
-                    // Create a Book object
-                    Book book = new Book(R.drawable.default_cover, pdfUrl, title, author, description);
+                    // Create a Book object with cover URL
+                    Book book = new Book(coverUrl, pdfUrl, title, author, description);
 
                     // Add the book to the list
                     bookList.add(book);
@@ -121,11 +123,16 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
                 if (!bookList.isEmpty()) {
                     Book bookOfTheDay = bookList.get(0);
                     bodTitle.setText("Today's Book: " + bookOfTheDay.getTitle());
+
                     if (bookOfTheDay.hasBitmapCover()) {
                         bodImage.setImageBitmap(bookOfTheDay.getCoverImageBitmap());
+                    } else if (bookOfTheDay.hasUrlCover()) {
+                        Glide.with(this).load(bookOfTheDay.getCoverImageUrl()).into(bodImage);
                     } else {
                         bodImage.setImageResource(bookOfTheDay.getImageResId());
                     }
+
+                    bodButton.setOnClickListener(v -> onPdfClick(bookOfTheDay));
                 }
 
             } else {
@@ -136,8 +143,8 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
 
     private void addPredefinedBooks() {
         // Add predefined books here if necessary
-        bookList.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "James Clear", "What the rich teach their kids about money."));
-        bookList.add(new Book(R.drawable.book_2, "url_to_pdf_2", "Atomic Habits", "Robert T. Kiyosaki", "An easy & proven way to build good habits."));
+        bookList.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "Robert T. Kiyosaki", "What the rich teach their kids about money."));
+        bookList.add(new Book(R.drawable.book_2, "url_to_pdf_2", "Atomic Habits", "James Clear", "An easy & proven way to build good habits."));
         // Add more predefined books as needed
     }
 
