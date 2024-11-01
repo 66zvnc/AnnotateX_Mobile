@@ -1,6 +1,7 @@
 package com.example.annotatex_mobile;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,17 +9,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -124,12 +128,22 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
                     Book bookOfTheDay = bookList.get(0);
                     bodTitle.setText("Today's Book: " + bookOfTheDay.getTitle());
 
-                    if (bookOfTheDay.hasBitmapCover()) {
-                        bodImage.setImageBitmap(bookOfTheDay.getCoverImageBitmap());
-                    } else if (bookOfTheDay.hasUrlCover()) {
-                        Glide.with(this).load(bookOfTheDay.getCoverImageUrl()).into(bodImage);
-                    } else {
-                        bodImage.setImageResource(bookOfTheDay.getImageResId());
+                    try {
+                        if (bookOfTheDay.hasBitmapCover()) {
+                            bodImage.setImageBitmap(bookOfTheDay.getCoverImageBitmap());
+                        } else if (bookOfTheDay.hasUrlCover()) {
+                            Glide.with(this).load(bookOfTheDay.getCoverImageUrl()).into(bodImage);
+                        } else {
+                            int imageResId = bookOfTheDay.getImageResId();
+                            if (imageResId == 0) {
+                                bodImage.setImageResource(R.drawable.default_cover); // Use a default cover
+                            } else {
+                                bodImage.setImageResource(imageResId);
+                            }
+                        }
+                    } catch (Resources.NotFoundException e) {
+                        Log.e(TAG, "Resource not found for Book of the Day image, using default cover", e);
+                        bodImage.setImageResource(R.drawable.default_cover); // Fallback to default cover
                     }
 
                     bodButton.setOnClickListener(v -> onPdfClick(bookOfTheDay));

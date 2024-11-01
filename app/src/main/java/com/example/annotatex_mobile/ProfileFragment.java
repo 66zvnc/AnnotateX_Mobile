@@ -30,7 +30,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 public class ProfileFragment extends Fragment {
 
@@ -42,6 +41,7 @@ public class ProfileFragment extends Fragment {
     private FirebaseStorage storage;
     private FirebaseFirestore firestore;
     private ImageView profileImageView;
+    private ImageView editProfileImageIcon;
     private Uri imageUri;
     private String profileImageUrl;
 
@@ -58,6 +58,7 @@ public class ProfileFragment extends Fragment {
         user = auth.getCurrentUser();
 
         profileImageView = view.findViewById(R.id.profileImageView);
+        editProfileImageIcon = view.findViewById(R.id.editProfileImageIcon);
         TextView nameTextView = view.findViewById(R.id.nameTextView);
         TextView emailTextView = view.findViewById(R.id.emailTextView);
 
@@ -73,6 +74,16 @@ public class ProfileFragment extends Fragment {
 
         // Set click listener for the profile image
         profileImageView.setOnClickListener(v -> showImageUploadOptions());
+
+        // Set click listener for the edit icon to open the EditProfileActivity
+        editProfileImageIcon.setOnClickListener(v -> openEditProfileActivity());
+
+        // Set click listeners for each profile option
+        view.findViewById(R.id.settingsOption).setOnClickListener(v -> openSettingsActivity());
+        view.findViewById(R.id.paymentOption).setOnClickListener(v -> openPaymentMethodsActivity());
+        view.findViewById(R.id.helpOption).setOnClickListener(v -> openHelpCenterActivity());
+        view.findViewById(R.id.privacyPolicyOption).setOnClickListener(v -> openPrivacyPolicyActivity());
+        view.findViewById(R.id.logoutOption).setOnClickListener(v -> logoutUser());
 
         return view;
     }
@@ -237,9 +248,37 @@ public class ProfileFragment extends Fragment {
         editor.apply();
     }
 
-    private void openSettings() { /* ... */ }
-    private void openPaymentMethods() { /* ... */ }
-    private void openHelpCenter() { /* ... */ }
-    private void openPrivacyPolicy() { /* ... */ }
-    private void logoutUser() { auth.signOut(); /* Redirect if necessary */ }
+    // Navigation to profile sections
+    private void openSettingsActivity() {
+        Intent intent = new Intent(getActivity(), SettingsProfileFragment.class);
+        startActivity(intent);
+    }
+
+    private void openHelpCenterActivity() {
+        Intent intent = new Intent(getActivity(), HelpCenterProfileFragment.class);
+        startActivity(intent);
+    }
+
+    private void openPaymentMethodsActivity() {
+        Intent intent = new Intent(getActivity(), PaymentMethodsProfileFragment.class);
+        startActivity(intent);
+    }
+
+    private void openPrivacyPolicyActivity() {
+        Intent intent = new Intent(getActivity(), PrivacyPolicyProfileFragment.class);
+        startActivity(intent);
+    }
+
+    private void openEditProfileActivity() {
+        Intent intent = new Intent(getActivity(), EditProfileFragment.class);
+        startActivity(intent);
+    }
+
+    private void logoutUser() {
+        auth.signOut();
+        Intent intent = new Intent(getActivity(), LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        requireActivity().finish();
+    }
 }
