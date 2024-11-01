@@ -65,20 +65,14 @@ public class ProfileFragment extends Fragment {
         if (user != null) {
             emailTextView.setText(user.getEmail());
             nameTextView.setText(user.getDisplayName() != null ? user.getDisplayName() : "Your Name");
-
-            // Load profile image from SharedPreferences first, then Firebase if needed
             loadProfileImage();
         } else {
             emailTextView.setText("No user logged in");
         }
 
-        // Set click listener for the profile image
         profileImageView.setOnClickListener(v -> showImageUploadOptions());
-
-        // Set click listener for the edit icon to open the EditProfileActivity
         editProfileImageIcon.setOnClickListener(v -> openEditProfileActivity());
 
-        // Set click listeners for each profile option
         view.findViewById(R.id.settingsOption).setOnClickListener(v -> openSettingsActivity());
         view.findViewById(R.id.paymentOption).setOnClickListener(v -> openPaymentMethodsActivity());
         view.findViewById(R.id.helpOption).setOnClickListener(v -> openHelpCenterActivity());
@@ -91,10 +85,8 @@ public class ProfileFragment extends Fragment {
     private void showImageUploadOptions() {
         PopupMenu popupMenu = new PopupMenu(requireContext(), profileImageView);
         if (profileImageUrl != null) {
-            // If a profile picture exists, show "Replace" and "Remove" options
             popupMenu.getMenuInflater().inflate(R.menu.image_replace_remove_options, popupMenu.getMenu());
         } else {
-            // Show options to take or upload a new picture
             popupMenu.getMenuInflater().inflate(R.menu.image_upload_options, popupMenu.getMenu());
         }
 
@@ -282,3 +274,4 @@ public class ProfileFragment extends Fragment {
         requireActivity().finish();
     }
 }
+

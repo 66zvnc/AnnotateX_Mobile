@@ -5,7 +5,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         // Set up bottom navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setOnNavigationItemSelectedListener(item -> {
-            Fragment selectedFragment;
+            Fragment selectedFragment = null;
 
             int itemId = item.getItemId();
             if (itemId == R.id.nav_library) {
@@ -45,20 +44,20 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragment = pdfViewerFragment;
             } else if (itemId == R.id.nav_profile) {
                 selectedFragment = new ProfileFragment();
-            } else {
-                return false;
             }
 
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, selectedFragment)
-                    .addToBackStack(null)  // This ensures user can go back to previous fragment
-                    .commit();
-            return true;
+            if (selectedFragment != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, selectedFragment)
+                        .commit();
+                return true;
+            }
+            return false;
         });
 
-        // Set default fragment to LibraryFragment
+        // Set default fragment to LibraryFragment on initial load
         if (savedInstanceState == null) {
-            bottomNav.setSelectedItemId(R.id.nav_library);  // Default to library tab
+            bottomNav.setSelectedItemId(R.id.nav_library);
         }
     }
 }
