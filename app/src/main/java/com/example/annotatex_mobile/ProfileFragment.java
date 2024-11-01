@@ -71,12 +71,12 @@ public class ProfileFragment extends Fragment {
         }
 
         profileImageView.setOnClickListener(v -> showImageUploadOptions());
-        editProfileImageIcon.setOnClickListener(v -> openEditProfileActivity());
+        editProfileImageIcon.setOnClickListener(v -> openFragment(new EditProfileFragment()));
 
-        view.findViewById(R.id.settingsOption).setOnClickListener(v -> openSettingsActivity());
-        view.findViewById(R.id.paymentOption).setOnClickListener(v -> openPaymentMethodsActivity());
-        view.findViewById(R.id.helpOption).setOnClickListener(v -> openHelpCenterActivity());
-        view.findViewById(R.id.privacyPolicyOption).setOnClickListener(v -> openPrivacyPolicyActivity());
+        view.findViewById(R.id.settingsOption).setOnClickListener(v -> openFragment(new SettingsProfileFragment()));
+        view.findViewById(R.id.paymentOption).setOnClickListener(v -> openFragment(new PaymentMethodsProfileFragment()));
+        view.findViewById(R.id.helpOption).setOnClickListener(v -> openFragment(new HelpCenterProfileFragment()));
+        view.findViewById(R.id.privacyPolicyOption).setOnClickListener(v -> openFragment(new PrivacyPolicyProfileFragment()));
         view.findViewById(R.id.logoutOption).setOnClickListener(v -> logoutUser());
 
         return view;
@@ -109,6 +109,14 @@ public class ProfileFragment extends Fragment {
             }
         });
         popupMenu.show();
+    }
+
+    private void openFragment(Fragment fragment) {
+        getChildFragmentManager().beginTransaction()
+                .replace(R.id.profileOptionContainer, fragment)
+                .addToBackStack(null)
+                .commit();
+        getView().findViewById(R.id.profileOptionContainer).setVisibility(View.VISIBLE);
     }
 
     private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
@@ -212,8 +220,7 @@ public class ProfileFragment extends Fragment {
 
         if (profileImageUrl != null) {
             Glide.with(this)
-                    .load(profileImageUrl)
-                    .placeholder(R.drawable.ic_default_profile)
+                    .load(profileImageUrl)                       .placeholder(R.drawable.ic_default_profile)
                     .into(profileImageView);
         } else if (user != null) {
             firestore.collection("users").document(user.getUid())
@@ -240,32 +247,6 @@ public class ProfileFragment extends Fragment {
         editor.apply();
     }
 
-    // Navigation to profile sections
-    private void openSettingsActivity() {
-        Intent intent = new Intent(getActivity(), SettingsProfileFragment.class);
-        startActivity(intent);
-    }
-
-    private void openHelpCenterActivity() {
-        Intent intent = new Intent(getActivity(), HelpCenterProfileFragment.class);
-        startActivity(intent);
-    }
-
-    private void openPaymentMethodsActivity() {
-        Intent intent = new Intent(getActivity(), PaymentMethodsProfileFragment.class);
-        startActivity(intent);
-    }
-
-    private void openPrivacyPolicyActivity() {
-        Intent intent = new Intent(getActivity(), PrivacyPolicyProfileFragment.class);
-        startActivity(intent);
-    }
-
-    private void openEditProfileActivity() {
-        Intent intent = new Intent(getActivity(), EditProfileFragment.class);
-        startActivity(intent);
-    }
-
     private void logoutUser() {
         auth.signOut();
         Intent intent = new Intent(getActivity(), LoginActivity.class);
@@ -274,4 +255,5 @@ public class ProfileFragment extends Fragment {
         requireActivity().finish();
     }
 }
+
 
