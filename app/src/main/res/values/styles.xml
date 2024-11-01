@@ -36,4 +36,9 @@
         <item name="pspdf__iconsColor">@color/white</item>
         <item name="pspdf__iconsColorActivated">@color/mindaro</item>
     </style>
+
+    <style name="CircleImageView" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>

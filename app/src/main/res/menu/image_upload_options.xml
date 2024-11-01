@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/option_take_photo"
+        android:title="Take Photo" />
+    <item
+        android:id="@+id/option_upload_gallery"
+        android:title="Upload from Gallery" />
+    <item
+        android:id="@+id/option_upload_files"
+        android:title="Upload from Files" />
+</menu>
