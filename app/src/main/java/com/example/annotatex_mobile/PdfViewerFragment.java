@@ -13,16 +13,21 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
@@ -46,22 +51,7 @@ public class PdfViewerFragment extends Fragment {
 
     private Dialog addBookInfoDialog;
     private Uri coverImageUri;
-
-    private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
-                    coverImageUri = result.getData().getData();
-                    try {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), coverImageUri);
-                        ImageView coverPreviewImage = addBookInfoDialog.findViewById(R.id.coverPreviewImage);
-                        coverPreviewImage.setImageBitmap(bitmap);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-    );
+    private DocumentReference pdfDocRef; // Reference for the Firestore document for real-time updates
 
     public static PdfViewerFragment newInstance(String pdfUrl) {
         PdfViewerFragment fragment = new PdfViewerFragment();
@@ -73,6 +63,10 @@ public class PdfViewerFragment extends Fragment {
 
     public void setShouldLoadPdf(boolean shouldLoad) {
         this.shouldLoadPdf = shouldLoad;
+    }
+
+    public void setFirestore(FirebaseFirestore firestore) {
+        this.firestore = firestore;
     }
 
     @Override
@@ -187,8 +181,10 @@ public class PdfViewerFragment extends Fragment {
         try {
             File localFile = File.createTempFile("tempPdf", ".pdf");
 
-            pdfRef.getFile(localFile).addOnSuccessListener(taskSnapshot -> openPdfWithPSPDFKit(Uri.fromFile(localFile)))
-                    .addOnFailureListener(e -> Log.e(TAG, "Failed to download PDF", e));
+            pdfRef.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
+                openPdfWithPSPDFKit(Uri.fromFile(localFile));
+                initializeRealTimeUpdates(localFile.getName());
+            }).addOnFailureListener(e -> Log.e(TAG, "Failed to download PDF", e));
         } catch (IOException e) {
             Log.e(TAG, "Error creating temp file", e);
         }
@@ -208,4 +204,54 @@ public class PdfViewerFragment extends Fragment {
 
         startActivity(intent);
     }
+
+    private void initializeRealTimeUpdates(String documentId) {
+        pdfDocRef = firestore.collection("pdfDocuments").document(documentId);
+
+        pdfDocRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e);
+                    return;
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    Map<String, Object> data = snapshot.getData();
+                    syncAnnotations(data);
+                } else {
+                    Log.d(TAG, "Current data: null");
+                }
+            }
+        });
+    }
+
+    private void syncAnnotations(Map<String, Object> data) {
+        if (data != null) {
+            Log.d(TAG, "Syncing annotations: " + data);
+        }
+    }
+
+    private void saveAnnotationUpdate(Map<String, Object> annotationData) {
+        pdfDocRef.set(annotationData, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Annotation updated successfully."))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to update annotation", e));
+    }
+
+    private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                    coverImageUri = result.getData().getData();
+                    try {
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), coverImageUri);
+                        ImageView coverPreviewImage = addBookInfoDialog.findViewById(R.id.coverPreviewImage);
+                        coverPreviewImage.setImageBitmap(bitmap);
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error loading image", e);
+                    }
+                }
+            }
+    );
 }
+

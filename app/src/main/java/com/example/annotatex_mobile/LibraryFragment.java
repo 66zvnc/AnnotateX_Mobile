@@ -108,11 +108,13 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
                     String pdfUrl = document.getString("pdfUrl");
                     String title = document.getString("title");
                     String author = document.getString("author");
-                    String description = document.getString("description");
                     String coverUrl = document.getString("coverUrl");
+                    String description = document.getString("description");
 
                     // Create a Book object with cover URL
-                    Book book = new Book(coverUrl, pdfUrl, title, author, description);
+                    String id = document.getId(); // Firestore document ID
+                    Book book = new Book(id, coverUrl, pdfUrl, title, author, description);
+
 
                     // Add the book to the list
                     bookList.add(book);

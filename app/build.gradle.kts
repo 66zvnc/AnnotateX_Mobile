@@ -61,6 +61,10 @@ dependencies {
     implementation ("com.google.android.gms:play-services-location:21.3.0")
     implementation ("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
+    implementation ("io.reactivex.rxjava2:rxjava:2.2.21")
+    implementation ("com.pspdfkit:pspdfkit:2024.7.0")
+    implementation ("com.google.code.gson:gson:2.10.1")
+
 
 
 
