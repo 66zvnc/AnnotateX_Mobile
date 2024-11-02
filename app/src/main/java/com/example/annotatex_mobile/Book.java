@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import java.io.Serializable;
 
 public class Book implements Serializable {
+    private String id; // Firestore document ID
     private int imageResId = -1; // Default to -1 to indicate no resource ID
     private Bitmap coverImageBitmap;
     private String coverImageUrl;
@@ -12,7 +13,17 @@ public class Book implements Serializable {
     private String author;
     private String description;
 
-    // Constructor for resource ID image
+    // Constructor for Firestore ID and URL-based image
+    public Book(String id, String coverImageUrl, String pdfUrl, String title, String author, String description) {
+        this.id = id;
+        this.coverImageUrl = coverImageUrl;
+        this.pdfUrl = pdfUrl;
+        this.title = title;
+        this.author = author;
+        this.description = description;
+    }
+
+    // Constructor for predefined books with resource ID image
     public Book(int imageResId, String pdfUrl, String title, String author, String description) {
         this.imageResId = imageResId;
         this.pdfUrl = pdfUrl;
@@ -21,22 +32,9 @@ public class Book implements Serializable {
         this.description = description;
     }
 
-    // Constructor for Bitmap image
-    public Book(Bitmap coverImageBitmap, String pdfUrl, String title, String author, String description) {
-        this.coverImageBitmap = coverImageBitmap;
-        this.pdfUrl = pdfUrl;
-        this.title = title;
-        this.author = author;
-        this.description = description;
-    }
-
-    // Constructor for URL-based image
-    public Book(String coverImageUrl, String pdfUrl, String title, String author, String description) {
-        this.coverImageUrl = coverImageUrl;
-        this.pdfUrl = pdfUrl;
-        this.title = title;
-        this.author = author;
-        this.description = description;
+    // Getter for Firestore document ID
+    public String getId() {
+        return id;
     }
 
     public int getImageResId() {
@@ -67,17 +65,14 @@ public class Book implements Serializable {
         return description;
     }
 
-    // Check if the book has a Bitmap cover image
     public boolean hasBitmapCover() {
         return coverImageBitmap != null;
     }
 
-    // Check if the book has a URL cover image
     public boolean hasUrlCover() {
         return coverImageUrl != null && !coverImageUrl.isEmpty();
     }
 
-    // Check if the book has a resource ID cover image
     public boolean hasResIdCover() {
         return imageResId != -1;
     }
