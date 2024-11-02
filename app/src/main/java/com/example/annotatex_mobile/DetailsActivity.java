@@ -110,6 +110,10 @@ public class DetailsActivity extends AppCompatActivity {
                 .enableAnnotationEditing()
                 .disableOutline()
                 .disableSearch()
+                .hideDocumentTitleOverlay()
+                .disableContentEditing()
+                .hideThumbnailGrid()
+                .disableDocumentEditor()
                 .build();
 
         Intent intent = PdfActivityIntentBuilder.fromUri(this, fileUri)
