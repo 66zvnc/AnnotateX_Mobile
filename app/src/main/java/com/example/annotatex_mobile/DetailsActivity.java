@@ -113,7 +113,7 @@ public class DetailsActivity extends AppCompatActivity {
                 .disableContentEditing()
                 .hideThumbnailGrid()
                 .disableDocumentEditor()
-                .disableDefaultToolbar()
+                //.disableDefaultToolbar()
                 .build();
 
         Intent intent = PdfActivityIntentBuilder.fromUri(this, fileUri)
