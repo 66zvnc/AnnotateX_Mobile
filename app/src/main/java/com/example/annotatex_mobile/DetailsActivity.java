@@ -6,6 +6,8 @@ import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,13 +21,10 @@ import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
 import com.pspdfkit.annotations.Annotation;
 import com.pspdfkit.annotations.AnnotationType;
-import com.pspdfkit.annotations.HighlightAnnotation;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -64,7 +63,7 @@ public class DetailsActivity extends AppCompatActivity {
             if (book.hasBitmapCover()) {
                 binding.mBookImage.setImageBitmap(book.getCoverImageBitmap());
             } else if (book.hasUrlCover()) {
-                // You can load the image from URL if you have Glide or Picasso integrated
+                // Load the image from URL if you have Glide or Picasso integrated
             } else {
                 try {
                     binding.mBookImage.setImageResource(book.getImageResId());
@@ -114,6 +113,7 @@ public class DetailsActivity extends AppCompatActivity {
                 .disableContentEditing()
                 .hideThumbnailGrid()
                 .disableDocumentEditor()
+                .disableDefaultToolbar()
                 .build();
 
         Intent intent = PdfActivityIntentBuilder.fromUri(this, fileUri)
@@ -121,6 +121,33 @@ public class DetailsActivity extends AppCompatActivity {
                 .build();
 
         startActivity(intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.custom_pdf_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.action_highlight) {
+            // Handle highlight action
+            Toast.makeText(this, "Highlight selected", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.action_add_note) {
+            // Handle add note action
+            Toast.makeText(this, "Add Note selected", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.action_settings) {
+            // Handle settings action
+            Toast.makeText(this, "Settings selected", Toast.LENGTH_SHORT).show();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
