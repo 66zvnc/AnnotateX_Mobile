@@ -71,12 +71,13 @@ public class ProfileFragment extends Fragment {
         }
 
         profileImageView.setOnClickListener(v -> showImageUploadOptions());
-        editProfileImageIcon.setOnClickListener(v -> openFragment(new EditProfileFragment()));
 
-        view.findViewById(R.id.settingsOption).setOnClickListener(v -> openFragment(new SettingsProfileFragment()));
-        view.findViewById(R.id.paymentOption).setOnClickListener(v -> openFragment(new PaymentMethodsProfileFragment()));
-        view.findViewById(R.id.helpOption).setOnClickListener(v -> openFragment(new HelpCenterProfileFragment()));
-        view.findViewById(R.id.privacyPolicyOption).setOnClickListener(v -> openFragment(new PrivacyPolicyProfileFragment()));
+        // Open each option as a full-screen activity
+        editProfileImageIcon.setOnClickListener(v -> startActivity(new Intent(getActivity(), EditProfileActivity.class)));
+        view.findViewById(R.id.settingsOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), SettingsProfileActivity.class)));
+        view.findViewById(R.id.paymentOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), PaymentMethodsProfileActivity.class)));
+        view.findViewById(R.id.helpOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), HelpCenterProfileActivity.class)));
+        view.findViewById(R.id.privacyPolicyOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), PrivacyPolicyActivity.class)));
         view.findViewById(R.id.logoutOption).setOnClickListener(v -> logoutUser());
 
         return view;
@@ -109,14 +110,6 @@ public class ProfileFragment extends Fragment {
             }
         });
         popupMenu.show();
-    }
-
-    private void openFragment(Fragment fragment) {
-        getChildFragmentManager().beginTransaction()
-                .replace(R.id.profileOptionContainer, fragment)
-                .addToBackStack(null)
-                .commit();
-        getView().findViewById(R.id.profileOptionContainer).setVisibility(View.VISIBLE);
     }
 
     private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
@@ -220,7 +213,8 @@ public class ProfileFragment extends Fragment {
 
         if (profileImageUrl != null) {
             Glide.with(this)
-                    .load(profileImageUrl)                       .placeholder(R.drawable.ic_default_profile)
+                    .load(profileImageUrl)
+                    .placeholder(R.drawable.ic_default_profile)
                     .into(profileImageView);
         } else if (user != null) {
             firestore.collection("users").document(user.getUid())
@@ -255,5 +249,4 @@ public class ProfileFragment extends Fragment {
         requireActivity().finish();
     }
 }
-
 

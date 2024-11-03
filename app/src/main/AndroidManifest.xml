@@ -31,6 +31,13 @@
             android:name="com.pspdfkit.ui.PdfActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
 
+        <!-- New Profile Activities -->
+        <activity android:name=".PrivacyPolicyActivity" />
+        <activity android:name=".HelpCenterProfileActivity" />
+        <activity android:name=".PaymentMethodsProfileActivity" />
+        <activity android:name=".SettingsProfileActivity" />
+        <activity android:name=".EditProfileActivity" />
+
     </application>
 
     <!-- Permissions for file handling and internet access -->
