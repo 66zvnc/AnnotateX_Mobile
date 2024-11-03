@@ -11,6 +11,5 @@ public class HelpCenterProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_profile_help_center);
 
-        // Additional setup if needed
     }
 }
