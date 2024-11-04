@@ -64,6 +64,7 @@ dependencies {
     implementation ("io.reactivex.rxjava2:rxjava:2.2.21")
     implementation ("com.pspdfkit:pspdfkit:2024.7.0")
     implementation ("com.google.code.gson:gson:2.10.1")
+    implementation ("com.android.support:appcompat-v7:28.0.0")
 
 
 

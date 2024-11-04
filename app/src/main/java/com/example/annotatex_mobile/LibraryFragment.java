@@ -1,28 +1,20 @@
 package com.example.annotatex_mobile;
 
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.bumptech.glide.Glide;
-import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,12 +24,9 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
     private RecyclerView pdfGalleryRecyclerView;
     private PdfGalleryAdapter adapter;
     private List<Book> bookList;
-    private View bookOfTheDayContainer;
-    private TextView bodTitle;
-    private ImageView bodImage;
-    private MaterialButton bodButton;
-    private boolean isBookOfTheDayVisible = true;
+    private List<Book> filteredList;
     private FirebaseFirestore firestore;
+    private SearchView searchView;
 
     @Nullable
     @Override
@@ -48,49 +37,17 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         // Initialize Firestore
         firestore = FirebaseFirestore.getInstance();
 
-        // Initialize the Book of the Day container and UI elements
-        bookOfTheDayContainer = view.findViewById(R.id.bookOfTheDayContainer);
-        bodTitle = bookOfTheDayContainer.findViewById(R.id.textView);
-        bodImage = bookOfTheDayContainer.findViewById(R.id.imageView);
-        bodButton = bookOfTheDayContainer.findViewById(R.id.mReadBookBtn);
-
         // Initialize book list and adapter
         bookList = new ArrayList<>();
-        adapter = new PdfGalleryAdapter(getContext(), bookList, this);
+        filteredList = new ArrayList<>();
+        adapter = new PdfGalleryAdapter(getContext(), filteredList, this);
         pdfGalleryRecyclerView = view.findViewById(R.id.pdfGalleryRecyclerView);
         pdfGalleryRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
         pdfGalleryRecyclerView.setAdapter(adapter);
 
-        // Add spacing decoration
-        int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.grid_spacing);
-        pdfGalleryRecyclerView.addItemDecoration(new SpacingItemDecoration(spacingInPixels));
-
-        // Set up scroll listener for Book of the Day visibility
-        pdfGalleryRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                FastOutSlowInInterpolator interpolator = new FastOutSlowInInterpolator();
-
-                if (dy > 0 && isBookOfTheDayVisible) {
-                    bookOfTheDayContainer.animate()
-                            .translationY(-bookOfTheDayContainer.getHeight())
-                            .alpha(0f)
-                            .setInterpolator(interpolator)
-                            .setDuration(500)
-                            .withEndAction(() -> bookOfTheDayContainer.setVisibility(View.GONE));
-                    isBookOfTheDayVisible = false;
-                } else if (dy < 0 && !isBookOfTheDayVisible) {
-                    bookOfTheDayContainer.setVisibility(View.VISIBLE);
-                    bookOfTheDayContainer.animate()
-                            .translationY(0)
-                            .alpha(1f)
-                            .setInterpolator(interpolator)
-                            .setDuration(500);
-                    isBookOfTheDayVisible = true;
-                }
-            }
-        });
+        // Initialize SearchView and set up query listener
+        searchView = view.findViewById(R.id.searchView);
+        setupSearchView();
 
         // Load books from Firestore and add predefined books
         loadBooksFromFirestore();
@@ -98,59 +55,57 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         return view;
     }
 
+    private void setupSearchView() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                filterBooks(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterBooks(newText);
+                return true;
+            }
+        });
+    }
+
+    private void filterBooks(String query) {
+        filteredList.clear();
+        if (query.isEmpty()) {
+            filteredList.addAll(bookList); // Show all books if query is empty
+        } else {
+            for (Book book : bookList) {
+                if (book.getTitle().toLowerCase().contains(query.toLowerCase()) ||
+                        book.getAuthor().toLowerCase().contains(query.toLowerCase())) {
+                    filteredList.add(book);
+                }
+            }
+        }
+        adapter.notifyDataSetChanged();
+    }
+
     private void loadBooksFromFirestore() {
         CollectionReference booksCollection = firestore.collection("books");
         booksCollection.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                bookList.clear(); // Clear the list to avoid duplicates
+                bookList.clear();
                 for (QueryDocumentSnapshot document : task.getResult()) {
-                    // Retrieve data from Firestore document
                     String pdfUrl = document.getString("pdfUrl");
                     String title = document.getString("title");
                     String author = document.getString("author");
                     String coverUrl = document.getString("coverUrl");
                     String description = document.getString("description");
 
-                    // Create a Book object with cover URL
-                    String id = document.getId(); // Firestore document ID
+                    String id = document.getId();
                     Book book = new Book(id, coverUrl, pdfUrl, title, author, description);
 
-
-                    // Add the book to the list
                     bookList.add(book);
                 }
 
-                // Add predefined books if Firestore has loaded successfully
                 addPredefinedBooks();
-
-                adapter.notifyDataSetChanged();
-
-                // Set the first book as Book of the Day if available
-                if (!bookList.isEmpty()) {
-                    Book bookOfTheDay = bookList.get(0);
-                    bodTitle.setText("Today's Book: " + bookOfTheDay.getTitle());
-
-                    try {
-                        if (bookOfTheDay.hasBitmapCover()) {
-                            bodImage.setImageBitmap(bookOfTheDay.getCoverImageBitmap());
-                        } else if (bookOfTheDay.hasUrlCover()) {
-                            Glide.with(this).load(bookOfTheDay.getCoverImageUrl()).into(bodImage);
-                        } else {
-                            int imageResId = bookOfTheDay.getImageResId();
-                            if (imageResId == 0) {
-                                bodImage.setImageResource(R.drawable.default_cover); // Use a default cover
-                            } else {
-                                bodImage.setImageResource(imageResId);
-                            }
-                        }
-                    } catch (Resources.NotFoundException e) {
-                        Log.e(TAG, "Resource not found for Book of the Day image, using default cover", e);
-                        bodImage.setImageResource(R.drawable.default_cover); // Fallback to default cover
-                    }
-
-                    bodButton.setOnClickListener(v -> onPdfClick(bookOfTheDay));
-                }
-
+                filterBooks(searchView.getQuery().toString()); // Initial filter
             } else {
                 Log.e(TAG, "Error getting documents: ", task.getException());
             }
@@ -158,7 +113,6 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
     }
 
     private void addPredefinedBooks() {
-        // Add predefined books here if necessary
         bookList.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "Robert T. Kiyosaki", "What the rich teach their kids about money."));
         bookList.add(new Book(R.drawable.book_2, "url_to_pdf_2", "Atomic Habits", "James Clear", "An easy & proven way to build good habits."));
         bookList.add(new Book(R.drawable.book_3, "url_to_pdf_3", "Best Self", "Mike Bayer", "Be you, only better."));
@@ -184,7 +138,13 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
     }
 
     public void addBookToLibrary(Book book) {
+        // Add new book to the Firestore database
+        firestore.collection("books").document(book.getId()).set(book)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Book successfully added to Firestore"))
+                .addOnFailureListener(e -> Log.e(TAG, "Error adding book to Firestore", e));
+
+        // Update book list locally
         bookList.add(book);
-        adapter.notifyItemInserted(bookList.size() - 1);
+        filterBooks(searchView.getQuery().toString()); // Update filter with new book
     }
 }

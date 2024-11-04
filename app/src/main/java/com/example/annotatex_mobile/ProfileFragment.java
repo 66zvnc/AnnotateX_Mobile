@@ -20,10 +20,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class ProfileFragment extends Fragment {
 
@@ -33,6 +33,7 @@ public class ProfileFragment extends Fragment {
     private FirebaseAuth auth;
     private FirebaseUser user;
     private FirebaseFirestore firestore;
+    private FirebaseStorage storage;
     private ImageView profileImageView;
     private String profileImageUrl;
 
@@ -45,6 +46,7 @@ public class ProfileFragment extends Fragment {
         // Initialize Firebase services
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
         user = auth.getCurrentUser();
 
         profileImageView = view.findViewById(R.id.profileImageView);
@@ -79,69 +81,43 @@ public class ProfileFragment extends Fragment {
         // Check if the document exists, if not create it with default values
         userRef.get().addOnSuccessListener(documentSnapshot -> {
             if (!documentSnapshot.exists()) {
-                Map<String, Object> userData = new HashMap<>();
-                userData.put("profileImageUrl", profileImageUrl != null ? profileImageUrl : null); // Default value for profile image
-                userData.put("email", user.getEmail());
-                userData.put("displayName", user.getDisplayName() != null ? user.getDisplayName() : "Your Name");
-
-                userRef.set(userData, SetOptions.merge())
-                        .addOnSuccessListener(aVoid -> {
-                            // Document created successfully
-                            Toast.makeText(getContext(), "User profile created", Toast.LENGTH_SHORT).show();
-                        })
-                        .addOnFailureListener(e -> {
-                            // Handle any errors
-                            Toast.makeText(getContext(), "Failed to create profile document", Toast.LENGTH_SHORT).show();
-                        });
+                userRef.set(new HashMap<>()).addOnSuccessListener(aVoid ->
+                                Toast.makeText(getContext(), "User profile created", Toast.LENGTH_SHORT).show())
+                        .addOnFailureListener(e ->
+                                Toast.makeText(getContext(), "Failed to create profile document", Toast.LENGTH_SHORT).show());
             }
         });
     }
 
     private void loadProfileImage() {
-        SharedPreferences prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        profileImageUrl = prefs.getString(KEY_PROFILE_IMAGE_URL, null);
+        if (user == null) return;
 
-        if (profileImageUrl != null) {
-            Glide.with(this)
-                    .load(profileImageUrl)
-                    .placeholder(R.drawable.ic_default_profile)
-                    .into(profileImageView);
-        } else if (user != null) {
-            firestore.collection("users").document(user.getUid())
-                    .get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.contains("profileImageUrl")) {
-                            profileImageUrl = documentSnapshot.getString("profileImageUrl");
-                            Glide.with(this).load(profileImageUrl).placeholder(R.drawable.ic_default_profile).into(profileImageView);
-                            saveProfileImageUrl(profileImageUrl);
-                        } else {
-                            profileImageView.setImageResource(R.drawable.ic_default_profile);
-                        }
-                    })
-                    .addOnFailureListener(e -> profileImageView.setImageResource(R.drawable.ic_default_profile));
-        } else {
-            profileImageView.setImageResource(R.drawable.ic_default_profile);
-        }
+        // Attempt to load profile image URL from Firestore
+        firestore.collection("users").document(user.getUid()).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.contains("profileImageUrl")) {
+                        profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                        displayProfileImage(profileImageUrl);
+                        saveProfileImageUrlLocally(profileImageUrl); // Cache for offline use
+                    } else {
+                        profileImageView.setImageResource(R.drawable.ic_default_profile);
+                    }
+                })
+                .addOnFailureListener(e -> profileImageView.setImageResource(R.drawable.ic_default_profile));
     }
 
-    private void saveProfileImageUrl(String url) {
+    private void displayProfileImage(String url) {
+        Glide.with(this)
+                .load(url)
+                .placeholder(R.drawable.ic_default_profile)
+                .into(profileImageView);
+    }
+
+    private void saveProfileImageUrlLocally(String url) {
         SharedPreferences prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(KEY_PROFILE_IMAGE_URL, url);
         editor.apply();
-
-        if (user != null) {
-            DocumentReference userRef = firestore.collection("users").document(user.getUid());
-            userRef.update("profileImageUrl", url)
-                    .addOnSuccessListener(aVoid -> {
-                        // URL saved successfully
-                        Toast.makeText(getContext(), "Profile image updated", Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnFailureListener(e -> {
-                        // Handle any errors
-                        Toast.makeText(getContext(), "Failed to update profile image in Firestore", Toast.LENGTH_SHORT).show();
-                    });
-        }
     }
 
     private void logoutUser() {
