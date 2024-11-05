@@ -21,7 +21,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.HashMap;
 
@@ -51,15 +50,15 @@ public class ProfileFragment extends Fragment {
 
         profileImageView = view.findViewById(R.id.profileImageView);
         TextView nameTextView = view.findViewById(R.id.nameTextView);
-        TextView emailTextView = view.findViewById(R.id.emailTextView);
+        TextView usernameTextView = view.findViewById(R.id.usernameTextView);
 
         if (user != null) {
-            emailTextView.setText(user.getEmail());
-            nameTextView.setText(user.getDisplayName() != null ? user.getDisplayName() : "Your Name");
+            loadFullName(nameTextView);
+            loadUsername(usernameTextView);
             createUserDocumentIfNeeded();
             loadProfileImage();
         } else {
-            emailTextView.setText("No user logged in");
+            usernameTextView.setText("No user logged in");
         }
 
         // Set up onClick listeners for the navigation buttons
@@ -71,6 +70,34 @@ public class ProfileFragment extends Fragment {
         view.findViewById(R.id.editProfileImageIcon).setOnClickListener(v -> startActivity(new Intent(getActivity(), EditProfileActivity.class)));
 
         return view;
+    }
+
+    private void loadFullName(TextView nameTextView) {
+        if (user == null) return;
+
+        firestore.collection("users").document(user.getUid()).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.contains("fullName")) {
+                        String fullName = documentSnapshot.getString("fullName");
+                        nameTextView.setText(fullName);
+                    } else {
+                        nameTextView.setText("Your Name"); // Default if no name is set
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to load full name", Toast.LENGTH_SHORT).show());
+    }
+
+    private void loadUsername(TextView usernameTextView) {
+        if (user == null) return;
+
+        firestore.collection("users").document(user.getUid()).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.contains("username")) {
+                        String username = documentSnapshot.getString("username");
+                        usernameTextView.setText("@" + username); // Prefix "@" to the username
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to load username", Toast.LENGTH_SHORT).show());
     }
 
     private void createUserDocumentIfNeeded() {
@@ -92,7 +119,6 @@ public class ProfileFragment extends Fragment {
     private void loadProfileImage() {
         if (user == null) return;
 
-        // Attempt to load profile image URL from Firestore
         firestore.collection("users").document(user.getUid()).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.contains("profileImageUrl")) {
