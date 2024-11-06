@@ -45,7 +45,6 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Book book = bookList.get(position);
 
-        // Load the correct cover image based on the cover image type
         if (book.hasBitmapCover()) {
             holder.imageView.setImageBitmap(book.getCoverImageBitmap());
         } else if (book.hasUrlCover()) {
@@ -53,10 +52,7 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
         } else if (book.hasResIdCover()) {
             holder.imageView.setImageResource(book.getImageResId());
         }
-
         holder.itemView.setOnClickListener(v -> listener.onPdfClick(book));
-
-        // Set up three-dot menu icon click
         holder.menuIcon.setOnClickListener(v -> showPopupMenu(v, book));
     }
 
@@ -76,7 +72,7 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
             listener.onPdfClick(book);
             return true;
         } else if (itemId == R.id.menu_share) {
-            // Implement share functionality here
+            listener.onPdfClick(book.getPdfUrl());
             return true;
         } else if (itemId == R.id.menu_delete) {
             deleteBook(book);
@@ -109,7 +105,6 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
                         }
                     });
 
-            // Remove from local list and notify the adapter
             int position = bookList.indexOf(book);
             if (position != -1) {
                 bookList.remove(position);
@@ -126,7 +121,7 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
-        ImageView menuIcon;  // Menu icon for three-dot menu
+        ImageView menuIcon; // 3 dots
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

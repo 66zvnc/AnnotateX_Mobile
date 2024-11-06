@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.firebase.auth.FirebaseAuth;
@@ -66,13 +67,10 @@ public class SettingsProfileActivity extends AppCompatActivity {
     private void deleteAccount() {
         FirebaseUser user = auth.getCurrentUser();
         if (user != null) {
-            // Get user ID for Firestore deletion
             String userId = user.getUid();
 
-            // Delete user data from Firestore
             firestore.collection("users").document(userId).delete()
                     .addOnSuccessListener(aVoid -> {
-                        // Delete user from Firebase Authentication
                         user.delete()
                                 .addOnCompleteListener(task -> {
                                     if (task.isSuccessful()) {
@@ -95,5 +93,4 @@ public class SettingsProfileActivity extends AppCompatActivity {
             Toast.makeText(this, "No user is currently logged in.", Toast.LENGTH_SHORT).show();
         }
     }
-
 }

@@ -30,22 +30,23 @@
         <item name="pspdf__iconsColorActivated">@color/verdigris</item>
     </style>
 
-    <!-- Contextual toolbar style for annotation and selection toolbars -->
+    <!-- Custom contextual toolbar style -->
     <style name="MyApp_ContextualToolbarStyle">
         <item name="pspdf__backgroundColor">@color/dark_pink</item>
         <item name="pspdf__iconsColor">@color/white</item>
         <item name="pspdf__iconsColorActivated">@color/mindaro</item>
     </style>
 
-    <style name="CircleImageView" parent="">
+    <!-- Style for circular image views -->
+    <style name="CircleImageView">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
     </style>
 
+    <!-- Full screen dialog theme -->
     <style name="FullScreenDialogTheme" parent="Theme.AppCompat.Light.Dialog">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowNoTitle">true</item>
     </style>
-
 </resources>

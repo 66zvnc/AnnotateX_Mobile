@@ -85,13 +85,15 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
 
     private void filterBooks(String query) {
         filteredList.clear();
+        String lowerCaseQuery = query.toLowerCase();
+
         if (query.isEmpty()) {
             filteredList.addAll(bookList); // Show all books if query is empty
         } else {
             for (Book book : bookList) {
                 String title = book.getTitle() != null ? book.getTitle().toLowerCase() : "";
                 String author = book.getAuthor() != null ? book.getAuthor().toLowerCase() : "";
-                if (title.contains(query.toLowerCase()) || author.contains(query.toLowerCase())) {
+                if (title.contains(lowerCaseQuery) || author.contains(lowerCaseQuery)) {
                     filteredList.add(book);
                 }
             }
@@ -105,7 +107,6 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         // Load only books belonging to the logged-in user
         String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
 
-        // Load user-specific books
         if (userId != null) {
             booksCollection.whereEqualTo("userId", userId).get().addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
@@ -117,20 +118,17 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
                         String coverUrl = document.getString("coverUrl");
                         String description = document.getString("description");
                         String id = document.getId();
-                        Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId); // Include userId
+                        Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
                         bookList.add(book);
                     }
-
-                    // Always add predefined books for everyone
-                    addPredefinedBooks();
+                    addPredefinedBooks(); // Add predefined books for all users
                     filterBooks(searchView.getQuery().toString()); // Initial filter
                 } else {
                     Log.e(TAG, "Error getting documents: ", task.getException());
                 }
             });
         } else {
-            Log.w(TAG, "User not logged in, unable to load books.");
-            // Load only predefined books if user is not logged in
+            Log.w(TAG, "User not logged in, loading predefined books.");
             addPredefinedBooks();
             filterBooks(searchView.getQuery().toString()); // Initial filter
         }
@@ -155,13 +153,10 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-
                 if (dy > 0 && isSearchViewVisible) {
-                    // Scrolling down, hide the SearchView
                     motionLayout.transitionToEnd();
                     isSearchViewVisible = false;
                 } else if (dy < 0 && !isSearchViewVisible) {
-                    // Scrolling up, show the SearchView
                     motionLayout.transitionToStart();
                     isSearchViewVisible = true;
                 }
@@ -182,13 +177,11 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
     }
 
     public void addBookToLibrary(Book book) {
-        // Set userId before saving to Firestore
         book.setUserId(auth.getCurrentUser().getUid());
         firestore.collection("books").document(book.getId()).set(book)
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "Book successfully added to Firestore"))
                 .addOnFailureListener(e -> Log.e(TAG, "Error adding book to Firestore", e));
 
-        // Update book list locally
         bookList.add(book);
         filterBooks(searchView.getQuery().toString()); // Update filter with new book
     }

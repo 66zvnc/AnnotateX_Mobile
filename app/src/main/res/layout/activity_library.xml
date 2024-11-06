@@ -8,7 +8,6 @@
     app:layoutDescription="@xml/scene_library"
     tools:context=".LibraryFragment">
 
-    <!-- SearchView with padding for better visibility -->
     <androidx.appcompat.widget.SearchView
         android:id="@+id/searchView"
         android:layout_width="0dp"
@@ -22,7 +21,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- RecyclerView for displaying books in library with top margin for spacing -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/pdfGalleryRecyclerView"
         android:layout_width="0dp"
@@ -35,5 +33,4 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:clipToPadding="false"
         android:layout_marginBottom="16dp" />
-
 </androidx.constraintlayout.motion.widget.MotionLayout>

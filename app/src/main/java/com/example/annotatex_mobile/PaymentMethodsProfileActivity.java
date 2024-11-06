@@ -10,7 +10,5 @@ public class PaymentMethodsProfileActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_profile_payment_methods);
-
-        // Additional setup if needed
     }
 }

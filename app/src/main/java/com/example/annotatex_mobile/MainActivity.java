@@ -2,7 +2,6 @@ package com.example.annotatex_mobile;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -20,14 +19,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize Firebase Auth and Firestore
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
-        // Check if the user is already authenticated
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
-            // Redirect to login if not logged in
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
             finish();
             return;
@@ -42,10 +38,9 @@ public class MainActivity extends AppCompatActivity {
             if (itemId == R.id.nav_library) {
                 selectedFragment = new LibraryFragment();
             } else if (itemId == R.id.nav_pdf) {
-                // Initialize PdfViewerFragment with Firestore for multiplayer functionality
                 PdfViewerFragment pdfViewerFragment = new PdfViewerFragment();
                 pdfViewerFragment.setFirestore(firestore);
-                pdfViewerFragment.setShouldLoadPdf(false); // Ensures PDF viewer opens without loading a default PDF
+                pdfViewerFragment.setShouldLoadPdf(false);
                 selectedFragment = pdfViewerFragment;
             } else if (itemId == R.id.nav_profile) {
                 selectedFragment = new ProfileFragment();
@@ -60,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-        // Set default fragment to LibraryFragment on initial load
         if (savedInstanceState == null) {
             bottomNav.setSelectedItemId(R.id.nav_library);
         }
