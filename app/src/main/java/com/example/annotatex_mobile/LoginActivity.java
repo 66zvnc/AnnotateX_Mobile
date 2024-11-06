@@ -3,7 +3,6 @@ package com.example.annotatex_mobile;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -46,7 +45,6 @@ public class LoginActivity extends AppCompatActivity {
         Button registerButton = findViewById(R.id.register_button);
         LinearLayout googleLoginButton = findViewById(R.id.google_login_button);
 
-        // Configure Google Sign-In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
@@ -107,10 +105,8 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         if (identifier.contains("@")) {
-            // Login with email
             signInWithEmail(identifier, password);
         } else {
-            // Login with username, fetch associated email from Firestore
             firestore.collection("users")
                     .whereEqualTo("username", identifier)
                     .get()
@@ -177,14 +173,12 @@ public class LoginActivity extends AppCompatActivity {
             if (task.isSuccessful()) {
                 FirebaseUser user = auth.getCurrentUser();
                 if (user != null) {
-                    // Send verification email
                     user.sendEmailVerification().addOnCompleteListener(verificationTask -> {
                         if (verificationTask.isSuccessful()) {
                             Toast.makeText(LoginActivity.this, "Registration successful! Please check your email to verify.", Toast.LENGTH_SHORT).show();
-                            // Redirect to EmailVerificationActivity
                             Intent intent = new Intent(LoginActivity.this, EmailVerificationActivity.class);
                             startActivity(intent);
-                            finish(); // Close the LoginActivity
+                            finish();
                         } else {
                             Toast.makeText(LoginActivity.this, "Failed to send verification email: " + Objects.requireNonNull(verificationTask.getException()).getMessage(), Toast.LENGTH_SHORT).show();
                         }
