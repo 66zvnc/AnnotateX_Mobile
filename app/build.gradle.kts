@@ -65,6 +65,11 @@ dependencies {
     implementation ("com.pspdfkit:pspdfkit:2024.7.0")
     implementation ("com.google.code.gson:gson:2.10.1")
     implementation ("com.android.support:appcompat-v7:28.0.0")
+    implementation ("com.google.android.gms:play-services-auth:21.2.0")
+    implementation ("androidx.credentials:credentials:1.3.0")
+    implementation ("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation ("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
 
 
 

@@ -4,26 +4,26 @@ import android.graphics.Bitmap;
 import java.io.Serializable;
 
 public class Book implements Serializable {
-    private String id; // Firestore document ID
-    private int imageResId = -1; // Default to -1 to indicate no resource ID
+    private String id; //Firestore id
+    private int imageResId = -1;
     private Bitmap coverImageBitmap;
     private String coverImageUrl;
     private String pdfUrl;
     private String title;
     private String author;
     private String description;
+    private String userId;
 
-    // Constructor for Firestore ID and URL-based image
-    public Book(String id, String coverImageUrl, String pdfUrl, String title, String author, String description) {
+    public Book(String id, String coverImageUrl, String pdfUrl, String title, String author, String description, String userId) {
         this.id = id;
         this.coverImageUrl = coverImageUrl;
         this.pdfUrl = pdfUrl;
         this.title = title;
         this.author = author;
         this.description = description;
+        this.userId = userId; // Set user ID
     }
 
-    // Constructor for predefined books with resource ID image
     public Book(int imageResId, String pdfUrl, String title, String author, String description) {
         this.imageResId = imageResId;
         this.pdfUrl = pdfUrl;
@@ -32,7 +32,10 @@ public class Book implements Serializable {
         this.description = description;
     }
 
-    // Getter for Firestore document ID
+    public Book() {
+
+    }
+
     public String getId() {
         return id;
     }
@@ -63,6 +66,14 @@ public class Book implements Serializable {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getUserId() {
+        return userId;//get
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId; //set
     }
 
     public boolean hasBitmapCover() {

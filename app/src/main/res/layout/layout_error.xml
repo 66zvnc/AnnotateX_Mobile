@@ -27,5 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="Try Again"
-        app:cornerRadius="6dp" />
+        android:background="@drawable/button_border"
+        android:textColor="@color/black"
+        android:padding="8dp" />
 </LinearLayout>

@@ -5,6 +5,7 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Cover Preview Image -->
     <ImageView
         android:id="@+id/coverPreviewImage"
         android:layout_width="100dp"
@@ -14,33 +15,44 @@
         android:src="@drawable/book_handle"
         android:layout_marginBottom="16dp" />
 
+    <!-- Select Cover Image Button -->
     <Button
         android:id="@+id/selectCoverButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select Cover Image" />
+        android:text="Select Cover Image"
+        android:background="@drawable/button_border"
+        android:textColor="@color/black"
+        android:layout_marginBottom="16dp" />
 
+    <!-- Book Title Input -->
     <EditText
         android:id="@+id/bookTitleInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Book Title (required)"
         android:inputType="text"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp" />
 
+    <!-- Book Description Input -->
     <EditText
         android:id="@+id/bookDescriptionInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Book Description (optional)"
         android:inputType="textMultiLine"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp" />
 
+    <!-- Confirm Button -->
     <Button
         android:id="@+id/confirmButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Add Book"
+        android:background="@drawable/button_border"
+        android:textColor="@color/black"
         android:layout_marginTop="24dp" />
 
 </LinearLayout>

@@ -13,6 +13,7 @@ import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -27,6 +28,7 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
     private List<Book> bookList;
     private List<Book> filteredList;
     private FirebaseFirestore firestore;
+    private FirebaseAuth auth;
     private SearchView searchView;
     private MotionLayout motionLayout;
     private boolean isSearchViewVisible = true;
@@ -37,8 +39,9 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_library, container, false);
 
-        // Initialize Firestore
+        // Initialize Firestore and FirebaseAuth
         firestore = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
 
         // Initialize MotionLayout
         motionLayout = view.findViewById(R.id.motionLayout);
@@ -98,41 +101,53 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
 
     private void loadBooksFromFirestore() {
         CollectionReference booksCollection = firestore.collection("books");
-        booksCollection.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                bookList.clear();
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    String pdfUrl = document.getString("pdfUrl");
-                    String title = document.getString("title");
-                    String author = document.getString("author");
-                    String coverUrl = document.getString("coverUrl");
-                    String description = document.getString("description");
 
-                    String id = document.getId();
-                    Book book = new Book(id, coverUrl, pdfUrl, title, author, description);
+        // Load only books belonging to the logged-in user
+        String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
 
-                    bookList.add(book);
+        // Load user-specific books
+        if (userId != null) {
+            booksCollection.whereEqualTo("userId", userId).get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    bookList.clear();
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        String pdfUrl = document.getString("pdfUrl");
+                        String title = document.getString("title");
+                        String author = document.getString("author");
+                        String coverUrl = document.getString("coverUrl");
+                        String description = document.getString("description");
+                        String id = document.getId();
+                        Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId); // Include userId
+                        bookList.add(book);
+                    }
+
+                    // Always add predefined books for everyone
+                    addPredefinedBooks();
+                    filterBooks(searchView.getQuery().toString()); // Initial filter
+                } else {
+                    Log.e(TAG, "Error getting documents: ", task.getException());
                 }
-
-                addPredefinedBooks();
-                filterBooks(searchView.getQuery().toString()); // Initial filter
-            } else {
-                Log.e(TAG, "Error getting documents: ", task.getException());
-            }
-        });
+            });
+        } else {
+            Log.w(TAG, "User not logged in, unable to load books.");
+            // Load only predefined books if user is not logged in
+            addPredefinedBooks();
+            filterBooks(searchView.getQuery().toString()); // Initial filter
+        }
     }
 
     private void addPredefinedBooks() {
-            bookList.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "Robert T. Kiyosaki", "What the rich teach their kids about money."));
-            bookList.add(new Book(R.drawable.book_2, "url_to_pdf_2", "Atomic Habits", "James Clear", "An easy & proven way to build good habits."));
-            bookList.add(new Book(R.drawable.book_3, "url_to_pdf_3", "Best Self", "Mike Bayer", "Be you, only better."));
-            bookList.add(new Book(R.drawable.book_4, "url_to_pdf_4", "How to Be Fine", "Kristen Meinzer", "What we learned from living by the rules of 50 self-help books."));
-            bookList.add(new Book(R.drawable.book_5, "url_to_pdf_5", "Out of the Box", "Suzanne Dudley", "A journey in and out of emotional captivity."));
-            bookList.add(new Book(R.drawable.book_6, "url_to_pdf_6", "Stripped", "Brenda M. Gonzalez", "Learning to live and love after trauma."));
-            bookList.add(new Book(R.drawable.book_7, "url_to_pdf_7", "12 Rules for Life", "Jordan B. Peterson", "An antidote to chaos."));
-            bookList.add(new Book(R.drawable.book_8, "url_to_pdf_8", "Readistan", "Shah Rukh Nadeem", "The best books summarized in 10 minutes."));
-            bookList.add(new Book(R.drawable.book_9, "url_to_pdf_9", "Reclaim Your Heart", "Yasmin Mogahed", "Breaking free from life’s shackles."));
-            bookList.add(new Book(R.drawable.book_10, "url_to_pdf_10", "Lost Islamic History", "Firas Alkhateeb", "Reclaiming Muslim civilization from the past."));
+        // Add predefined books that are accessible to all users
+        bookList.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "Robert T. Kiyosaki", "What the rich teach their kids about money."));
+        bookList.add(new Book(R.drawable.book_2, "url_to_pdf_2", "Atomic Habits", "James Clear", "An easy & proven way to build good habits."));
+        bookList.add(new Book(R.drawable.book_3, "url_to_pdf_3", "Best Self", "Mike Bayer", "Be you, only better."));
+        bookList.add(new Book(R.drawable.book_4, "url_to_pdf_4", "How to Be Fine", "Kristen Meinzer", "What we learned from living by the rules of 50 self-help books."));
+        bookList.add(new Book(R.drawable.book_5, "url_to_pdf_5", "Out of the Box", "Suzanne Dudley", "A journey in and out of emotional captivity."));
+        bookList.add(new Book(R.drawable.book_6, "url_to_pdf_6", "Stripped", "Brenda M. Gonzalez", "Learning to live and love after trauma."));
+        bookList.add(new Book(R.drawable.book_7, "url_to_pdf_7", "12 Rules for Life", "Jordan B. Peterson", "An antidote to chaos."));
+        bookList.add(new Book(R.drawable.book_8, "url_to_pdf_8", "Readistan", "Shah Rukh Nadeem", "The best books summarized in 10 minutes."));
+        bookList.add(new Book(R.drawable.book_9, "url_to_pdf_9", "Reclaim Your Heart", "Yasmin Mogahed", "Breaking free from life’s shackles."));
+        bookList.add(new Book(R.drawable.book_10, "url_to_pdf_10", "Lost Islamic History", "Firas Alkhateeb", "Reclaiming Muslim civilization from the past."));
     }
 
     private void setupScrollListener() {
@@ -167,6 +182,8 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
     }
 
     public void addBookToLibrary(Book book) {
+        // Set userId before saving to Firestore
+        book.setUserId(auth.getCurrentUser().getUid());
         firestore.collection("books").document(book.getId()).set(book)
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "Book successfully added to Firestore"))
                 .addOnFailureListener(e -> Log.e(TAG, "Error adding book to Firestore", e));

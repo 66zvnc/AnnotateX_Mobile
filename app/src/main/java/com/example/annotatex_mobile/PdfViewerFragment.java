@@ -44,14 +44,14 @@ public class PdfViewerFragment extends Fragment {
     private static final String TAG = "PdfViewerFragment";
 
     private String pdfUrl;
-    private boolean shouldLoadPdf = true; // Flag to control PDF loading
+    private boolean shouldLoadPdf = true;
     private FirebaseStorage storage;
     private FirebaseFirestore firestore;
     private FirebaseAuth auth;
 
     private Dialog addBookInfoDialog;
     private Uri coverImageUri;
-    private DocumentReference pdfDocRef; // Reference for the Firestore document for real-time updates
+    private DocumentReference pdfDocRef;
 
     public static PdfViewerFragment newInstance(String pdfUrl) {
         PdfViewerFragment fragment = new PdfViewerFragment();
@@ -114,6 +114,11 @@ public class PdfViewerFragment extends Fragment {
     private void showAddBookInfoDialog(Uri pdfUri) {
         addBookInfoDialog = new Dialog(requireContext());
         addBookInfoDialog.setContentView(R.layout.dialog_add_book_info);
+
+        // Set the dialog width to match the parent width
+        if (addBookInfoDialog.getWindow() != null) {
+            addBookInfoDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
 
         ImageView coverPreviewImage = addBookInfoDialog.findViewById(R.id.coverPreviewImage);
         Button selectCoverButton = addBookInfoDialog.findViewById(R.id.selectCoverButton);
@@ -254,4 +259,3 @@ public class PdfViewerFragment extends Fragment {
             }
     );
 }
-

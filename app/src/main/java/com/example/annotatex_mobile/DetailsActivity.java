@@ -2,7 +2,6 @@ package com.example.annotatex_mobile;
 
 import android.content.Intent;
 import android.content.res.Resources;
-import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,12 +20,9 @@ import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
 import com.pspdfkit.annotations.Annotation;
 import com.pspdfkit.annotations.AnnotationType;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -63,7 +59,7 @@ public class DetailsActivity extends AppCompatActivity {
             if (book.hasBitmapCover()) {
                 binding.mBookImage.setImageBitmap(book.getCoverImageBitmap());
             } else if (book.hasUrlCover()) {
-                // Load the image from URL if you have Glide or Picasso integrated
+               //glide
             } else {
                 try {
                     binding.mBookImage.setImageResource(book.getImageResId());
@@ -184,7 +180,6 @@ public class DetailsActivity extends AppCompatActivity {
         }
     }
 
-    // Data class for saving annotation details
     private static class AnnotationData {
         int pageIndex;
         float left;

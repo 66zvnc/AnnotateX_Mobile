@@ -8,7 +8,7 @@
         android:id="@+id/email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Email" />
+        android:hint="Email or UserName" />
 
     <EditText
         android:id="@+id/password"
@@ -17,15 +17,52 @@
         android:hint="Password"
         android:inputType="textPassword" />
 
+    <!-- Login Button with Border -->
     <Button
         android:id="@+id/login_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Login" />
+        android:text="Login"
+        android:background="@drawable/button_border"
+        android:textColor="@color/black"
+        android:layout_marginTop="16dp" />
 
+    <!-- Register Button with Border -->
     <Button
         android:id="@+id/register_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Register" />
+        android:text="Register"
+        android:background="@drawable/button_border"
+        android:textColor="@color/black"
+        android:layout_marginTop="16dp" />
+
+    <!-- Custom Google Login Button with Border -->
+    <LinearLayout
+        android:id="@+id/google_login_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="12dp"
+        android:background="@drawable/button_border"
+        android:layout_marginTop="16dp"
+        android:onClick="onGoogleLoginClicked">
+
+        <!-- Google Icon -->
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_google_logo"
+            android:contentDescription="Google Logo" />
+
+        <!-- TextView for Button Label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Login with Google"
+            android:textColor="@color/black"
+            android:layout_marginStart="8dp"
+            android:textSize="16sp" />
+    </LinearLayout>
 </LinearLayout>

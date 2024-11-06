@@ -1,16 +1,24 @@
 package com.example.annotatex_mobile;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class SettingsProfileActivity extends AppCompatActivity {
 
     private static final String PREFS_NAME = "SettingsPrefs";
     private static final String KEY_DARK_MODE = "darkMode";
+    private FirebaseAuth auth;
+    private FirebaseFirestore firestore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +26,11 @@ public class SettingsProfileActivity extends AppCompatActivity {
         setContentView(R.layout.fragment_profile_settings);
 
         Switch darkModeSwitch = findViewById(R.id.darkModeSwitch);
+        Button deleteAccountButton = findViewById(R.id.deleteAccountButton);
+
+        // Initialize Firebase
+        auth = FirebaseAuth.getInstance();
+        firestore = FirebaseFirestore.getInstance();
 
         // Load dark mode preference
         SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
@@ -37,6 +50,9 @@ public class SettingsProfileActivity extends AppCompatActivity {
             // Apply the selected mode
             applyDarkMode(isChecked);
         });
+
+        // Set up delete account button listener
+        deleteAccountButton.setOnClickListener(v -> deleteAccount());
     }
 
     private void applyDarkMode(boolean isDarkMode) {
@@ -46,4 +62,38 @@ public class SettingsProfileActivity extends AppCompatActivity {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
     }
+
+    private void deleteAccount() {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user != null) {
+            // Get user ID for Firestore deletion
+            String userId = user.getUid();
+
+            // Delete user data from Firestore
+            firestore.collection("users").document(userId).delete()
+                    .addOnSuccessListener(aVoid -> {
+                        // Delete user from Firebase Authentication
+                        user.delete()
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        Toast.makeText(SettingsProfileActivity.this, "Account deleted successfully.", Toast.LENGTH_SHORT).show();
+
+                                        // Redirect to LoginActivity after deletion
+                                        Intent intent = new Intent(SettingsProfileActivity.this, LoginActivity.class);
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK); // Clear the activity stack
+                                        startActivity(intent);
+                                        finish(); // Close the current activity
+                                    } else {
+                                        Toast.makeText(SettingsProfileActivity.this, "Failed to delete account: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(SettingsProfileActivity.this, "Failed to delete user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            Toast.makeText(this, "No user is currently logged in.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }

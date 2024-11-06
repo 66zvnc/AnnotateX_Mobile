@@ -24,6 +24,7 @@
 
         <!-- Additional Activities -->
         <activity android:name=".LoginActivity" />
+        <activity android:name=".EmailVerificationActivity" />
         <activity android:name=".DetailsActivity" android:exported="true" />
 
         <!-- PSPDFKit PdfActivity declaration -->
