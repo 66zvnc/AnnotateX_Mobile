@@ -9,12 +9,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+
 import java.util.List;
 
 public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.ViewHolder> {
@@ -45,6 +48,7 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Book book = bookList.get(position);
 
+        // Load book cover
         if (book.hasBitmapCover()) {
             holder.imageView.setImageBitmap(book.getCoverImageBitmap());
         } else if (book.hasUrlCover()) {
@@ -52,6 +56,7 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
         } else if (book.hasResIdCover()) {
             holder.imageView.setImageResource(book.getImageResId());
         }
+
         holder.itemView.setOnClickListener(v -> listener.onPdfClick(book));
         holder.menuIcon.setOnClickListener(v -> showPopupMenu(v, book));
     }
@@ -60,6 +65,13 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
         PopupMenu popupMenu = new PopupMenu(context, view);
         MenuInflater inflater = popupMenu.getMenuInflater();
         inflater.inflate(R.menu.item_book_menu, popupMenu.getMenu());
+
+        MenuItem deleteItem = popupMenu.getMenu().findItem(R.id.menu_delete);
+        if (book.isPreloaded()) {
+            deleteItem.setTitle("Don't Suggest");
+        } else {
+            deleteItem.setTitle("Delete");
+        }
 
         popupMenu.setOnMenuItemClickListener(item -> onMenuItemClick(item, book));
         popupMenu.show();
@@ -75,10 +87,27 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
             listener.onPdfClick(book.getPdfUrl());
             return true;
         } else if (itemId == R.id.menu_delete) {
-            deleteBook(book);
+            if (book.isPreloaded()) {
+                markBookAsHidden(book);
+            } else {
+                deleteBook(book);
+            }
             return true;
         } else {
             return false;
+        }
+    }
+
+    private void markBookAsHidden(Book book) {
+        book.setHidden(true); // Mark the book as hidden
+        Log.d(TAG, "Marked as 'Don't Suggest': " + book.getTitle());
+        Toast.makeText(context, "Marked as 'Don't Suggest'", Toast.LENGTH_SHORT).show();
+
+        // Update the book list and notify adapter
+        int position = bookList.indexOf(book);
+        if (position != -1) {
+            bookList.remove(position);
+            notifyItemRemoved(position);
         }
     }
 
@@ -121,7 +150,7 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
-        ImageView menuIcon; // 3 dots
+        ImageView menuIcon;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

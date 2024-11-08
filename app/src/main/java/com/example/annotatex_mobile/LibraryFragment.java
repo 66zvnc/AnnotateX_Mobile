@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,18 +88,25 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         filteredList.clear();
         String lowerCaseQuery = query.toLowerCase();
 
-        if (query.isEmpty()) {
-            filteredList.addAll(bookList); // Show all books if query is empty
-        } else {
-            for (Book book : bookList) {
-                String title = book.getTitle() != null ? book.getTitle().toLowerCase() : "";
-                String author = book.getAuthor() != null ? book.getAuthor().toLowerCase() : "";
-                if (title.contains(lowerCaseQuery) || author.contains(lowerCaseQuery)) {
-                    filteredList.add(book);
-                }
+        for (Book book : bookList) {
+            // Include hidden books only if they match the search query
+            if (book.isHidden() && (query.isEmpty() || !matchesQuery(book, lowerCaseQuery))) {
+                continue;
+            }
+
+            // Add the book if it matches the search query or if the query is empty
+            if (query.isEmpty() || matchesQuery(book, lowerCaseQuery)) {
+                filteredList.add(book);
             }
         }
+
         adapter.notifyDataSetChanged();
+    }
+
+    private boolean matchesQuery(Book book, String query) {
+        String title = book.getTitle() != null ? book.getTitle().toLowerCase() : "";
+        String author = book.getAuthor() != null ? book.getAuthor().toLowerCase() : "";
+        return title.contains(query) || author.contains(query);
     }
 
     private void loadBooksFromFirestore() {
@@ -118,7 +126,9 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
                         String coverUrl = document.getString("coverUrl");
                         String description = document.getString("description");
                         String id = document.getId();
+                        boolean hidden = document.getBoolean("hidden") != null && document.getBoolean("hidden");
                         Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
+                        book.setHidden(hidden);
                         bookList.add(book);
                     }
                     addPredefinedBooks(); // Add predefined books for all users
@@ -183,6 +193,6 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
                 .addOnFailureListener(e -> Log.e(TAG, "Error adding book to Firestore", e));
 
         bookList.add(book);
-        filterBooks(searchView.getQuery().toString()); // Update filter with new book
+        filterBooks(searchView.getQuery().toString());
     }
 }
