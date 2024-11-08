@@ -7,7 +7,6 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,8 +27,8 @@ public class SettingsProfileActivity extends AppCompatActivity {
 
         Switch darkModeSwitch = findViewById(R.id.darkModeSwitch);
         Button deleteAccountButton = findViewById(R.id.deleteAccountButton);
+        Button preferencesButton = findViewById(R.id.preferencesButton);
 
-        // Initialize Firebase
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
@@ -38,22 +37,24 @@ public class SettingsProfileActivity extends AppCompatActivity {
         boolean isDarkMode = preferences.getBoolean(KEY_DARK_MODE, false);
         darkModeSwitch.setChecked(isDarkMode);
 
-        // Apply dark mode based on the saved preference
         applyDarkMode(isDarkMode);
 
-        // Set up the switch listener
+        // Dark mode switch listener
         darkModeSwitch.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) -> {
-            // Save the dark mode preference
             SharedPreferences.Editor editor = preferences.edit();
             editor.putBoolean(KEY_DARK_MODE, isChecked);
             editor.apply();
-
-            // Apply the selected mode
             applyDarkMode(isChecked);
         });
 
-        // Set up delete account button listener
+        // Delete account button listener
         deleteAccountButton.setOnClickListener(v -> deleteAccount());
+
+        // Preferences button listener
+        preferencesButton.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsProfileActivity.this, PreferencesActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void applyDarkMode(boolean isDarkMode) {
@@ -75,12 +76,10 @@ public class SettingsProfileActivity extends AppCompatActivity {
                                 .addOnCompleteListener(task -> {
                                     if (task.isSuccessful()) {
                                         Toast.makeText(SettingsProfileActivity.this, "Account deleted successfully.", Toast.LENGTH_SHORT).show();
-
-                                        // Redirect to LoginActivity after deletion
                                         Intent intent = new Intent(SettingsProfileActivity.this, LoginActivity.class);
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK); // Clear the activity stack
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                                         startActivity(intent);
-                                        finish(); // Close the current activity
+                                        finish();
                                     } else {
                                         Toast.makeText(SettingsProfileActivity.this, "Failed to delete account: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                     }

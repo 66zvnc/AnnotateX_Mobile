@@ -22,6 +22,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Dark Mode Switch -->
     <Switch
         android:id="@+id/darkModeSwitch"
         android:layout_width="wrap_content"
@@ -32,17 +33,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Preferences Button -->
     <Button
-        android:id="@+id/deleteAccountButton"
+        android:id="@+id/preferencesButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Delete Account"
         android:layout_marginTop="32dp"
-        android:textColor="@color/red"
-        android:background="@drawable/button_border"
+        android:background="@android:color/transparent"
+        android:text="Preferences"
+        android:textColor="?attr/colorOnBackground"
+        android:gravity="start|center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         app:layout_constraintTop_toBottomOf="@id/darkModeSwitch"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+
+    <!-- Delete Account Button -->
+    <Button
+        android:id="@+id/deleteAccountButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="468dp"
+        android:background="@drawable/button_border"
+        android:text="Delete Account"
+        android:textColor="@color/red"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/preferencesButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
