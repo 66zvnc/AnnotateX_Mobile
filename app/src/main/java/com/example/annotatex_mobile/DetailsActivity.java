@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -59,7 +60,7 @@ public class DetailsActivity extends AppCompatActivity {
             if (book.hasBitmapCover()) {
                 binding.mBookImage.setImageBitmap(book.getCoverImageBitmap());
             } else if (book.hasUrlCover()) {
-               //glide
+                // Load image using Glide if needed
             } else {
                 try {
                     binding.mBookImage.setImageResource(book.getImageResId());
@@ -79,6 +80,16 @@ public class DetailsActivity extends AppCompatActivity {
         } else {
             Log.e(TAG, "Book data is missing");
         }
+
+        // Back button functionality
+        ImageView goBackButton = findViewById(R.id.goBackButton);
+        goBackButton.setOnClickListener(v -> {
+            // Navigate back to the library
+            Intent intent = new Intent(DetailsActivity.this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void downloadAndOpenPdf(String pdfUrl) {
@@ -109,7 +120,6 @@ public class DetailsActivity extends AppCompatActivity {
                 .disableContentEditing()
                 .hideThumbnailGrid()
                 .disableDocumentEditor()
-                //.disableDefaultToolbar()
                 .build();
 
         Intent intent = PdfActivityIntentBuilder.fromUri(this, fileUri)
@@ -117,84 +127,5 @@ public class DetailsActivity extends AppCompatActivity {
                 .build();
 
         startActivity(intent);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.custom_pdf_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
-
-        if (itemId == R.id.action_highlight) {
-            // Handle highlight action
-            Toast.makeText(this, "Highlight selected", Toast.LENGTH_SHORT).show();
-            return true;
-        } else if (itemId == R.id.action_add_note) {
-            // Handle add note action
-            Toast.makeText(this, "Add Note selected", Toast.LENGTH_SHORT).show();
-            return true;
-        } else if (itemId == R.id.action_settings) {
-            // Handle settings action
-            Toast.makeText(this, "Settings selected", Toast.LENGTH_SHORT).show();
-            return true;
-        } else {
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (pdfDocument != null) {
-            saveAnnotationsToFirestore();
-        }
-    }
-
-    private void saveAnnotationsToFirestore() {
-        List<AnnotationData> annotationDataList = new ArrayList<>();
-
-        List<Annotation> annotations = pdfDocument.getAnnotationProvider()
-                .getAllAnnotationsOfType(EnumSet.of(AnnotationType.HIGHLIGHT));
-
-        for (Annotation annotation : annotations) {
-            AnnotationData data = new AnnotationData(
-                    annotation.getPageIndex(),
-                    annotation.getBoundingBox().left,
-                    annotation.getBoundingBox().top,
-                    annotation.getBoundingBox().right,
-                    annotation.getBoundingBox().bottom,
-                    annotation.getType().toString()
-            );
-            annotationDataList.add(data);
-        }
-
-        for (AnnotationData data : annotationDataList) {
-            annotationsCollection.add(data).addOnSuccessListener(documentReference ->
-                            Log.d(TAG, "Annotation saved with ID: " + documentReference.getId()))
-                    .addOnFailureListener(e ->
-                            Log.e(TAG, "Error saving annotation", e));
-        }
-    }
-
-    private static class AnnotationData {
-        int pageIndex;
-        float left;
-        float top;
-        float right;
-        float bottom;
-        String type;
-
-        AnnotationData(int pageIndex, float left, float top, float right, float bottom, String type) {
-            this.pageIndex = pageIndex;
-            this.left = left;
-            this.top = top;
-            this.right = right;
-            this.bottom = bottom;
-            this.type = type;
-        }
     }
 }
