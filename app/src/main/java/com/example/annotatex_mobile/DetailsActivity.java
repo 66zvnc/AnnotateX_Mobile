@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import com.bumptech.glide.Glide;
 import com.example.annotatex_mobile.databinding.ActivityDetailsBinding;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -21,7 +22,6 @@ import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
 import com.pspdfkit.annotations.Annotation;
 import com.pspdfkit.annotations.AnnotationType;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,18 +57,8 @@ public class DetailsActivity extends AppCompatActivity {
             binding.mAuthorName.setText(book.getAuthor());
             binding.mBookDesc.setText(book.getDescription());
 
-            if (book.hasBitmapCover()) {
-                binding.mBookImage.setImageBitmap(book.getCoverImageBitmap());
-            } else if (book.hasUrlCover()) {
-                // Load image using Glide if needed
-            } else {
-                try {
-                    binding.mBookImage.setImageResource(book.getImageResId());
-                } catch (Resources.NotFoundException e) {
-                    Log.e(TAG, "Image resource not found", e);
-                    binding.mBookImage.setImageResource(R.drawable.default_cover);
-                }
-            }
+            // Load the book cover using the helper method
+            loadBookCover(book);
 
             binding.mReadBookBtn.setOnClickListener(v -> {
                 if (book.getPdfUrl() != null && !book.getPdfUrl().isEmpty()) {
@@ -90,6 +80,34 @@ public class DetailsActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+    }
+
+    private void loadBookCover(Book book) {
+        // Check if the book has a Bitmap cover
+        if (book.hasBitmapCover()) {
+            binding.mBookImage.setImageBitmap(book.getCoverImageBitmap());
+        }
+        // Check if the book has a URL cover
+        else if (book.hasUrlCover()) {
+            // Load the cover from a URL using Glide
+            Glide.with(this)
+                    .load(book.getCoverImageUrl())
+                    .placeholder(R.drawable.default_cover)
+                    .error(R.drawable.default_cover)
+                    .into(binding.mBookImage);
+        }
+        // Fallback to resource ID if available
+        else if (book.hasResIdCover()) {
+            try {
+                binding.mBookImage.setImageResource(book.getImageResId());
+            } catch (Resources.NotFoundException e) {
+                Log.e(TAG, "Image resource not found", e);
+                binding.mBookImage.setImageResource(R.drawable.default_cover);
+            }
+        } else {
+            // If no cover is available, use a default image
+            binding.mBookImage.setImageResource(R.drawable.default_cover);
+        }
     }
 
     private void downloadAndOpenPdf(String pdfUrl) {
