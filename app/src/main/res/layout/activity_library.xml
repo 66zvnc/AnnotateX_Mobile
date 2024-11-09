@@ -40,7 +40,9 @@
             android:contentDescription="Activities"
             android:layout_marginEnd="8dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="6dp" />
+            android:padding="6dp"
+            app:layout_constraintTop_toTopOf="@+id/searchContainer"
+            app:layout_constraintBottom_toBottomOf="@+id/searchContainer" />
 
         <!-- Messages Icon -->
         <ImageView
@@ -50,7 +52,9 @@
             android:src="@drawable/ic_messages"
             android:contentDescription="Messages"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="6dp" />
+            android:padding="6dp"
+            app:layout_constraintTop_toTopOf="@+id/searchContainer"
+            app:layout_constraintBottom_toBottomOf="@+id/searchContainer" />
     </LinearLayout>
 
     <!-- Centered RecyclerView for Books -->
@@ -60,8 +64,6 @@
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
         android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@id/searchContainer"
         app:layout_constraintBottom_toBottomOf="parent"
