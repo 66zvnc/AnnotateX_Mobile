@@ -1,6 +1,7 @@
 package com.example.annotatex_mobile;
 
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,7 +18,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,8 +51,17 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         bookList = new ArrayList<>();
         filteredList = new ArrayList<>();
         adapter = new PdfGalleryAdapter(getContext(), filteredList, this);
+
         pdfGalleryRecyclerView = view.findViewById(R.id.pdfGalleryRecyclerView);
-        pdfGalleryRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+
+        // Set up a GridLayoutManager with 2 columns
+        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 2);
+        pdfGalleryRecyclerView.setLayoutManager(layoutManager);
+
+        // Add spacing to center items
+        int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.recycler_view_item_spacing);
+        pdfGalleryRecyclerView.addItemDecoration(new SpaceItemDecoration(spacingInPixels));
+
         pdfGalleryRecyclerView.setAdapter(adapter);
 
         // Initialize SearchView and set up query listener
@@ -89,17 +98,13 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         String lowerCaseQuery = query.toLowerCase();
 
         for (Book book : bookList) {
-            // Include hidden books only if they match the search query
             if (book.isHidden() && (query.isEmpty() || !matchesQuery(book, lowerCaseQuery))) {
                 continue;
             }
-
-            // Add the book if it matches the search query or if the query is empty
             if (query.isEmpty() || matchesQuery(book, lowerCaseQuery)) {
                 filteredList.add(book);
             }
         }
-
         adapter.notifyDataSetChanged();
     }
 
@@ -111,8 +116,6 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
 
     private void loadBooksFromFirestore() {
         CollectionReference booksCollection = firestore.collection("books");
-
-        // Load only books belonging to the logged-in user
         String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
 
         if (userId != null) {
@@ -183,16 +186,24 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
 
     @Override
     public void onPdfClick(String pdfUrl) {
-        // Optional, not required if using the Book object
+
     }
 
-    public void addBookToLibrary(Book book) {
-        book.setUserId(auth.getCurrentUser().getUid());
-        firestore.collection("books").document(book.getId()).set(book)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Book successfully added to Firestore"))
-                .addOnFailureListener(e -> Log.e(TAG, "Error adding book to Firestore", e));
+    private class SpaceItemDecoration extends RecyclerView.ItemDecoration {
+        private final int space;
 
-        bookList.add(book);
-        filterBooks(searchView.getQuery().toString());
+        public SpaceItemDecoration(int space) {
+            this.space = space;
+        }
+
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            outRect.left = space;
+            outRect.right = space;
+            outRect.bottom = space;
+            if (parent.getChildLayoutPosition(view) < 2) {
+                outRect.top = space;
+            }
+        }
     }
 }
