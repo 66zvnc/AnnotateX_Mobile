@@ -1,5 +1,6 @@
 package com.example.annotatex_mobile;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -7,6 +8,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.firebase.auth.FirebaseAuth;
@@ -36,7 +38,6 @@ public class SettingsProfileActivity extends AppCompatActivity {
         SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         boolean isDarkMode = preferences.getBoolean(KEY_DARK_MODE, false);
         darkModeSwitch.setChecked(isDarkMode);
-
         applyDarkMode(isDarkMode);
 
         // Dark mode switch listener
@@ -47,8 +48,8 @@ public class SettingsProfileActivity extends AppCompatActivity {
             applyDarkMode(isChecked);
         });
 
-        // Delete account button listener
-        deleteAccountButton.setOnClickListener(v -> deleteAccount());
+        // Delete account button listener with confirmation dialog
+        deleteAccountButton.setOnClickListener(v -> showDeleteConfirmationDialog());
 
         // Preferences button listener
         preferencesButton.setOnClickListener(v -> {
@@ -63,6 +64,15 @@ public class SettingsProfileActivity extends AppCompatActivity {
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
+    }
+
+    private void showDeleteConfirmationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Account")
+                .setMessage("Are you sure you want to delete your account? This action cannot be undone.")
+                .setPositiveButton("Yes, Im sure", (dialog, which) -> deleteAccount())
+                .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
     private void deleteAccount() {

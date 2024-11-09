@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     tools:ignore="UseSwitchCompatOrMaterialXml">
 
+    <!-- Profile Settings Title -->
     <TextView
         android:id="@+id/profileSettingsTitle"
         android:layout_width="0dp"
@@ -49,19 +50,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-
-    <!-- Delete Account Button -->
+    <!-- Delete Account Button - Aligned to the bottom -->
     <Button
         android:id="@+id/deleteAccountButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="468dp"
+        android:layout_margin="16dp"
         android:background="@drawable/button_border"
         android:text="Delete Account"
         android:textColor="@color/red"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/preferencesButton" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
