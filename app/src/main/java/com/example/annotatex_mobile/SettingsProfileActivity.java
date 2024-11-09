@@ -48,14 +48,19 @@ public class SettingsProfileActivity extends AppCompatActivity {
             applyDarkMode(isChecked);
         });
 
-        // Delete account button listener with confirmation dialog
         deleteAccountButton.setOnClickListener(v -> showDeleteConfirmationDialog());
 
-        // Preferences button listener
         preferencesButton.setOnClickListener(v -> {
             Intent intent = new Intent(SettingsProfileActivity.this, PreferencesActivity.class);
             startActivity(intent);
         });
+
+        Button privacyButton = findViewById(R.id.privacyButton);
+        privacyButton.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsProfileActivity.this, PrivacyActivity.class);
+            startActivity(intent);
+        });
+
     }
 
     private void applyDarkMode(boolean isDarkMode) {

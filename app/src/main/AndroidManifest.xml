@@ -39,6 +39,8 @@
         <activity android:name=".SettingsProfileActivity" />
         <activity android:name=".EditProfileActivity" />
         <activity android:name=".PreferencesActivity" />
+        <activity android:name=".PrivacyActivity" />
+
 
     </application>
 
