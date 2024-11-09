@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -21,6 +22,14 @@ public class MainActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
+
+        // Initialize the Google Mobile Ads SDK on a background thread
+        new Thread(() -> {
+            MobileAds.initialize(this, initializationStatus -> {
+                // Optional: Handle initialization status here if needed
+                // Log.d("AdMob", "Initialization Complete");
+            });
+        }).start();
 
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
@@ -55,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
+        // Set the default fragment to LibraryFragment on first load
         if (savedInstanceState == null) {
             bottomNav.setSelectedItemId(R.id.nav_library);
         }
