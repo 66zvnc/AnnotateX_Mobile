@@ -3,17 +3,18 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:gravity="center_horizontal">
 
     <!-- Cover Preview Image -->
     <ImageView
         android:id="@+id/coverPreviewImage"
-        android:layout_width="100dp"
-        android:layout_height="150dp"
-        android:layout_gravity="center"
+        android:layout_width="120dp"
+        android:layout_height="180dp"
         android:contentDescription="@string/cover_preview"
         android:src="@drawable/book_handle"
-        android:layout_marginBottom="16dp" />
+        android:layout_gravity="center"
+        android:layout_marginBottom="24dp" />
 
     <!-- Select Cover Image Button -->
     <Button
@@ -21,9 +22,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Select Cover Image"
-        android:background="@drawable/button_border"
-        android:textColor="@color/black"
-        android:layout_marginBottom="16dp" />
+        android:background="@android:color/transparent"
+        android:textColor="?attr/colorPrimary"
+        android:layout_marginBottom="16dp"
+        android:padding="8dp" />
 
     <!-- Book Title Input -->
     <EditText
@@ -33,7 +35,8 @@
         android:hint="Book Title (required)"
         android:inputType="text"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="8dp"
+        android:padding="12dp" />
 
     <!-- Book Description Input -->
     <EditText
@@ -43,7 +46,8 @@
         android:hint="Book Description (optional)"
         android:inputType="textMultiLine"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:padding="12dp" />
 
     <!-- Confirm Button -->
     <Button
@@ -52,7 +56,8 @@
         android:layout_height="wrap_content"
         android:text="Add Book"
         android:background="@drawable/button_border"
-        android:textColor="@color/black"
-        android:layout_marginTop="24dp" />
+        android:textColor="?attr/colorOnBackground"
+        android:layout_marginTop="24dp"
+        android:padding="12dp" />
 
 </LinearLayout>

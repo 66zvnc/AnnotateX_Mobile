@@ -23,10 +23,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -48,42 +45,27 @@ public class PdfViewerFragment extends Fragment {
     private FirebaseStorage storage;
     private FirebaseFirestore firestore;
     private FirebaseAuth auth;
-
     private Dialog addBookInfoDialog;
     private Uri coverImageUri;
     private DocumentReference pdfDocRef;
 
-    public static PdfViewerFragment newInstance(String pdfUrl) {
-        PdfViewerFragment fragment = new PdfViewerFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PDF_URL, pdfUrl);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    public void setShouldLoadPdf(boolean shouldLoad) {
-        this.shouldLoadPdf = shouldLoad;
-    }
-
+    // Method to set Firestore instance
     public void setFirestore(FirebaseFirestore firestore) {
         this.firestore = firestore;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            pdfUrl = getArguments().getString(ARG_PDF_URL);
-        }
-        storage = FirebaseStorage.getInstance();
-        firestore = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
+    // Method to control PDF loading behavior
+    public void setShouldLoadPdf(boolean shouldLoad) {
+        this.shouldLoadPdf = shouldLoad;
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pdf_viewer, container, false);
+
+        storage = FirebaseStorage.getInstance();
+        auth = FirebaseAuth.getInstance();
 
         Button uploadButton = view.findViewById(R.id.uploadButton);
         uploadButton.setOnClickListener(v -> openFileChooser());
@@ -94,6 +76,70 @@ public class PdfViewerFragment extends Fragment {
 
         return view;
     }
+
+    private void downloadAndOpenPdfWithPSPDFKit(String url) {
+        StorageReference pdfRef = storage.getReferenceFromUrl(url);
+
+        try {
+            File localFile = File.createTempFile("tempPdf", ".pdf", requireContext().getCacheDir());
+
+            pdfRef.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
+                openPdfWithPSPDFKit(Uri.fromFile(localFile));
+                initializeRealTimeUpdates(localFile.getName());
+            }).addOnFailureListener(e -> {
+                Log.e(TAG, "Failed to download PDF", e);
+                Toast.makeText(requireContext(), "Failed to open PDF", Toast.LENGTH_SHORT).show();
+            });
+        } catch (IOException e) {
+            Log.e(TAG, "Error creating temp file", e);
+        }
+    }
+
+    private void initializeRealTimeUpdates(String documentId) {
+        // Get a reference to the Firestore document
+        pdfDocRef = firestore.collection("pdfDocuments").document(documentId);
+
+        // Set up a real-time listener on the Firestore document
+        pdfDocRef.addSnapshotListener((snapshot, e) -> {
+            if (e != null) {
+                Log.w(TAG, "Listen failed.", e);
+                return;
+            }
+
+            if (snapshot != null && snapshot.exists()) {
+                Map<String, Object> data = snapshot.getData();
+                syncAnnotations(data);
+            } else {
+                Log.d(TAG, "No data found for real-time updates.");
+            }
+        });
+    }
+
+    private void syncAnnotations(Map<String, Object> data) {
+        if (data != null) {
+            Log.d(TAG, "Syncing annotations: " + data);
+            // Implement your logic to update annotations based on the data retrieved
+        }
+    }
+
+
+
+    private void openPdfWithPSPDFKit(Uri fileUri) {
+        PdfActivityConfiguration configuration = new PdfActivityConfiguration.Builder(requireContext())
+                .theme(R.style.MyApp_PSPDFKitTheme)
+                .enableAnnotationEditing()
+                .disableOutline()
+                .disableSearch()
+                .build();
+
+        Intent intent = PdfActivityIntentBuilder.fromUri(requireContext(), fileUri)
+                .configuration(configuration)
+                .build();
+
+        startActivity(intent);
+    }
+
+
 
     private void openFileChooser() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -115,7 +161,6 @@ public class PdfViewerFragment extends Fragment {
         addBookInfoDialog = new Dialog(requireContext());
         addBookInfoDialog.setContentView(R.layout.dialog_add_book_info);
 
-        // Set the dialog width to match the parent width
         if (addBookInfoDialog.getWindow() != null) {
             addBookInfoDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         }
@@ -178,69 +223,6 @@ public class PdfViewerFragment extends Fragment {
         firestore.collection("books").add(bookData)
                 .addOnSuccessListener(documentReference -> Log.d(TAG, "Book metadata saved with ID: " + documentReference.getId()))
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to save book metadata", e));
-    }
-
-    private void downloadAndOpenPdfWithPSPDFKit(String url) {
-        StorageReference pdfRef = storage.getReferenceFromUrl(url);
-
-        try {
-            File localFile = File.createTempFile("tempPdf", ".pdf");
-
-            pdfRef.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
-                openPdfWithPSPDFKit(Uri.fromFile(localFile));
-                initializeRealTimeUpdates(localFile.getName());
-            }).addOnFailureListener(e -> Log.e(TAG, "Failed to download PDF", e));
-        } catch (IOException e) {
-            Log.e(TAG, "Error creating temp file", e);
-        }
-    }
-
-    private void openPdfWithPSPDFKit(Uri fileUri) {
-        PdfActivityConfiguration configuration = new PdfActivityConfiguration.Builder(requireContext())
-                .theme(R.style.MyApp_PSPDFKitTheme)
-                .enableAnnotationEditing()
-                .disableOutline()
-                .disableSearch()
-                .build();
-
-        Intent intent = PdfActivityIntentBuilder.fromUri(requireContext(), fileUri)
-                .configuration(configuration)
-                .build();
-
-        startActivity(intent);
-    }
-
-    private void initializeRealTimeUpdates(String documentId) {
-        pdfDocRef = firestore.collection("pdfDocuments").document(documentId);
-
-        pdfDocRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
-                }
-
-                if (snapshot != null && snapshot.exists()) {
-                    Map<String, Object> data = snapshot.getData();
-                    syncAnnotations(data);
-                } else {
-                    Log.d(TAG, "Current data: null");
-                }
-            }
-        });
-    }
-
-    private void syncAnnotations(Map<String, Object> data) {
-        if (data != null) {
-            Log.d(TAG, "Syncing annotations: " + data);
-        }
-    }
-
-    private void saveAnnotationUpdate(Map<String, Object> annotationData) {
-        pdfDocRef.set(annotationData, SetOptions.merge())
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Annotation updated successfully."))
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to update annotation", e));
     }
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
