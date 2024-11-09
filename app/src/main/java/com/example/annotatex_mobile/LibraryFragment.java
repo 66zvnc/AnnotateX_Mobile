@@ -40,38 +40,30 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_library, container, false);
 
-        // Initialize Firestore and FirebaseAuth
         firestore = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
-        // Initialize MotionLayout
         motionLayout = view.findViewById(R.id.motionLayout);
 
-        // Initialize book list and adapter
         bookList = new ArrayList<>();
         filteredList = new ArrayList<>();
         adapter = new PdfGalleryAdapter(getContext(), filteredList, this);
 
         pdfGalleryRecyclerView = view.findViewById(R.id.pdfGalleryRecyclerView);
 
-        // Set up a GridLayoutManager with 2 columns
         GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 2);
         pdfGalleryRecyclerView.setLayoutManager(layoutManager);
 
-        // Add spacing to center items
         int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.recycler_view_item_spacing);
         pdfGalleryRecyclerView.addItemDecoration(new SpaceItemDecoration(spacingInPixels));
 
         pdfGalleryRecyclerView.setAdapter(adapter);
 
-        // Initialize SearchView and set up query listener
         searchView = view.findViewById(R.id.searchView);
         setupSearchView();
 
-        // Load books from Firestore and add predefined books
         loadBooksFromFirestore();
 
-        // Set up scroll listener for hiding/showing SearchView
         setupScrollListener();
 
         return view;
@@ -134,8 +126,8 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
                         book.setHidden(hidden);
                         bookList.add(book);
                     }
-                    addPredefinedBooks(); // Add predefined books for all users
-                    filterBooks(searchView.getQuery().toString()); // Initial filter
+                    addPredefinedBooks();
+                    filterBooks(searchView.getQuery().toString());
                 } else {
                     Log.e(TAG, "Error getting documents: ", task.getException());
                 }
@@ -143,12 +135,11 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         } else {
             Log.w(TAG, "User not logged in, loading predefined books.");
             addPredefinedBooks();
-            filterBooks(searchView.getQuery().toString()); // Initial filter
+            filterBooks(searchView.getQuery().toString());
         }
     }
 
     private void addPredefinedBooks() {
-        // Add predefined books that are accessible to all users
         bookList.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "Robert T. Kiyosaki", "What the rich teach their kids about money."));
         bookList.add(new Book(R.drawable.book_2, "url_to_pdf_2", "Atomic Habits", "James Clear", "An easy & proven way to build good habits."));
         bookList.add(new Book(R.drawable.book_3, "url_to_pdf_3", "Best Self", "Mike Bayer", "Be you, only better."));
