@@ -5,11 +5,23 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Title TextView -->
     <TextView
         android:id="@+id/text_friend_requests"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Activities"
+        android:text="Friend Requests"
         android:textSize="20sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:textColor="?attr/colorOnBackground" />
+
+    <!-- RecyclerView for displaying friend requests -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/friendRequestsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:scrollbars="vertical" />
 </LinearLayout>

@@ -1,31 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Toolbar with a plus icon -->
+    <!-- Container for SearchView and Add Friend Icon -->
     <LinearLayout
-        android:layout_width="29dp"
-        android:layout_height="33dp"
-        android:gravity="end"
-        android:orientation="horizontal">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="8dp">
 
+        <!-- Search View -->
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:iconifiedByDefault="false"
+            android:queryHint="Search for users"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- Add Friend Icon next to SearchView -->
         <ImageView
             android:id="@+id/addFriendIcon"
-            android:layout_width="33dp"
-            android:layout_height="33dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Add Friend"
             android:padding="8dp"
+            app:tint="?attr/colorOnSurface"
             android:src="@drawable/ic_add_friend" />
     </LinearLayout>
 
+    <!-- RecyclerView for displaying search results -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/friendsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:padding="16dp"/>
+        android:padding="8dp"/>
 </LinearLayout>
