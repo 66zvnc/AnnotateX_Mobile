@@ -80,30 +80,48 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             return;
         }
 
-        // Create a timestamp for when the request was sent
-        long timestamp = System.currentTimeMillis();
-        String receiverId = user.getId();
-        String senderName = auth.getCurrentUser().getDisplayName();
+        // Fetch current user's full name from Firestore
+        firestore.collection("users").document(currentUserId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    String senderName = documentSnapshot.getString("fullName");
+                    if (senderName == null || senderName.isEmpty()) {
+                        senderName = "Unknown User"; // Fallback if fullName is not found
+                    }
 
-        // Create a FriendRequest object
-        FriendRequest friendRequest = new FriendRequest(currentUserId, senderName, receiverId, timestamp);
+                    // Create a timestamp for when the request was sent
+                    long timestamp = System.currentTimeMillis();
 
-        // Send friend request to the selected user
-        firestore.collection("users")
-                .document(receiverId)
-                .collection("friendRequests")
-                .document(currentUserId)
-                .set(friendRequest)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(context, "Friend request sent", Toast.LENGTH_SHORT).show();
-                    holder.addFriendButton.setEnabled(false);
-                    holder.addFriendButton.setText("Requested");
+                    // Create a FriendRequest object
+                    FriendRequest friendRequest = new FriendRequest(
+                            currentUserId,
+                            senderName,
+                            user.getId(),
+                            timestamp
+                    );
+
+                    // Send friend request to the selected user
+                    firestore.collection("users")
+                            .document(user.getId())
+                            .collection("friendRequests")
+                            .document(currentUserId)
+                            .set(friendRequest)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(context, "Friend request sent", Toast.LENGTH_SHORT).show();
+                                holder.addFriendButton.setEnabled(false);
+                                holder.addFriendButton.setText("Requested");
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(context, "Failed to send friend request", Toast.LENGTH_SHORT).show();
+                            });
+
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(context, "Failed to send friend request", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
+                    Toast.makeText(context, "Failed to fetch user information", Toast.LENGTH_SHORT).show();
                 });
     }
+
+
+
 
     @Override
     public int getItemCount() {

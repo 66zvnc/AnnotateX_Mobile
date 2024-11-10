@@ -8,17 +8,19 @@ public class FriendRequest implements Serializable {
     private String receiverId;
     private long timestamp;
 
+    // Default constructor required for Firestore deserialization
     public FriendRequest() {
-        // Default constructor required for calls to DataSnapshot.getValue(FriendRequest.class)
     }
 
+    // Constructor to create a new FriendRequest object
     public FriendRequest(String senderId, String senderName, String receiverId, long timestamp) {
         this.senderId = senderId;
-        this.senderName = senderName;
+        this.senderName = senderName != null ? senderName : "Unknown User"; // Handle null senderName
         this.receiverId = receiverId;
         this.timestamp = timestamp;
     }
 
+    // Getters
     public String getSenderId() {
         return senderId;
     }
@@ -35,12 +37,13 @@ public class FriendRequest implements Serializable {
         return timestamp;
     }
 
+    // Setters
     public void setSenderId(String senderId) {
         this.senderId = senderId;
     }
 
     public void setSenderName(String senderName) {
-        this.senderName = senderName;
+        this.senderName = senderName != null ? senderName : "Unknown User";
     }
 
     public void setReceiverId(String receiverId) {
@@ -51,6 +54,7 @@ public class FriendRequest implements Serializable {
         this.timestamp = timestamp;
     }
 
+    // Override toString method for debugging purposes
     @Override
     public String toString() {
         return "FriendRequest{" +
@@ -59,5 +63,11 @@ public class FriendRequest implements Serializable {
                 ", receiverId='" + receiverId + '\'' +
                 ", timestamp=" + timestamp +
                 '}';
+    }
+
+    // Method to check if the FriendRequest object is valid
+    public boolean isValid() {
+        return senderId != null && !senderId.isEmpty() &&
+                receiverId != null && !receiverId.isEmpty();
     }
 }
