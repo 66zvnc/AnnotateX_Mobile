@@ -41,6 +41,7 @@
             android:layout_marginEnd="8dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="6dp"
+            app:tint="?attr/colorOnSurface"
             app:layout_constraintTop_toTopOf="@+id/searchContainer"
             app:layout_constraintBottom_toBottomOf="@+id/searchContainer" />
 
@@ -53,6 +54,7 @@
             android:contentDescription="Messages"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="6dp"
+            app:tint="?attr/colorOnSurface"
             app:layout_constraintTop_toTopOf="@+id/searchContainer"
             app:layout_constraintBottom_toBottomOf="@+id/searchContainer" />
     </LinearLayout>
