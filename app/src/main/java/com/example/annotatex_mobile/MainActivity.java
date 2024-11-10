@@ -2,6 +2,7 @@ package com.example.annotatex_mobile;
 
 import android.content.Intent;
 import android.os.Bundle;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.google.android.gms.ads.MobileAds;
@@ -23,11 +24,10 @@ public class MainActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
-        // Initialize the Google Mobile Ads SDK on a background thread
+        // Initialize Google Mobile Ads SDK in a background thread
         new Thread(() -> {
             MobileAds.initialize(this, initializationStatus -> {
-                // Optional: Handle initialization status here if needed
-                // Log.d("AdMob", "Initialization Complete");
+
             });
         }).start();
 
@@ -38,35 +38,40 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Set up bottom navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
-        bottomNav.setOnNavigationItemSelectedListener(item -> {
-            Fragment selectedFragment = null;
+        bottomNav.setOnNavigationItemSelectedListener(navListener);
 
-            int itemId = item.getItemId();
-            if (itemId == R.id.nav_library) {
-                selectedFragment = new LibraryFragment();
-            } else if (itemId == R.id.nav_pdf) {
-                PdfViewerFragment pdfViewerFragment = new PdfViewerFragment();
-                pdfViewerFragment.setFirestore(firestore);
-                pdfViewerFragment.setShouldLoadPdf(false);
-                selectedFragment = pdfViewerFragment;
-            } else if (itemId == R.id.nav_profile) {
-                selectedFragment = new ProfileFragment();
-            }
-
-            if (selectedFragment != null) {
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, selectedFragment)
-                        .commit();
-                return true;
-            }
-            return false;
-        });
-
-        // Set the default fragment to LibraryFragment on first load
         if (savedInstanceState == null) {
             bottomNav.setSelectedItemId(R.id.nav_library);
         }
     }
+
+    private final BottomNavigationView.OnNavigationItemSelectedListener navListener = item -> {
+        Fragment selectedFragment = null;
+
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.nav_library) {
+            selectedFragment = new LibraryFragment();
+        } else if (itemId == R.id.nav_categories) {
+            selectedFragment = new CategoriesFragment();
+        } else if (itemId == R.id.nav_add_book) {
+            PdfViewerFragment pdfViewerFragment = new PdfViewerFragment();
+            pdfViewerFragment.setFirestore(firestore);
+            pdfViewerFragment.setShouldLoadPdf(false);
+            selectedFragment = pdfViewerFragment;
+        } else if (itemId == R.id.nav_friends) {
+            selectedFragment = new FriendsFragment();
+        } else if (itemId == R.id.nav_profile) {
+            selectedFragment = new ProfileFragment();
+        }
+
+        if (selectedFragment != null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, selectedFragment)
+                    .commit();
+            return true;
+        }
+        return false;
+    };
 }

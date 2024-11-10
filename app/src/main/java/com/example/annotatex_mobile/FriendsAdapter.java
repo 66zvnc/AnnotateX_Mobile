@@ -1,0 +1,61 @@
+package com.example.annotatex_mobile;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
+import java.util.List;
+
+public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendViewHolder> {
+
+    private final List<Friend> friendsList;
+    private final Context context;
+
+    public FriendsAdapter(Context context, List<Friend> friendsList) {
+        this.context = context;
+        this.friendsList = friendsList;
+    }
+
+    @NonNull
+    @Override
+    public FriendViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context).inflate(R.layout.item_friend, parent, false);
+        return new FriendViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull FriendViewHolder holder, int position) {
+        Friend friend = friendsList.get(position);
+        holder.nameTextView.setText(friend.getName());
+
+        // Load profile image using Glide
+        Glide.with(context)
+                .load(friend.getProfileImageUrl())
+                .placeholder(R.drawable.ic_default_profile)
+                .into(holder.profileImageView);
+
+        holder.statusTextView.setText(friend.getStatus());
+    }
+
+    @Override
+    public int getItemCount() {
+        return friendsList.size();
+    }
+
+    public static class FriendViewHolder extends RecyclerView.ViewHolder {
+        ImageView profileImageView;
+        TextView nameTextView, statusTextView;
+
+        public FriendViewHolder(@NonNull View itemView) {
+            super(itemView);
+            profileImageView = itemView.findViewById(R.id.profileImageView);
+            nameTextView = itemView.findViewById(R.id.nameTextView);
+            statusTextView = itemView.findViewById(R.id.statusTextView);
+        }
+    }
+}
