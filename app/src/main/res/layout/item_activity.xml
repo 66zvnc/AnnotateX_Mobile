@@ -1,8 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/activityTextView"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
-    android:textSize="16sp"
-    android:textColor="?attr/colorOnSurface"/>
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:background="?android:attr/selectableItemBackground">
+
+    <!-- Notification Message -->
+    <TextView
+        android:id="@+id/requestTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Friend request message"
+        android:textSize="16sp"
+        android:textColor="?attr/colorOnSurface" />
+
+    <!-- Accept Button -->
+    <ImageView
+        android:id="@+id/acceptButton"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_check"
+        android:contentDescription="Accept Friend Request" />
+
+    <!-- Deny Button -->
+    <ImageView
+        android:id="@+id/denyButton"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_close"
+        android:contentDescription="Deny Friend Request" />
+</LinearLayout>

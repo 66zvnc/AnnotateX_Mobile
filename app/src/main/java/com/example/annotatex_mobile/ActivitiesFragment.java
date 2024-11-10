@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +21,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class ActivitiesFragment extends Fragment {
     private static final String CHANNEL_ID = "friend_requests_channel";
     private RecyclerView friendRequestsRecyclerView;
     private ActivitiesAdapter activitiesAdapter;
-    private List<String> activitiesList;
+    private List<FriendRequest> activitiesList;
     private FirebaseFirestore firestore;
     private FirebaseAuth auth;
     private ListenerRegistration listenerRegistration;
@@ -69,26 +69,42 @@ public class ActivitiesFragment extends Fragment {
                 .addSnapshotListener((querySnapshot, e) -> {
                     if (e != null || querySnapshot == null) return;
 
-                    for (QueryDocumentSnapshot document : querySnapshot) {
-                        String senderName = document.getString("senderName");
-                        if (senderName != null) {
-                            String notificationMessage = senderName + " sent you a friend request!";
-                            activitiesList.add(notificationMessage);
-                            activitiesAdapter.notifyDataSetChanged();
+                    activitiesList.clear();
 
-                            // Show system notification
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        String senderId = document.getString("senderId");
+                        String senderName = document.getString("senderName");
+                        String receiverId = document.getString("receiverId");
+                        long timestamp = document.getLong("timestamp");
+
+                        FriendRequest request = new FriendRequest(senderId, senderName, receiverId, timestamp);
+                        activitiesList.add(request);
+
+                        // Show system notification for each new friend request
+                        if (senderName != null && !senderName.isEmpty()) {
+                            String notificationMessage = senderName + " sent you a friend request!";
                             showSystemNotification(notificationMessage);
                         }
                     }
+                    activitiesAdapter.notifyDataSetChanged();
                 });
     }
-
 
     private void showSystemNotification(String message) {
         NotificationManager notificationManager = (NotificationManager) requireContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
+        if (notificationManager == null) {
+            Log.e("ActivitiesFragment", "Notification Manager not available");
+            return;
+        }
+
         Intent intent = new Intent(requireContext(), MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                requireContext(),
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
@@ -98,9 +114,7 @@ public class ActivitiesFragment extends Fragment {
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
 
-        if (notificationManager != null) {
-            notificationManager.notify((int) System.currentTimeMillis(), builder.build());
-        }
+        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
     }
 
     private void createNotificationChannel() {
