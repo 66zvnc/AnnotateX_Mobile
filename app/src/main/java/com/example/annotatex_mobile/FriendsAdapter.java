@@ -1,7 +1,6 @@
 package com.example.annotatex_mobile;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,24 +32,20 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
     public void onBindViewHolder(@NonNull FriendViewHolder holder, int position) {
         Friend friend = friendsList.get(position);
 
-        // Set the friend's name and status
         holder.nameTextView.setText(friend.getName());
         holder.statusTextView.setText(friend.getStatus());
 
-        // Check if the profile image URL is available
+        // Load profile image using Glide
         if (friend.getProfileImageUrl() != null && !friend.getProfileImageUrl().isEmpty()) {
-            // Load profile image using Glide with placeholder and error handling
             Glide.with(context)
                     .load(friend.getProfileImageUrl())
                     .placeholder(R.drawable.ic_default_profile)
-                    .error(R.drawable.ic_default_profile) // Fallback image if loading fails
+                    .error(R.drawable.ic_default_profile)
                     .into(holder.profileImageView);
         } else {
-            // If URL is null or empty, set the default profile image
             holder.profileImageView.setImageResource(R.drawable.ic_default_profile);
         }
     }
-
 
     @Override
     public int getItemCount() {
