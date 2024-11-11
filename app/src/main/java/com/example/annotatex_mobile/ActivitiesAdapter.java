@@ -61,51 +61,71 @@ public class ActivitiesAdapter extends RecyclerView.Adapter<ActivitiesAdapter.Ac
 
 
     private void acceptFriendRequest(FriendRequest request, ActivityViewHolder holder) {
-        String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
+        String currentUserId = auth.getCurrentUser().getUid();
 
         if (currentUserId == null) {
-            Log.e("ActivitiesAdapter", "User not logged in");
             Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show();
             holder.acceptButton.setEnabled(true);
-            holder.denyButton.setEnabled(true);
             return;
         }
 
-        Log.d("ActivitiesAdapter", "Attempting to accept friend request from: " + request.getSenderName());
-
-        // Add the sender to the current user's friends list
+        // Fetch sender's profile data before adding to friends list
         firestore.collection("users")
-                .document(currentUserId)
-                .collection("friends")
                 .document(request.getSenderId())
-                .set(new Friend(request.getSenderId(), request.getSenderName(), "", "Online"))
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("ActivitiesAdapter", "Successfully added to friends list: " + request.getSenderName());
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String senderName = documentSnapshot.getString("fullName");
+                        String profileImageUrl = documentSnapshot.getString("profileImageUrl");
 
-                    // Also add the current user to the sender's friends list
-                    firestore.collection("users")
-                            .document(request.getSenderId())
-                            .collection("friends")
-                            .document(currentUserId)
-                            .set(new Friend(currentUserId, auth.getCurrentUser().getDisplayName(), "", "Online"))
-                            .addOnSuccessListener(aVoid1 -> {
-                                Log.d("ActivitiesAdapter", "Successfully added current user to sender's friends list.");
-                                deleteFriendRequest(request);
-                                holder.acceptButton.setImageResource(R.drawable.ic_check);
-                                Toast.makeText(context, "Friend request accepted", Toast.LENGTH_SHORT).show();
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e("ActivitiesAdapter", "Failed to add current user to sender's friends list", e);
-                                holder.acceptButton.setEnabled(true);
-                                holder.denyButton.setEnabled(true);
-                            });
+                        Friend senderAsFriend = new Friend(
+                                request.getSenderId(),
+                                senderName,
+                                profileImageUrl,
+                                "Online"
+                        );
+
+                        firestore.collection("users")
+                                .document(currentUserId)
+                                .collection("friends")
+                                .document(request.getSenderId())
+                                .set(senderAsFriend)
+                                .addOnSuccessListener(aVoid -> {
+                                    // Also add the current user to the sender's friends list
+                                    String currentUserName = auth.getCurrentUser().getDisplayName();
+
+                                    firestore.collection("users")
+                                            .document(request.getSenderId())
+                                            .collection("friends")
+                                            .document(currentUserId)
+                                            .set(new Friend(
+                                                    currentUserId,
+                                                    currentUserName,
+                                                    "",  // Optionally, fetch current user's profile image
+                                                    "Online"
+                                            ))
+                                            .addOnSuccessListener(aVoid1 -> {
+                                                deleteFriendRequest(request);
+                                                holder.acceptButton.setImageResource(R.drawable.ic_check);
+                                                Toast.makeText(context, "Friend request accepted", Toast.LENGTH_SHORT).show();
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Toast.makeText(context, "Failed to add to sender's friends list", Toast.LENGTH_SHORT).show();
+                                                holder.acceptButton.setEnabled(true);
+                                            });
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(context, "Failed to add to your friends list", Toast.LENGTH_SHORT).show();
+                                    holder.acceptButton.setEnabled(true);
+                                });
+                    }
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("ActivitiesAdapter", "Failed to add to friends list", e);
+                    Toast.makeText(context, "Failed to fetch sender data", Toast.LENGTH_SHORT).show();
                     holder.acceptButton.setEnabled(true);
-                    holder.denyButton.setEnabled(true);
                 });
     }
+
 
 
     private void denyFriendRequest(FriendRequest request) {

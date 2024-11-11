@@ -16,8 +16,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,21 +30,25 @@ public class FriendsFragment extends Fragment {
     private List<Friend> friendsList;
 
     private FirebaseAuth auth;
-    FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+    private FirebaseFirestore firestore;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.fragment_friends, container, false);
+
+        auth = FirebaseAuth.getInstance();
+        firestore = FirebaseFirestore.getInstance();
 
         friendsRecyclerView = view.findViewById(R.id.friendsRecyclerView);
         friendsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         friendsList = new ArrayList<>();
-
         friendsAdapter = new FriendsAdapter(requireContext(), friendsList);
         friendsRecyclerView.setAdapter(friendsAdapter);
+
+        // Fetch the friends list
+        fetchFriends();
 
         // Set up the "Add Friend" icon
         ImageView addFriendIcon = view.findViewById(R.id.addFriendIcon);
@@ -55,20 +60,26 @@ public class FriendsFragment extends Fragment {
         return view;
     }
 
-    private void addFriend(Friend user) {
+    private void fetchFriends() {
         String currentUserId = auth.getCurrentUser().getUid();
 
-        if (user != null && user.isValid() && !user.getId().equals(currentUserId)) {
-
+        if (currentUserId != null) {
             firestore.collection("users")
                     .document(currentUserId)
                     .collection("friends")
-                    .document(user.getId())
-                    .set(user)
-                    .addOnSuccessListener(aVoid -> Log.d(TAG, "Friend added successfully"))
-                    .addOnFailureListener(e -> Log.e(TAG, "Error adding friend", e));
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            friendsList.clear();
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Friend friend = document.toObject(Friend.class);
+                                friendsList.add(friend);
+                            }
+                            friendsAdapter.notifyDataSetChanged();
+                        } else {
+                            Log.e(TAG, "Error fetching friends", task.getException());
+                        }
+                    });
         }
     }
-
-
 }
