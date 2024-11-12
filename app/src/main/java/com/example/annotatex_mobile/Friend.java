@@ -10,13 +10,13 @@ public class Friend implements Serializable {
 
     // Constructor with parameters
     public Friend(String id, String name, String profileImageUrl, String status) {
-        this.id = id != null ? id : "";
-        this.name = name != null ? name : "";
-        this.profileImageUrl = profileImageUrl != null ? profileImageUrl : "";
-        this.status = status != null ? status : "Offline";
+        this.id = (id != null) ? id : "";
+        this.name = (name != null) ? name : "";
+        this.profileImageUrl = (profileImageUrl != null) ? profileImageUrl : "";
+        this.status = (status != null) ? status : "Offline";
     }
 
-    // Default constructor
+    // Default constructor for Firestore
     public Friend() {
         this.id = "";
         this.name = "";
@@ -26,19 +26,19 @@ public class Friend implements Serializable {
 
     // Getters
     public String getId() {
-        return id != null ? id : "";
+        return (id != null) ? id : "";
     }
 
     public String getName() {
-        return name != null ? name : "Unknown User";
+        return (name != null) ? name : "Unknown User";
     }
 
     public String getProfileImageUrl() {
-        return profileImageUrl != null ? profileImageUrl : "";
+        return (profileImageUrl != null) ? profileImageUrl : "";
     }
 
     public String getStatus() {
-        return status != null ? status : "Offline";
+        return (status != null) ? status : "Offline";
     }
 
     // Setters
@@ -68,7 +68,7 @@ public class Friend implements Serializable {
         return !id.isEmpty() && !name.isEmpty();
     }
 
-    // Overriding toString() for debugging
+    // Overriding toString() for debugging purposes
     @Override
     public String toString() {
         return "Friend{" +
@@ -79,7 +79,7 @@ public class Friend implements Serializable {
                 '}';
     }
 
-    // Equals method to compare Friend objects based on their IDs
+    // Overriding equals() to compare Friend objects based on their IDs
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -88,8 +88,25 @@ public class Friend implements Serializable {
         return id.equals(friend.id);
     }
 
+    // Overriding hashCode() for better performance in collections
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    public void update(Friend updatedFriend) {
+        if (updatedFriend == null) return;
+
+        if (updatedFriend.getName() != null) {
+            this.name = updatedFriend.getName();
+        }
+
+        if (updatedFriend.getProfileImageUrl() != null) {
+            this.profileImageUrl = updatedFriend.getProfileImageUrl();
+        }
+
+        if (updatedFriend.getStatus() != null) {
+            this.status = updatedFriend.getStatus();
+        }
     }
 }

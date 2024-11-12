@@ -70,14 +70,31 @@ public class FriendsFragment extends Fragment {
                         return;
                     }
 
-                    friendsList.clear();
                     for (QueryDocumentSnapshot document : querySnapshot) {
-                        Friend friend = document.toObject(Friend.class);
-                        friendsList.add(friend);
+                        Friend updatedFriend = document.toObject(Friend.class);
+
+                        // Check if the friend already exists in the list
+                        boolean friendExists = false;
+                        for (Friend friend : friendsList) {
+                            if (friend.getId().equals(updatedFriend.getId())) {
+                                // Update existing friend's information
+                                friend.update(updatedFriend);
+                                friendExists = true;
+                                break;
+                            }
+                        }
+
+                        // If friend does not exist, add them to the list
+                        if (!friendExists) {
+                            friendsList.add(updatedFriend);
+                        }
                     }
+
+                    // Notify the adapter of data changes
                     friendsAdapter.notifyDataSetChanged();
                 });
     }
+
 
     @Override
     public void onDestroy() {
