@@ -1,10 +1,13 @@
 package com.example.annotatex_mobile;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -39,7 +42,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
     public void onBindViewHolder(@NonNull FriendViewHolder holder, int position) {
         Friend friend = friendsList.get(position);
 
-        // Set friend's name and status
         holder.nameTextView.setText(friend.getName());
         holder.statusTextView.setText(friend.getStatus());
 
@@ -54,8 +56,41 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
             holder.profileImageView.setImageResource(R.drawable.ic_default_profile);
         }
 
-        // Handle delete button click
-        holder.deleteFriendButton.setOnClickListener(v -> deleteFriend(friend, holder.getAdapterPosition()));
+        // Handle long press to show the popup menu
+        holder.itemView.setOnLongClickListener(v -> {
+            showPopupMenu(holder.itemView, friend, position);
+            return true;
+        });
+    }
+
+    private void showPopupMenu(View anchor, Friend friend, int position) {
+        // Create a PopupMenu anchored to the view
+        PopupMenu popupMenu = new PopupMenu(context, anchor);
+        popupMenu.inflate(R.menu.friend_options_menu);
+
+        // Set up menu item click listeners
+        popupMenu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.menu_view_profile) {
+                viewProfile(friend);
+                return true;
+            } else if (item.getItemId() == R.id.menu_remove_friend) {
+                deleteFriend(friend, position);
+                return true;
+            } else if (item.getItemId() == R.id.menu_block_friend) {
+                blockFriend(friend);
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        popupMenu.show();
+    }
+
+    private void viewProfile(Friend friend) {
+        Intent intent = new Intent(context, ProfileActivity.class);
+        intent.putExtra("friendId", friend.getId());
+        context.startActivity(intent);
     }
 
     private void deleteFriend(Friend friend, int position) {
@@ -66,39 +101,22 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
             return;
         }
 
-        // Check if position is still valid before attempting to delete
-        if (position < 0 || position >= friendsList.size()) {
-            return;
-        }
-
-        // Delete the friend from the current user's friends list
+        // Delete friend from user's list
         firestore.collection("users")
                 .document(currentUserId)
                 .collection("friends")
                 .document(friend.getId())
                 .delete()
                 .addOnSuccessListener(aVoid -> {
-                    // Remove the friend from the list and update RecyclerView
-                    if (position < friendsList.size()) {
-                        friendsList.remove(position);
-                        notifyItemRemoved(position);
-                        notifyItemRangeChanged(position, friendsList.size());
-                        Toast.makeText(context, "Friend removed", Toast.LENGTH_SHORT).show();
-                    }
+                    friendsList.remove(position);
+                    notifyItemRemoved(position);
+                    Toast.makeText(context, "Friend removed", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> Toast.makeText(context, "Failed to remove friend", Toast.LENGTH_SHORT).show());
+    }
 
-        // Delete the current user from the friend's friends list
-        firestore.collection("users")
-                .document(friend.getId())
-                .collection("friends")
-                .document(currentUserId)
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    // Optional: Notify if removal from friend's list was successful
-                    Toast.makeText(context, "Removed from friend's list", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> Toast.makeText(context, "Failed to update friend's list", Toast.LENGTH_SHORT).show());
+    private void blockFriend(Friend friend) {
+        Toast.makeText(context, "Friend blocked (feature coming soon)", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -107,7 +125,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
     }
 
     public static class FriendViewHolder extends RecyclerView.ViewHolder {
-        ImageView profileImageView, deleteFriendButton;
+        ImageView profileImageView;
         TextView nameTextView, statusTextView;
 
         public FriendViewHolder(@NonNull View itemView) {
@@ -115,7 +133,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
             profileImageView = itemView.findViewById(R.id.profileImageView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
             statusTextView = itemView.findViewById(R.id.statusTextView);
-            deleteFriendButton = itemView.findViewById(R.id.deleteFriendButton);
         }
     }
 }

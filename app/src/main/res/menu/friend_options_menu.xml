@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_view_profile"
+        android:title="View Profile" />
+    <item
+        android:id="@+id/menu_remove_friend"
+        android:title="Remove Friend" />
+    <item
+        android:id="@+id/menu_block_friend"
+        android:title="Block" />
+</menu>
