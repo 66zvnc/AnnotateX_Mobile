@@ -58,7 +58,7 @@ public class UsersFragment extends Fragment {
                     if (!userId.equals(currentUserId)) {
                         String name = document.getString("name");
                         String profileImageUrl = document.getString("profileImageUrl");
-                        usersList.add(new Friend(userId, name, profileImageUrl, "Available"));
+                        usersList.add(new Friend(userId, name, profileImageUrl, "Available", false));
                     }
                 }
                 usersAdapter.notifyDataSetChanged();

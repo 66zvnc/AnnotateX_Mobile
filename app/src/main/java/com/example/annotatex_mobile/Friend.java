@@ -7,13 +7,15 @@ public class Friend implements Serializable {
     private String name;
     private String profileImageUrl;
     private String status;
+    private boolean removed; // New field to indicate if the friend was removed
 
     // Constructor with parameters
-    public Friend(String id, String name, String profileImageUrl, String status) {
+    public Friend(String id, String name, String profileImageUrl, String status, boolean removed) {
         this.id = (id != null) ? id : "";
         this.name = (name != null) ? name : "";
         this.profileImageUrl = (profileImageUrl != null) ? profileImageUrl : "";
         this.status = (status != null) ? status : "Offline";
+        this.removed = removed;
     }
 
     // Default constructor for Firestore
@@ -22,6 +24,7 @@ public class Friend implements Serializable {
         this.name = "";
         this.profileImageUrl = "";
         this.status = "Offline";
+        this.removed = false;
     }
 
     // Getters
@@ -41,6 +44,10 @@ public class Friend implements Serializable {
         return (status != null) ? status : "Offline";
     }
 
+    public boolean isRemoved() {
+        return removed;
+    }
+
     // Setters
     public void setId(String id) {
         this.id = id;
@@ -56,6 +63,10 @@ public class Friend implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public void setRemoved(boolean removed) {
+        this.removed = removed;
     }
 
     // Method to check if the friend has a profile image URL
@@ -76,6 +87,7 @@ public class Friend implements Serializable {
                 ", name='" + name + '\'' +
                 ", profileImageUrl='" + profileImageUrl + '\'' +
                 ", status='" + status + '\'' +
+                ", removed=" + removed +
                 '}';
     }
 
@@ -94,6 +106,7 @@ public class Friend implements Serializable {
         return id.hashCode();
     }
 
+    // Method to update the friend's information
     public void update(Friend updatedFriend) {
         if (updatedFriend == null) return;
 
@@ -108,5 +121,7 @@ public class Friend implements Serializable {
         if (updatedFriend.getStatus() != null) {
             this.status = updatedFriend.getStatus();
         }
+
+        this.removed = updatedFriend.isRemoved();
     }
 }

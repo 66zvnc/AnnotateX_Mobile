@@ -39,37 +39,32 @@ public class ActivitiesAdapter extends RecyclerView.Adapter<ActivitiesAdapter.Ac
     public void onBindViewHolder(@NonNull ActivityViewHolder holder, int position) {
         FriendRequest request = activitiesList.get(position);
 
-        // Set the friend request text
         holder.requestTextView.setText(request.getSenderName() + " sent you a friend request.");
 
         // Handle accept button click
         holder.acceptButton.setOnClickListener(v -> {
-            Log.d("ActivitiesAdapter", "Accept button clicked for: " + request.getSenderName());
             holder.acceptButton.setEnabled(false);
-            holder.denyButton.setEnabled(false); // Disable both buttons after action
+            holder.denyButton.setEnabled(false);
             acceptFriendRequest(request, holder);
         });
 
         // Handle deny button click
         holder.denyButton.setOnClickListener(v -> {
-            Log.d("ActivitiesAdapter", "Deny button clicked for: " + request.getSenderName());
             holder.acceptButton.setEnabled(false);
-            holder.denyButton.setEnabled(false); // Disable both buttons after action
+            holder.denyButton.setEnabled(false);
             denyFriendRequest(request);
         });
     }
 
-
     private void acceptFriendRequest(FriendRequest request, ActivityViewHolder holder) {
-        String currentUserId = auth.getCurrentUser().getUid();
+        String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
 
         if (currentUserId == null) {
             Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show();
-            holder.acceptButton.setEnabled(true);
             return;
         }
 
-        // Step 1: Fetch the receiver's (current user's) profile data
+        // Step 1: Fetch the receiver's profile (current user)
         firestore.collection("users")
                 .document(currentUserId)
                 .get()
@@ -78,65 +73,55 @@ public class ActivitiesAdapter extends RecyclerView.Adapter<ActivitiesAdapter.Ac
                         String receiverName = receiverDoc.getString("fullName");
                         String receiverProfileImageUrl = receiverDoc.getString("profileImageUrl");
 
-                        // Step 2: Add the receiver to the sender's friends list
-                        Friend receiverAsFriend = new Friend(
-                                currentUserId,
-                                receiverName,
-                                receiverProfileImageUrl,
-                                "Online"
-                        );
-
-                        firestore.collection("users")
-                                .document(request.getSenderId())
-                                .collection("friends")
-                                .document(currentUserId)
-                                .set(receiverAsFriend)
-                                .addOnSuccessListener(aVoid1 -> {
-                                    // Step 3: Fetch the sender's profile data
-                                    firestore.collection("users")
-                                            .document(request.getSenderId())
-                                            .get()
-                                            .addOnSuccessListener(senderDoc -> {
-                                                if (senderDoc.exists()) {
-                                                    String senderName = senderDoc.getString("fullName");
-                                                    String senderProfileImageUrl = senderDoc.getString("profileImageUrl");
-
-                                                    Friend senderAsFriend = new Friend(
-                                                            request.getSenderId(),
-                                                            senderName,
-                                                            senderProfileImageUrl,
-                                                            "Online"
-                                                    );
-
-                                                    // Step 4: Add the sender to the receiver's friends list
-                                                    firestore.collection("users")
-                                                            .document(currentUserId)
-                                                            .collection("friends")
-                                                            .document(request.getSenderId())
-                                                            .set(senderAsFriend)
-                                                            .addOnSuccessListener(aVoid2 -> {
-                                                                // Step 5: Delete the friend request
-                                                                deleteFriendRequest(request);
-                                                                holder.acceptButton.setImageResource(R.drawable.ic_check);
-                                                                Toast.makeText(context, "Friend request accepted", Toast.LENGTH_SHORT).show();
-                                                            })
-                                                            .addOnFailureListener(e -> {
-                                                                Toast.makeText(context, "Failed to add sender to friends list", Toast.LENGTH_SHORT).show();
-                                                            });
-                                                }
-                                            })
-                                            .addOnFailureListener(e -> {
-                                                Toast.makeText(context, "Failed to fetch sender's data", Toast.LENGTH_SHORT).show();
-                                            });
-                                })
-                                .addOnFailureListener(e -> {
-                                    Toast.makeText(context, "Failed to add receiver to sender's friends list", Toast.LENGTH_SHORT).show();
-                                });
+                        // Step 2: Add receiver to sender's friends list
+                        addReceiverToSender(request, currentUserId, receiverName, receiverProfileImageUrl, holder);
                     }
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(context, "Failed to fetch receiver's data", Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e -> Toast.makeText(context, "Failed to fetch profile data", Toast.LENGTH_SHORT).show());
+    }
+
+    private void addReceiverToSender(FriendRequest request, String currentUserId, String receiverName, String receiverProfileImageUrl, ActivityViewHolder holder) {
+        // Create the Friend object with the 'removed' status as false
+        Friend receiverAsFriend = new Friend(currentUserId, receiverName, receiverProfileImageUrl, "Online", false);
+
+        firestore.collection("users")
+                .document(request.getSenderId())
+                .collection("friends")
+                .document(currentUserId)
+                .set(receiverAsFriend)
+                .addOnSuccessListener(aVoid -> {
+                    // Step 3: Add sender to receiver's friends list
+                    addSenderToReceiver(request, currentUserId, holder);
+                })
+                .addOnFailureListener(e -> Toast.makeText(context, "Failed to add friend", Toast.LENGTH_SHORT).show());
+    }
+
+    private void addSenderToReceiver(FriendRequest request, String currentUserId, ActivityViewHolder holder) {
+        firestore.collection("users")
+                .document(request.getSenderId())
+                .get()
+                .addOnSuccessListener(senderDoc -> {
+                    if (senderDoc.exists()) {
+                        String senderName = senderDoc.getString("fullName");
+                        String senderProfileImageUrl = senderDoc.getString("profileImageUrl");
+
+                        // Create the Friend object with the 'removed' status as false
+                        Friend senderAsFriend = new Friend(request.getSenderId(), senderName, senderProfileImageUrl, "Online", false);
+
+                        firestore.collection("users")
+                                .document(currentUserId)
+                                .collection("friends")
+                                .document(request.getSenderId())
+                                .set(senderAsFriend)
+                                .addOnSuccessListener(aVoid -> {
+                                    deleteFriendRequest(request);
+                                    holder.acceptButton.setImageResource(R.drawable.ic_check);
+                                    Toast.makeText(context, "Friend request accepted", Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(e -> Toast.makeText(context, "Failed to add friend", Toast.LENGTH_SHORT).show());
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(context, "Failed to fetch profile data", Toast.LENGTH_SHORT).show());
     }
 
     private void denyFriendRequest(FriendRequest request) {
@@ -157,9 +142,7 @@ public class ActivitiesAdapter extends RecyclerView.Adapter<ActivitiesAdapter.Ac
                         activitiesList.remove(request);
                         notifyDataSetChanged();
                     })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(context, "Failed to delete request", Toast.LENGTH_SHORT).show();
-                    });
+                    .addOnFailureListener(e -> Toast.makeText(context, "Failed to delete request", Toast.LENGTH_SHORT).show());
         }
     }
 
@@ -177,11 +160,6 @@ public class ActivitiesAdapter extends RecyclerView.Adapter<ActivitiesAdapter.Ac
             requestTextView = itemView.findViewById(R.id.requestTextView);
             acceptButton = itemView.findViewById(R.id.acceptButton);
             denyButton = itemView.findViewById(R.id.denyButton);
-
-            // Check if any view is null
-            if (requestTextView == null || acceptButton == null || denyButton == null) {
-                throw new RuntimeException("View IDs not found in item_activity.xml");
-            }
         }
     }
 }

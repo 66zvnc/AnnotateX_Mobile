@@ -56,6 +56,14 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
             holder.profileImageView.setImageResource(R.drawable.ic_default_profile);
         }
 
+        // Show "Add Friend" button if friend was removed
+        if (friend.isRemoved()) {
+            holder.addFriendButton.setVisibility(View.VISIBLE);
+            holder.addFriendButton.setOnClickListener(v -> addFriend(friend, position));
+        } else {
+            holder.addFriendButton.setVisibility(View.GONE);
+        }
+
         // Handle long press to show the popup menu
         holder.itemView.setOnLongClickListener(v -> {
             showPopupMenu(holder.itemView, friend, position);
@@ -64,7 +72,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
     }
 
     private void showPopupMenu(View anchor, Friend friend, int position) {
-        // Create a PopupMenu anchored to the view
         PopupMenu popupMenu = new PopupMenu(context, anchor);
         popupMenu.inflate(R.menu.friend_options_menu);
 
@@ -88,7 +95,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
     }
 
     private void viewProfile(Friend friend) {
-        Intent intent = new Intent(context, ProfileActivity.class);
+        Intent intent = new Intent(context, UserProfileActivity.class);
         intent.putExtra("friendId", friend.getId());
         context.startActivity(intent);
     }
@@ -108,8 +115,8 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
                 .document(friend.getId())
                 .delete()
                 .addOnSuccessListener(aVoid -> {
-                    friendsList.remove(position);
-                    notifyItemRemoved(position);
+                    friendsList.get(position).setRemoved(true); // Mark as removed
+                    notifyItemChanged(position);
                     Toast.makeText(context, "Friend removed", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> Toast.makeText(context, "Failed to remove friend", Toast.LENGTH_SHORT).show());
@@ -119,6 +126,24 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
         Toast.makeText(context, "Friend blocked (feature coming soon)", Toast.LENGTH_SHORT).show();
     }
 
+    private void addFriend(Friend friend, int position) {
+        String currentUserId = auth.getCurrentUser().getUid();
+
+        if (currentUserId != null) {
+            firestore.collection("users")
+                    .document(currentUserId)
+                    .collection("friends")
+                    .document(friend.getId())
+                    .set(friend)
+                    .addOnSuccessListener(aVoid -> {
+                        friendsList.get(position).setRemoved(false); // Mark as not removed
+                        notifyItemChanged(position);
+                        Toast.makeText(context, "Friend added back", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> Toast.makeText(context, "Failed to add friend", Toast.LENGTH_SHORT).show());
+        }
+    }
+
     @Override
     public int getItemCount() {
         return friendsList.size();
@@ -126,13 +151,14 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
 
     public static class FriendViewHolder extends RecyclerView.ViewHolder {
         ImageView profileImageView;
-        TextView nameTextView, statusTextView;
+        TextView nameTextView, statusTextView, addFriendButton;
 
         public FriendViewHolder(@NonNull View itemView) {
             super(itemView);
             profileImageView = itemView.findViewById(R.id.profileImageView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
             statusTextView = itemView.findViewById(R.id.statusTextView);
+            addFriendButton = itemView.findViewById(R.id.addFriendButton);
         }
     }
 }

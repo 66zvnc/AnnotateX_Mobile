@@ -94,7 +94,7 @@ public class SearchUsersActivity extends AppCompatActivity {
                         String profileImageUrl = document.getString("profileImageUrl");
                         String status = document.getString("status");
 
-                        Friend user = new Friend(id, fullName != null ? fullName : username, profileImageUrl, status);
+                        Friend user = new Friend(id, fullName != null ? fullName : username, profileImageUrl, status,false);
                         if (user.isValid()) {
                             filteredList.add(user);
                         }

@@ -15,9 +15,12 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,8 +61,12 @@ public class FriendsFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Listen for real-time updates on the friends collection.
+     */
     private void listenForFriendUpdates() {
         String currentUserId = auth.getCurrentUser().getUid();
+        if (currentUserId == null) return;
 
         listenerRegistration = firestore.collection("users")
                 .document(currentUserId)
@@ -70,31 +77,78 @@ public class FriendsFragment extends Fragment {
                         return;
                     }
 
-                    for (QueryDocumentSnapshot document : querySnapshot) {
-                        Friend updatedFriend = document.toObject(Friend.class);
-
-                        // Check if the friend already exists in the list
-                        boolean friendExists = false;
-                        for (Friend friend : friendsList) {
-                            if (friend.getId().equals(updatedFriend.getId())) {
-                                // Update existing friend's information
-                                friend.update(updatedFriend);
-                                friendExists = true;
-                                break;
-                            }
-                        }
-
-                        // If friend does not exist, add them to the list
-                        if (!friendExists) {
-                            friendsList.add(updatedFriend);
-                        }
-                    }
-
-                    // Notify the adapter of data changes
-                    friendsAdapter.notifyDataSetChanged();
+                    handleFriendUpdates(querySnapshot);
                 });
     }
 
+    /**
+     * Handle real-time updates for the friends list.
+     */
+    private void handleFriendUpdates(QuerySnapshot querySnapshot) {
+        for (DocumentChange change : querySnapshot.getDocumentChanges()) {
+            DocumentSnapshot document = change.getDocument();
+            Friend updatedFriend = document.toObject(Friend.class);
+
+            switch (change.getType()) {
+                case ADDED:
+                    // Add a new friend to the list
+                    addOrUpdateFriend(updatedFriend);
+                    break;
+                case MODIFIED:
+                    // Update the existing friend's information
+                    updateFriend(updatedFriend);
+                    break;
+                case REMOVED:
+                    // Remove the friend from the list and show "Add Friend" button
+                    removeFriend(updatedFriend);
+                    break;
+            }
+        }
+
+        // Notify the adapter of data changes
+        friendsAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * Add or update a friend in the list.
+     */
+    private void addOrUpdateFriend(Friend updatedFriend) {
+        boolean friendExists = false;
+        for (Friend friend : friendsList) {
+            if (friend.getId().equals(updatedFriend.getId())) {
+                friend.update(updatedFriend);
+                friendExists = true;
+                break;
+            }
+        }
+        if (!friendExists) {
+            friendsList.add(updatedFriend);
+        }
+    }
+
+    /**
+     * Update existing friend's information.
+     */
+    private void updateFriend(Friend updatedFriend) {
+        for (int i = 0; i < friendsList.size(); i++) {
+            if (friendsList.get(i).getId().equals(updatedFriend.getId())) {
+                friendsList.get(i).update(updatedFriend);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Remove a friend from the list and allow adding them back.
+     */
+    private void removeFriend(Friend removedFriend) {
+        for (int i = 0; i < friendsList.size(); i++) {
+            if (friendsList.get(i).getId().equals(removedFriend.getId())) {
+                friendsList.get(i).setRemoved(true);
+                break;
+            }
+        }
+    }
 
     @Override
     public void onDestroy() {
