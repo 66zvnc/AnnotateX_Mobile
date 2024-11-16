@@ -41,14 +41,12 @@ public class ActivitiesAdapter extends RecyclerView.Adapter<ActivitiesAdapter.Ac
 
         holder.requestTextView.setText(request.getSenderName() + " sent you a friend request.");
 
-        // Handle accept button click
         holder.acceptButton.setOnClickListener(v -> {
             holder.acceptButton.setEnabled(false);
             holder.denyButton.setEnabled(false);
             acceptFriendRequest(request, holder);
         });
 
-        // Handle deny button click
         holder.denyButton.setOnClickListener(v -> {
             holder.acceptButton.setEnabled(false);
             holder.denyButton.setEnabled(false);
@@ -81,7 +79,7 @@ public class ActivitiesAdapter extends RecyclerView.Adapter<ActivitiesAdapter.Ac
     }
 
     private void addReceiverToSender(FriendRequest request, String currentUserId, String receiverName, String receiverProfileImageUrl, ActivityViewHolder holder) {
-        // Create the Friend object with the 'removed' status as false
+        // Create the Friend object with 'removed' status as false
         Friend receiverAsFriend = new Friend(currentUserId, receiverName, receiverProfileImageUrl, "Online", false);
 
         firestore.collection("users")
@@ -105,7 +103,7 @@ public class ActivitiesAdapter extends RecyclerView.Adapter<ActivitiesAdapter.Ac
                         String senderName = senderDoc.getString("fullName");
                         String senderProfileImageUrl = senderDoc.getString("profileImageUrl");
 
-                        // Create the Friend object with the 'removed' status as false
+                        // Create the Friend object with 'removed' status as false
                         Friend senderAsFriend = new Friend(request.getSenderId(), senderName, senderProfileImageUrl, "Online", false);
 
                         firestore.collection("users")

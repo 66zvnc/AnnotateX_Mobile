@@ -86,9 +86,8 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
             } else if (item.getItemId() == R.id.menu_block_friend) {
                 blockFriend(friend);
                 return true;
-            } else {
-                return false;
             }
+            return false;
         });
 
         popupMenu.show();
@@ -108,16 +107,25 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
             return;
         }
 
-        // Delete friend from user's list
+        // Set the `removed` status to true for both users
         firestore.collection("users")
                 .document(currentUserId)
                 .collection("friends")
                 .document(friend.getId())
-                .delete()
+                .update("removed", true)
                 .addOnSuccessListener(aVoid -> {
-                    friendsList.get(position).setRemoved(true); // Mark as removed
-                    notifyItemChanged(position);
-                    Toast.makeText(context, "Friend removed", Toast.LENGTH_SHORT).show();
+                    // Update the other user's friends list
+                    firestore.collection("users")
+                            .document(friend.getId())
+                            .collection("friends")
+                            .document(currentUserId)
+                            .update("removed", true)
+                            .addOnSuccessListener(aVoid2 -> {
+                                friendsList.get(position).setRemoved(true);
+                                notifyItemChanged(position);
+                                Toast.makeText(context, "Friend removed", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(context, "Failed to update friend's list", Toast.LENGTH_SHORT).show());
                 })
                 .addOnFailureListener(e -> Toast.makeText(context, "Failed to remove friend", Toast.LENGTH_SHORT).show());
     }
@@ -130,15 +138,24 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
         String currentUserId = auth.getCurrentUser().getUid();
 
         if (currentUserId != null) {
+            // Set the 'removed' status to false for both users
             firestore.collection("users")
                     .document(currentUserId)
                     .collection("friends")
                     .document(friend.getId())
-                    .set(friend)
+                    .update("removed", false)
                     .addOnSuccessListener(aVoid -> {
-                        friendsList.get(position).setRemoved(false); // Mark as not removed
-                        notifyItemChanged(position);
-                        Toast.makeText(context, "Friend added back", Toast.LENGTH_SHORT).show();
+                        firestore.collection("users")
+                                .document(friend.getId())
+                                .collection("friends")
+                                .document(currentUserId)
+                                .update("removed", false)
+                                .addOnSuccessListener(aVoid2 -> {
+                                    friendsList.get(position).setRemoved(false);
+                                    notifyItemChanged(position);
+                                    Toast.makeText(context, "Friend added back", Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(e -> Toast.makeText(context, "Failed to update friend's list", Toast.LENGTH_SHORT).show());
                     })
                     .addOnFailureListener(e -> Toast.makeText(context, "Failed to add friend", Toast.LENGTH_SHORT).show());
         }

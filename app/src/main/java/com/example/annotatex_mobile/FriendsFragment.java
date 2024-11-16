@@ -61,12 +61,8 @@ public class FriendsFragment extends Fragment {
         return view;
     }
 
-    /**
-     * Listen for real-time updates on the friends collection.
-     */
     private void listenForFriendUpdates() {
         String currentUserId = auth.getCurrentUser().getUid();
-        if (currentUserId == null) return;
 
         listenerRegistration = firestore.collection("users")
                 .document(currentUserId)
@@ -77,13 +73,27 @@ public class FriendsFragment extends Fragment {
                         return;
                     }
 
-                    handleFriendUpdates(querySnapshot);
+                    friendsList.clear();
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        Friend updatedFriend = document.toObject(Friend.class);
+                        boolean found = false;
+
+                        for (Friend friend : friendsList) {
+                            if (friend.getId().equals(updatedFriend.getId())) {
+                                friend.update(updatedFriend);
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (!found) {
+                            friendsList.add(updatedFriend);
+                        }
+                    }
+                    friendsAdapter.notifyDataSetChanged();
                 });
     }
 
-    /**
-     * Handle real-time updates for the friends list.
-     */
     private void handleFriendUpdates(QuerySnapshot querySnapshot) {
         for (DocumentChange change : querySnapshot.getDocumentChanges()) {
             DocumentSnapshot document = change.getDocument();
