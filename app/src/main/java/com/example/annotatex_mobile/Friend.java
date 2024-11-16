@@ -7,9 +7,8 @@ public class Friend implements Serializable {
     private String name;
     private String profileImageUrl;
     private String status;
-    private boolean removed; // New field to indicate if the friend was removed
+    private boolean removed;
 
-    // Constructor with parameters
     public Friend(String id, String name, String profileImageUrl, String status, boolean removed) {
         this.id = (id != null) ? id : "";
         this.name = (name != null) ? name : "";
@@ -18,7 +17,6 @@ public class Friend implements Serializable {
         this.removed = removed;
     }
 
-    // Default constructor for Firestore
     public Friend() {
         this.id = "";
         this.name = "";
@@ -69,17 +67,32 @@ public class Friend implements Serializable {
         this.removed = removed;
     }
 
-    // Method to check if the friend has a profile image URL
     public boolean hasProfileImage() {
         return profileImageUrl != null && !profileImageUrl.isEmpty();
     }
 
-    // Method to check if the friend object is valid (has all required fields)
     public boolean isValid() {
         return !id.isEmpty() && !name.isEmpty();
     }
 
-    // Overriding toString() for debugging purposes
+    public void update(Friend updatedFriend) {
+        if (updatedFriend == null) return;
+
+        if (updatedFriend.getName() != null && !updatedFriend.getName().isEmpty()) {
+            this.name = updatedFriend.getName();
+        }
+
+        if (updatedFriend.getProfileImageUrl() != null && !updatedFriend.getProfileImageUrl().isEmpty()) {
+            this.profileImageUrl = updatedFriend.getProfileImageUrl();
+        }
+
+        if (updatedFriend.getStatus() != null && !updatedFriend.getStatus().isEmpty()) {
+            this.status = updatedFriend.getStatus();
+        }
+
+        this.removed = updatedFriend.isRemoved();
+    }
+
     @Override
     public String toString() {
         return "Friend{" +
@@ -91,7 +104,6 @@ public class Friend implements Serializable {
                 '}';
     }
 
-    // Overriding equals() to compare Friend objects based on their IDs
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -100,28 +112,8 @@ public class Friend implements Serializable {
         return id.equals(friend.id);
     }
 
-    // Overriding hashCode() for better performance in collections
     @Override
     public int hashCode() {
         return id.hashCode();
-    }
-
-    // Method to update the friend's information
-    public void update(Friend updatedFriend) {
-        if (updatedFriend == null) return;
-
-        if (updatedFriend.getName() != null) {
-            this.name = updatedFriend.getName();
-        }
-
-        if (updatedFriend.getProfileImageUrl() != null) {
-            this.profileImageUrl = updatedFriend.getProfileImageUrl();
-        }
-
-        if (updatedFriend.getStatus() != null) {
-            this.status = updatedFriend.getStatus();
-        }
-
-        this.removed = updatedFriend.isRemoved();
     }
 }
