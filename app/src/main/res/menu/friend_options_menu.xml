@@ -7,6 +7,12 @@
         android:id="@+id/menu_remove_friend"
         android:title="Remove Friend" />
     <item
+        android:id="@+id/menu_delete_collab"
+        android:title="Delete Collab"
+        android:visible="false" />
+    <item
         android:id="@+id/menu_block_friend"
-        android:title="Block" />
+        android:title="Block Friend" />
 </menu>
+
+

@@ -56,7 +56,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
             holder.profileImageView.setImageResource(R.drawable.ic_default_profile);
         }
 
-        // Show "Add Friend" button if friend was removed
+        // Show "Add Friend" button if the friend was removed
         if (friend.isRemoved()) {
             holder.addFriendButton.setVisibility(View.VISIBLE);
             holder.addFriendButton.setOnClickListener(v -> addFriend(friend, position));
@@ -75,13 +75,29 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
         PopupMenu popupMenu = new PopupMenu(context, anchor);
         popupMenu.inflate(R.menu.friend_options_menu);
 
-        // Set up menu item click listeners
+        // Dynamically adjust the menu based on the friend's status
+        MenuItem removeFriendItem = popupMenu.getMenu().findItem(R.id.menu_remove_friend);
+        MenuItem deleteCollabItem = popupMenu.getMenu().findItem(R.id.menu_delete_collab);
+
+        if (friend.isRemoved()) {
+            // If the friend is removed, show "Delete Collab" and hide "Remove Friend"
+            removeFriendItem.setVisible(false);
+            deleteCollabItem.setVisible(true);
+        } else {
+            // If the friend is not removed, show "Remove Friend" and hide "Delete Collab"
+            removeFriendItem.setVisible(true);
+            deleteCollabItem.setVisible(false);
+        }
+
         popupMenu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.menu_view_profile) {
                 viewProfile(friend);
                 return true;
             } else if (item.getItemId() == R.id.menu_remove_friend) {
                 deleteFriend(friend, position);
+                return true;
+            } else if (item.getItemId() == R.id.menu_delete_collab) {
+                deleteCollab(friend, position);
                 return true;
             } else if (item.getItemId() == R.id.menu_block_friend) {
                 blockFriend(friend);
@@ -91,6 +107,36 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
         });
 
         popupMenu.show();
+    }
+
+    private void deleteCollab(Friend friend, int position) {
+        String currentUserId = auth.getCurrentUser().getUid();
+
+        if (currentUserId == null) {
+            Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Delete the collaboration entry for both users
+        firestore.collection("users")
+                .document(currentUserId)
+                .collection("friends")
+                .document(friend.getId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    firestore.collection("users")
+                            .document(friend.getId())
+                            .collection("friends")
+                            .document(currentUserId)
+                            .delete()
+                            .addOnSuccessListener(aVoid2 -> {
+                                friendsList.remove(position);
+                                notifyItemRemoved(position);
+                                Toast.makeText(context, "Collaboration deleted", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(context, "Failed to delete collaboration", Toast.LENGTH_SHORT).show());
+                })
+                .addOnFailureListener(e -> Toast.makeText(context, "Failed to delete collaboration", Toast.LENGTH_SHORT).show());
     }
 
     private void viewProfile(Friend friend) {
@@ -107,14 +153,12 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
             return;
         }
 
-        // Set the `removed` status to true for both users
         firestore.collection("users")
                 .document(currentUserId)
                 .collection("friends")
                 .document(friend.getId())
                 .update("removed", true)
                 .addOnSuccessListener(aVoid -> {
-                    // Update the other user's friends list
                     firestore.collection("users")
                             .document(friend.getId())
                             .collection("friends")
@@ -125,7 +169,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
                                 notifyItemChanged(position);
                                 Toast.makeText(context, "Friend removed", Toast.LENGTH_SHORT).show();
                             })
-                            .addOnFailureListener(e -> Toast.makeText(context, "Failed to update friend's list", Toast.LENGTH_SHORT).show());
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(context, "Failed to update friend's list", Toast.LENGTH_SHORT).show();
+                            });
                 })
                 .addOnFailureListener(e -> Toast.makeText(context, "Failed to remove friend", Toast.LENGTH_SHORT).show());
     }
@@ -136,29 +182,43 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
 
     private void addFriend(Friend friend, int position) {
         String currentUserId = auth.getCurrentUser().getUid();
+        String currentUserName = auth.getCurrentUser().getDisplayName();
 
-        if (currentUserId != null) {
-            // Set the 'removed' status to false for both users
+        if (currentUserId == null || currentUserName == null) {
             firestore.collection("users")
                     .document(currentUserId)
-                    .collection("friends")
-                    .document(friend.getId())
-                    .update("removed", false)
-                    .addOnSuccessListener(aVoid -> {
-                        firestore.collection("users")
-                                .document(friend.getId())
-                                .collection("friends")
-                                .document(currentUserId)
-                                .update("removed", false)
-                                .addOnSuccessListener(aVoid2 -> {
-                                    friendsList.get(position).setRemoved(false);
-                                    notifyItemChanged(position);
-                                    Toast.makeText(context, "Friend added back", Toast.LENGTH_SHORT).show();
-                                })
-                                .addOnFailureListener(e -> Toast.makeText(context, "Failed to update friend's list", Toast.LENGTH_SHORT).show());
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String fetchedUserName = documentSnapshot.getString("fullName");
+                            sendFriendRequest(friend, currentUserId, fetchedUserName, position);
+                        }
                     })
-                    .addOnFailureListener(e -> Toast.makeText(context, "Failed to add friend", Toast.LENGTH_SHORT).show());
+                    .addOnFailureListener(e -> Toast.makeText(context, "Failed to fetch user info", Toast.LENGTH_SHORT).show());
+        } else {
+            sendFriendRequest(friend, currentUserId, currentUserName, position);
         }
+    }
+
+    private void sendFriendRequest(Friend friend, String senderId, String senderName, int position) {
+        FriendRequest newRequest = new FriendRequest(
+                senderId,
+                senderName,
+                friend.getId(),
+                System.currentTimeMillis()
+        );
+
+        firestore.collection("users")
+                .document(friend.getId())
+                .collection("friendRequests")
+                .document(senderId)
+                .set(newRequest)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(context, "Friend request sent", Toast.LENGTH_SHORT).show();
+                    friendsList.get(position).setRemoved(false);
+                    notifyItemChanged(position);
+                })
+                .addOnFailureListener(e -> Toast.makeText(context, "Failed to send friend request", Toast.LENGTH_SHORT).show());
     }
 
     @Override

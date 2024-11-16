@@ -10,14 +10,25 @@ public class FriendRequest implements Serializable {
 
     // Default constructor required for Firestore deserialization
     public FriendRequest() {
+        // Initialize with a default timestamp if not set
+        this.timestamp = System.currentTimeMillis();
     }
 
-    // Constructor to create a new FriendRequest object
+    public FriendRequest(String senderId, String senderName, String receiverId) {
+        this.senderId = senderId != null ? senderId : "";
+        this.senderName = senderName != null ? senderName : "Unknown User";
+        this.receiverId = receiverId != null ? receiverId : "";
+        this.timestamp = System.currentTimeMillis(); // Automatically set the current timestamp
+    }
+
+    /**
+     * Overloaded constructor with a timestamp parameter.
+     */
     public FriendRequest(String senderId, String senderName, String receiverId, long timestamp) {
-        this.senderId = senderId;
-        this.senderName = senderName != null ? senderName : "Unknown User"; // Handle null senderName
-        this.receiverId = receiverId;
-        this.timestamp = timestamp;
+        this.senderId = senderId != null ? senderId : "";
+        this.senderName = senderName != null ? senderName : "Unknown User";
+        this.receiverId = receiverId != null ? receiverId : "";
+        this.timestamp = timestamp > 0 ? timestamp : System.currentTimeMillis();
     }
 
     // Getters
@@ -39,7 +50,7 @@ public class FriendRequest implements Serializable {
 
     // Setters
     public void setSenderId(String senderId) {
-        this.senderId = senderId;
+        this.senderId = senderId != null ? senderId : "";
     }
 
     public void setSenderName(String senderName) {
@@ -47,11 +58,11 @@ public class FriendRequest implements Serializable {
     }
 
     public void setReceiverId(String receiverId) {
-        this.receiverId = receiverId;
+        this.receiverId = receiverId != null ? receiverId : "";
     }
 
     public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+        this.timestamp = timestamp > 0 ? timestamp : System.currentTimeMillis();
     }
 
     // Override toString method for debugging purposes
@@ -69,5 +80,20 @@ public class FriendRequest implements Serializable {
     public boolean isValid() {
         return senderId != null && !senderId.isEmpty() &&
                 receiverId != null && !receiverId.isEmpty();
+    }
+
+    // Equals method to compare FriendRequest objects based on senderId and receiverId
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        FriendRequest request = (FriendRequest) obj;
+        return senderId.equals(request.senderId) && receiverId.equals(request.receiverId);
+    }
+
+    // Overriding hashCode() for better performance in collections
+    @Override
+    public int hashCode() {
+        return senderId.hashCode() + receiverId.hashCode();
     }
 }

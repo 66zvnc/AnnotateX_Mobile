@@ -148,9 +148,6 @@ public class FriendsFragment extends Fragment {
         }
     }
 
-    /**
-     * Remove a friend from the list and allow adding them back.
-     */
     private void removeFriend(Friend removedFriend) {
         for (int i = 0; i < friendsList.size(); i++) {
             if (friendsList.get(i).getId().equals(removedFriend.getId())) {
