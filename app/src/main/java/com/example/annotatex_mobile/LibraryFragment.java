@@ -23,11 +23,11 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdfClickListener {
+public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfClickListener {
 
     private static final String TAG = "LibraryFragment";
     private RecyclerView pdfGalleryRecyclerView;
-    private PdfGalleryAdapter adapter;
+    private LibraryAdapter adapter;
     private List<Book> bookList;
     private List<Book> filteredList;
     private FirebaseFirestore firestore;
@@ -49,15 +49,24 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
 
         bookList = new ArrayList<>();
         filteredList = new ArrayList<>();
-        adapter = new PdfGalleryAdapter(getContext(), filteredList, this);
+        adapter = new LibraryAdapter(getContext(), filteredList, this);
 
         // Set up RecyclerView
         pdfGalleryRecyclerView = view.findViewById(R.id.pdfGalleryRecyclerView);
-        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 2);
+
+        // Dynamically adjust span count based on screen size
+        int spanCount = 2;  // Default for smaller screens
+        if (getResources().getDisplayMetrics().widthPixels > 600) {  // For larger screens (tablets)
+            spanCount = 3;  // Show more columns on tablets
+        }
+
+        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), spanCount);
         pdfGalleryRecyclerView.setLayoutManager(layoutManager);
 
+        // Add item spacing decoration
         int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.recycler_view_item_spacing);
         pdfGalleryRecyclerView.addItemDecoration(new SpaceItemDecoration(spacingInPixels));
+
         pdfGalleryRecyclerView.setAdapter(adapter);
 
         // Set up SearchView
@@ -92,7 +101,6 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
             }
         });
     }
-
 
     private void setupSearchView() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

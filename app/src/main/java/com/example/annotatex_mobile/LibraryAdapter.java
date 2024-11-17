@@ -20,8 +20,8 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 
-public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.ViewHolder> {
-    private static final String TAG = "PdfGalleryAdapter";
+public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHolder> {
+    private static final String TAG = "LibraryAdapter";
     private final Context context;
     private final List<Book> bookList;
     private final OnPdfClickListener listener;
@@ -31,7 +31,7 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
         void onPdfClick(String pdfUrl);
     }
 
-    public PdfGalleryAdapter(Context context, List<Book> bookList, OnPdfClickListener listener) {
+    public LibraryAdapter(Context context, List<Book> bookList, OnPdfClickListener listener) {
         this.context = context;
         this.bookList = bookList;
         this.listener = listener;
@@ -48,7 +48,22 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Book book = bookList.get(position);
 
-        // Load book cover
+        // Get the screen width
+        int screenWidth = context.getResources().getDisplayMetrics().widthPixels;
+
+        // Determine the scale factor based on screen size
+        float scaleFactor = 1.0f; // Default scale factor for small screens
+        if (screenWidth > 600) {  // For larger screens (e.g., tablets)
+            scaleFactor = 1.5f; // Increase the size for larger screens
+        }
+
+        // Adjust the size of the book cover image based on the scale factor
+        ViewGroup.LayoutParams layoutParams = holder.imageView.getLayoutParams();
+        layoutParams.width = (int) (screenWidth / 3 * scaleFactor);  // Scale the width
+        layoutParams.height = (int) (layoutParams.width * 1.5f);  // Maintain aspect ratio for the height
+        holder.imageView.setLayoutParams(layoutParams);
+
+        // Load the book cover image using Glide
         if (book.hasBitmapCover()) {
             holder.imageView.setImageBitmap(book.getCoverImageBitmap());
         } else if (book.hasUrlCover()) {
