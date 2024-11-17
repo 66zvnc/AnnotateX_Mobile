@@ -70,6 +70,7 @@ dependencies {
     implementation ("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation ("com.google.android.libraries.identity.googleid:googleid:1.1.1")
     implementation("com.google.android.gms:play-services-ads:23.5.0")
+    implementation("com.google.firebase:firebase-messaging:24.1.0")
 
 
 

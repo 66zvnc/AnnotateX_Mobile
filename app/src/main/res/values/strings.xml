@@ -4,4 +4,5 @@
     <string name="menu_icon_desc">Menu options</string>
     <string name="cover_preview">Cover Preview</string>
     <string name="book_cover_desc">Book cover image</string>
+    <string name="default_notification_channel_id">notifications</string>
 </resources>
