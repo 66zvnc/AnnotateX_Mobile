@@ -25,7 +25,11 @@ public class CategoriesFragment extends Fragment {
 
         // Initialize RecyclerView
         categoriesRecyclerView = view.findViewById(R.id.categoriesRecyclerView);
-        categoriesRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+
+        // Use GridLayoutManager with 1 column per row
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 1); // 1 column per row
+
+        categoriesRecyclerView.setLayoutManager(gridLayoutManager);
 
         // Sample data for categories
         categoriesList = new ArrayList<>();
