@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -63,8 +64,18 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         sortCollabsButton = view.findViewById(R.id.sort_collabs);
         underline = view.findViewById(R.id.underlineContainer);
 
-        // Set the default underline to the "ALL" button
-        setUnderlinePosition(sortAllButton);
+        // Use ViewTreeObserver to wait until the layout is fully drawn
+        sortAllButton.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                // Ensure the listener is only triggered once
+                sortAllButton.getViewTreeObserver().removeOnPreDrawListener(this);
+
+                // Set the default underline to the "ALL" button when the fragment loads
+                setUnderlinePosition(sortAllButton);
+                return true;
+            }
+        });
 
         // Set up RecyclerView with dynamic columns based on screen size
         pdfGalleryRecyclerView = view.findViewById(R.id.pdfGalleryRecyclerView);
@@ -252,3 +263,4 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         }
     }
 }
+
