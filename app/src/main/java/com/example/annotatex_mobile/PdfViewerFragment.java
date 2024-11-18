@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -53,6 +55,10 @@ public class PdfViewerFragment extends Fragment {
     private DocumentReference pdfDocRef;
     private AdView adView;
 
+    // Progress bar views
+    private ProgressBar uploadProgressBar;
+    private TextView uploadProgressText;
+
     // Ensure Firestore instance is initialized
     public void setFirestore(FirebaseFirestore firestore) {
         this.firestore = firestore;
@@ -74,6 +80,10 @@ public class PdfViewerFragment extends Fragment {
         // Set up the AdView
         adView = view.findViewById(R.id.adView);
         loadBannerAd();
+
+        // Initialize the upload progress bar
+        uploadProgressBar = view.findViewById(R.id.uploadProgressBar);
+        uploadProgressText = view.findViewById(R.id.uploadProgressPercent);
 
         Button uploadButton = view.findViewById(R.id.uploadButton);
         uploadButton.setOnClickListener(v -> openFileChooser());
@@ -230,6 +240,9 @@ public class PdfViewerFragment extends Fragment {
     }
 
     private void uploadPdfToFirebase(Uri pdfUri, String title, String description, Uri coverImageUri) {
+        // Show the progress dialog when upload starts
+        showUploadProgressDialog();
+
         // Get a reference to Firebase Storage
         StorageReference pdfRef = storage.getReference().child("uploads/" + System.currentTimeMillis() + ".pdf");
 
@@ -249,12 +262,52 @@ public class PdfViewerFragment extends Fragment {
         });
     }
 
+
+    // Show the upload progress dialog
+    // Show the upload progress dialog
+    private void showUploadProgressDialog() {
+
+        Dialog uploadProgressDialog = new Dialog(requireContext());
+        uploadProgressDialog.setContentView(R.layout.upload_progress_dialog); // Your progress dialog layout
+
+        ProgressBar progressBar = uploadProgressDialog.findViewById(R.id.uploadProgressBar);
+        TextView progressText = uploadProgressDialog.findViewById(R.id.uploadProgressPercent);
+
+        uploadProgressDialog.show();
+
+        final int[] progress = {0};
+
+        new Thread(() -> {
+            while (progress[0] < 100) {
+                try {
+                    Thread.sleep(100); // Simulate work
+                    progress[0]++; // Increment progress
+
+                    // Update the progress bar and text on the UI thread
+                    getActivity().runOnUiThread(() -> {
+                        progressBar.setProgress(progress[0]);
+                        progressText.setText(progress[0] + "%");
+                    });
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // Once upload is complete, dismiss the progress dialog
+            getActivity().runOnUiThread(uploadProgressDialog::dismiss);
+        }).start();
+    }
+
     private void uploadCoverImageToFirebase(String pdfUrl, String title, String description, Uri coverImageUri) {
         // Get a reference to Firebase Storage for the cover image
         StorageReference coverRef = storage.getReference().child("covers/" + System.currentTimeMillis() + ".jpg");
 
-        // Upload the cover image
-        coverRef.putFile(coverImageUri).addOnSuccessListener(taskSnapshot -> {
+        // Upload the cover image with progress
+        coverRef.putFile(coverImageUri).addOnProgressListener(taskSnapshot -> {
+            int progress = (int) (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+            uploadProgressBar.setProgress(progress);
+            uploadProgressText.setText(progress + "%");
+        }).addOnSuccessListener(taskSnapshot -> {
             // Get the download URL of the uploaded cover image
             coverRef.getDownloadUrl().addOnSuccessListener(coverUrl -> {
                 // Save the book metadata to Firestore

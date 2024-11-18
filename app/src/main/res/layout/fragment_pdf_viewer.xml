@@ -39,6 +39,60 @@
             android:textColor="?attr/colorPrimary" />
     </LinearLayout>
 
+    <!-- Upload Progress Dialog -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/uploadProgressDialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_centerInParent="true"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Text to show uploading status -->
+            <TextView
+                android:id="@+id/uploadingText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Uploading PDF..."
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Progress Bar -->
+            <ProgressBar
+                android:id="@+id/uploadProgressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:progress="0"
+                android:max="100"
+                android:progressTint="@color/dark_pink"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Progress Text -->
+            <TextView
+                android:id="@+id/uploadProgressPercent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:text="0%"
+                android:textColor="@color/black"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
     <!-- AdView Banner at the Bottom -->
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
