@@ -262,9 +262,6 @@ public class PdfViewerFragment extends Fragment {
         });
     }
 
-
-    // Show the upload progress dialog
-    // Show the upload progress dialog
     private void showUploadProgressDialog() {
 
         Dialog uploadProgressDialog = new Dialog(requireContext());

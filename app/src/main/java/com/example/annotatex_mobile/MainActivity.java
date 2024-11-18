@@ -65,9 +65,6 @@ public class MainActivity extends AppCompatActivity {
         listenForFriendRequests();
     }
 
-    /**
-     * Listen for friend requests in Firestore and show notifications.
-     */
     private void listenForFriendRequests() {
         String currentUserId = auth.getCurrentUser().getUid();
 
@@ -86,9 +83,6 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Show a system notification when a friend request is received.
-     */
     private void showSystemNotification(String message) {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -111,9 +105,6 @@ public class MainActivity extends AppCompatActivity {
         notificationManager.notify((int) System.currentTimeMillis(), builder.build());
     }
 
-    /**
-     * Create a notification channel for friend requests.
-     */
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Friend Requests";
