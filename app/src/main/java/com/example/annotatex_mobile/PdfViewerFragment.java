@@ -53,14 +53,9 @@ public class PdfViewerFragment extends Fragment {
     private DocumentReference pdfDocRef;
     private AdView adView;
 
-    // Method to set Firestore instance
+    // Ensure Firestore instance is initialized
     public void setFirestore(FirebaseFirestore firestore) {
         this.firestore = firestore;
-    }
-
-    // Method to control PDF loading behavior
-    public void setShouldLoadPdf(boolean shouldLoad) {
-        this.shouldLoadPdf = shouldLoad;
     }
 
     @Nullable
@@ -68,8 +63,10 @@ public class PdfViewerFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pdf_viewer, container, false);
 
+        // Initialize Firebase
         storage = FirebaseStorage.getInstance();
         auth = FirebaseAuth.getInstance();
+        firestore = FirebaseFirestore.getInstance();  // Make sure Firestore is initialized
 
         // Initialize AdMob
         MobileAds.initialize(requireContext(), initializationStatus -> {});
@@ -81,6 +78,7 @@ public class PdfViewerFragment extends Fragment {
         Button uploadButton = view.findViewById(R.id.uploadButton);
         uploadButton.setOnClickListener(v -> openFileChooser());
 
+        // Load PDF if flag is true
         if (shouldLoadPdf && pdfUrl != null) {
             downloadAndOpenPdfWithPSPDFKit(pdfUrl);
         }
@@ -231,7 +229,6 @@ public class PdfViewerFragment extends Fragment {
         addBookInfoDialog.show();
     }
 
-
     private void uploadPdfToFirebase(Uri pdfUri, String title, String description, Uri coverImageUri) {
         // Get a reference to Firebase Storage
         StorageReference pdfRef = storage.getReference().child("uploads/" + System.currentTimeMillis() + ".pdf");
@@ -296,5 +293,4 @@ public class PdfViewerFragment extends Fragment {
                     Toast.makeText(requireContext(), "Failed to save book metadata", Toast.LENGTH_SHORT).show();
                 });
     }
-
 }
