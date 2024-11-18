@@ -54,22 +54,29 @@
         </LinearLayout>
 
         <!-- Sorting Bar (added just below the search view and icons) -->
+        <View
+            android:id="@+id/underlineContainer2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="4dp"
+            android:background="?attr/colorPrimary" />
+
         <LinearLayout
             android:id="@+id/sortContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:gravity="center"
-            android:padding="8dp">
+            android:orientation="horizontal"
+            android:padding="7dp">
 
             <!-- "All" Button -->
             <TextView
                 android:id="@+id/sort_all"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ALL"
+                android:text="All"
                 android:textColor="?attr/colorPrimary"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:padding="8dp"
                 android:layout_marginEnd="16dp"
                 android:clickable="true"
@@ -80,13 +87,22 @@
                 android:id="@+id/sort_collabs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="COLLABS"
+                android:text="Collabs"
                 android:textColor="?attr/colorPrimary"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:padding="8dp"
                 android:clickable="true"
                 android:focusable="true"/>
         </LinearLayout>
+
+        <!-- Underline Container -->
+        <View
+            android:id="@+id/underlineContainer"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="4dp"
+            android:background="?attr/colorPrimary" />
+
     </LinearLayout>
 
     <!-- Centered RecyclerView for Books -->
@@ -97,10 +113,12 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@id/searchContainer"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp" />
+        android:paddingBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.625"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/searchContainer"
+        app:layout_constraintVertical_bias="0.0" />
 </androidx.constraintlayout.motion.widget.MotionLayout>

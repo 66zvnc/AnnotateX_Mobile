@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
@@ -36,6 +38,11 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
     private MotionLayout motionLayout;
     private boolean isSearchViewVisible = true;
 
+    // Button references for "ALL" and "COLLABS"
+    private TextView sortAllButton;
+    private TextView sortCollabsButton;
+    private View underline;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -50,6 +57,14 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         bookList = new ArrayList<>();
         filteredList = new ArrayList<>();
         adapter = new PdfGalleryAdapter(getContext(), filteredList, this);
+
+        // Initialize UI elements
+        sortAllButton = view.findViewById(R.id.sort_all);
+        sortCollabsButton = view.findViewById(R.id.sort_collabs);
+        underline = view.findViewById(R.id.underlineContainer);
+
+        // Set the default underline to the "ALL" button
+        setUnderlinePosition(sortAllButton);
 
         // Set up RecyclerView with dynamic columns based on screen size
         pdfGalleryRecyclerView = view.findViewById(R.id.pdfGalleryRecyclerView);
@@ -70,6 +85,10 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         loadBooksFromFirestore();
 
         setupScrollListener();
+
+        // Set the button click listeners for "ALL" and "COLLABS"
+        sortAllButton.setOnClickListener(v -> setUnderlinePosition(sortAllButton));
+        sortCollabsButton.setOnClickListener(v -> setUnderlinePosition(sortCollabsButton));
 
         return view;
     }
@@ -112,8 +131,6 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
 
     private void setupIcons(View view) {
         ImageView activitiesIcon = view.findViewById(R.id.icon_notifications);
-        // Removed messagesIcon and its associated code
-
         activitiesIcon.setOnClickListener(v -> openFragment(new NotificationsFragment()));
     }
 
@@ -185,6 +202,23 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         bookList.add(new Book(R.drawable.book_8, "url_to_pdf_8", "Readistan", "Shah Rukh Nadeem", "Summaries of the best books."));
         bookList.add(new Book(R.drawable.book_9, "url_to_pdf_9", "Reclaim Your Heart", "Yasmin Mogahed", "Free yourself from life's shackles."));
         bookList.add(new Book(R.drawable.book_10, "url_to_pdf_10", "Lost Islamic History", "Firas Alkhateeb", "Muslim civilization through the ages."));
+    }
+
+    private void setUnderlinePosition(View selectedButton) {
+        // Highlight the selected button
+        if (selectedButton instanceof TextView) {
+            TextView button = (TextView) selectedButton;
+            button.setTextColor(getResources().getColor(R.color.dark_pink)); // Color for the selected button
+        }
+
+        // Adjust underline to the selected button
+        ViewGroup.LayoutParams layoutParams = underline.getLayoutParams();
+        layoutParams.width = selectedButton.getWidth(); // Set the underline width to match button width
+        underline.setLayoutParams(layoutParams);
+
+        // Move the underline to the selected button's position
+        float xPosition = selectedButton.getX();
+        underline.setTranslationX(xPosition); // Set the underline position to the button
     }
 
     @Override
