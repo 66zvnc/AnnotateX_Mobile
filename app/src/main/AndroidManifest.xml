@@ -41,9 +41,6 @@
         <activity android:name=".EditProfileActivity" />
         <activity android:name=".PreferencesActivity" />
         <activity android:name=".PrivacyActivity" />
-
-        <activity android:name=".MessagesActivity" />
-
         <activity android:name=".SearchUsersActivity"/>
 
         <service

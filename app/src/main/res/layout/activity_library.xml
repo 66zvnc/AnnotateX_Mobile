@@ -33,30 +33,19 @@
 
         <!-- Activities Icon -->
         <ImageView
-            android:id="@+id/icon_activities"
+            android:id="@+id/icon_notifications"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:src="@drawable/ic_activities"
-            android:contentDescription="Activities"
             android:layout_marginEnd="8dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Activities"
             android:padding="6dp"
-            app:tint="?attr/colorOnSurface"
+            android:src="@drawable/ic_notifications"
+            app:layout_constraintBottom_toBottomOf="@+id/searchContainer"
             app:layout_constraintTop_toTopOf="@+id/searchContainer"
-            app:layout_constraintBottom_toBottomOf="@+id/searchContainer" />
+            app:tint="?attr/colorOnSurface" />
 
         <!-- Messages Icon -->
-        <ImageView
-            android:id="@+id/icon_messages"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@drawable/ic_messages"
-            android:contentDescription="Messages"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="6dp"
-            app:tint="?attr/colorOnSurface"
-            app:layout_constraintTop_toTopOf="@+id/searchContainer"
-            app:layout_constraintBottom_toBottomOf="@+id/searchContainer" />
     </LinearLayout>
 
     <!-- Centered RecyclerView for Books -->

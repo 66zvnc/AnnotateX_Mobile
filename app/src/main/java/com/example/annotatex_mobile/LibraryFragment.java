@@ -1,13 +1,10 @@
 package com.example.annotatex_mobile;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -114,14 +111,10 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
     }
 
     private void setupIcons(View view) {
-        ImageView activitiesIcon = view.findViewById(R.id.icon_activities);
-        ImageView messagesIcon = view.findViewById(R.id.icon_messages);
+        ImageView activitiesIcon = view.findViewById(R.id.icon_notifications);
+        // Removed messagesIcon and its associated code
 
         activitiesIcon.setOnClickListener(v -> openFragment(new ActivitiesFragment()));
-        messagesIcon.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), MessagesActivity.class);
-            startActivity(intent);
-        });
     }
 
     private void openFragment(Fragment fragment) {
