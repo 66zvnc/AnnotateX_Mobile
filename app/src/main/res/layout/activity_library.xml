@@ -8,44 +8,85 @@
     app:layoutDescription="@xml/scene_library"
     tools:context=".LibraryFragment">
 
-    <!-- Container for Search View and Icons -->
+    <!-- Container for Search View, Icons, and Sort Bar -->
     <LinearLayout
         android:id="@+id/searchContainer"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="8dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Search View -->
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/searchView"
-            android:layout_width="0dp"
+        <!-- Container for Search View and Icons (Notifications) -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:queryHint="Search books..."
-            android:iconifiedByDefault="false"
-            android:background="@android:color/transparent"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp" />
+            android:orientation="horizontal"
+            android:gravity="start|center_vertical"
+            android:paddingEnd="8dp"
+            android:paddingTop="8dp">
 
-        <!-- Activities Icon -->
-        <ImageView
-            android:id="@+id/icon_notifications"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginEnd="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Activities"
-            android:padding="6dp"
-            android:src="@drawable/ic_notifications"
-            app:layout_constraintBottom_toBottomOf="@+id/searchContainer"
-            app:layout_constraintTop_toTopOf="@+id/searchContainer"
-            app:tint="?attr/colorOnSurface" />
+            <!-- Search View -->
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/searchView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:iconifiedByDefault="false"
+                android:queryHint="Search books..."
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"/>
 
-        <!-- Messages Icon -->
+            <!-- Notifications Icon -->
+            <ImageView
+                android:id="@+id/icon_notifications"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Notifications"
+                android:padding="6dp"
+                android:src="@drawable/ic_notifications"
+                app:tint="?attr/colorOnSurface" />
+        </LinearLayout>
+
+        <!-- Sorting Bar (added just below the search view and icons) -->
+        <LinearLayout
+            android:id="@+id/sortContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:padding="8dp">
+
+            <!-- "All" Button -->
+            <TextView
+                android:id="@+id/sort_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ALL"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="16sp"
+                android:padding="8dp"
+                android:layout_marginEnd="16dp"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <!-- "Collabs" Button -->
+            <TextView
+                android:id="@+id/sort_collabs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="COLLABS"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="16sp"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true"/>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Centered RecyclerView for Books -->
