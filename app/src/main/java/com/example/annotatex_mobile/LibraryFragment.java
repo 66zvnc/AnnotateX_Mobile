@@ -114,7 +114,7 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         ImageView activitiesIcon = view.findViewById(R.id.icon_notifications);
         // Removed messagesIcon and its associated code
 
-        activitiesIcon.setOnClickListener(v -> openFragment(new ActivitiesFragment()));
+        activitiesIcon.setOnClickListener(v -> openFragment(new NotificationsFragment()));
     }
 
     private void openFragment(Fragment fragment) {

@@ -16,7 +16,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ActivitiesFragment extends Fragment {
+public class NotificationsFragment extends Fragment {
 
     private RecyclerView friendRequestsRecyclerView;
     private ActivitiesAdapter activitiesAdapter;
@@ -28,7 +28,7 @@ public class ActivitiesFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_activities, container, false);
+        View view = inflater.inflate(R.layout.fragment_notifications, container, false);
         requireActivity().setTitle("Activities");
 
         // Initialize Firestore and FirebaseAuth
