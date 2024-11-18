@@ -1,10 +1,10 @@
 <com.google.android.material.card.MaterialCardView
     android:id="@+id/cardView"
     android:layout_width="match_parent"
-    android:layout_height="250dp"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
+    android:layout_height="320dp"
+    android:layout_margin="16dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="8dp"
     app:cardBackgroundColor="?attr/colorSurface"
     app:layout_constraintTop_toTopOf="parent"
     app:layout_constraintBottom_toBottomOf="parent"
@@ -22,25 +22,25 @@ android:layout_height="match_parent">
     android:id="@+id/imageView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:scaleType="centerCrop"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintBottom_toBottomOf="parent"
-    android:contentDescription="@string/book_cover_desc" />
+android:scaleType="centerCrop"
+app:layout_constraintTop_toTopOf="parent"
+app:layout_constraintStart_toStartOf="parent"
+app:layout_constraintEnd_toEndOf="parent"
+app:layout_constraintBottom_toBottomOf="parent"
+android:contentDescription="@string/book_cover_desc" />
 
 <!-- Menu Icon -->
 <ImageView
     android:id="@+id/menu_icon"
-    android:layout_width="24dp"
-    android:layout_height="24dp"
+    android:layout_width="32dp"
+    android:layout_height="32dp"
     android:contentDescription="@string/menu_icon_desc"
     app:srcCompat="@drawable/ic_menu"
     app:tint="?attr/colorOnSurface"
     app:layout_constraintTop_toTopOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
-    android:padding="4dp"
-    android:layout_marginEnd="8dp"
-    android:layout_marginTop="8dp"/>
+    android:padding="8dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginTop="12dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>

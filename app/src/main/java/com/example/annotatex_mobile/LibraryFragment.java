@@ -1,10 +1,13 @@
 package com.example.annotatex_mobile;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -51,9 +54,10 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
         filteredList = new ArrayList<>();
         adapter = new PdfGalleryAdapter(getContext(), filteredList, this);
 
-        // Set up RecyclerView
+        // Set up RecyclerView with dynamic columns based on screen size
         pdfGalleryRecyclerView = view.findViewById(R.id.pdfGalleryRecyclerView);
-        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 2);
+        int columns = getResources().getConfiguration().screenWidthDp >= 600 ? 3 : 2; // 3 for tablets, 2 for phones
+        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), columns);
         pdfGalleryRecyclerView.setLayoutManager(layoutManager);
 
         int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.recycler_view_item_spacing);
@@ -92,7 +96,6 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
             }
         });
     }
-
 
     private void setupSearchView() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
