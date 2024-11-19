@@ -69,6 +69,16 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
             showPopupMenu(holder.itemView, friend, position);
             return true;
         });
+
+        // Set up click listener to open CollaborativeChatActivity when a user is clicked
+        holder.itemView.setOnClickListener(v -> openCollaborativeChat(friend));
+    }
+
+    private void openCollaborativeChat(Friend friend) {
+        // Open the CollaborativeChatActivity and pass the friend ID
+        Intent intent = new Intent(context, CollaborativeChatActivity.class);
+        intent.putExtra("friendId", friend.getId());  // Pass the friend ID
+        context.startActivity(intent);
     }
 
     private void showPopupMenu(View anchor, Friend friend, int position) {

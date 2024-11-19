@@ -42,6 +42,7 @@
         <activity android:name=".PreferencesActivity" />
         <activity android:name=".PrivacyActivity" />
         <activity android:name=".SearchUsersActivity"/>
+        <activity android:name=".CollaborativeChatActivity"/>
 
         <service
             android:name=".MyFirebaseMessagingService"

@@ -21,9 +21,6 @@ public class FriendRequest implements Serializable {
         this.timestamp = System.currentTimeMillis(); // Automatically set the current timestamp
     }
 
-    /**
-     * Overloaded constructor with a timestamp parameter.
-     */
     public FriendRequest(String senderId, String senderName, String receiverId, long timestamp) {
         this.senderId = senderId != null ? senderId : "";
         this.senderName = senderName != null ? senderName : "Unknown User";
