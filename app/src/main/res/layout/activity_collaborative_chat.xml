@@ -47,6 +47,20 @@
 
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/addBookButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/ic_add_book"
+    android:contentDescription="Add Collaborative Book"
+    android:clickable="true"
+    android:focusable="true"/>
+
+
     <!-- Chat and Book Management Content Goes Here -->
     <!-- Add your chat layout or other features here -->
 
