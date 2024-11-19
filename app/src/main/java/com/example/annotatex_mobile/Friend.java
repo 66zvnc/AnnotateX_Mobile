@@ -116,4 +116,5 @@ public class Friend implements Serializable {
     public int hashCode() {
         return id.hashCode();
     }
+
 }

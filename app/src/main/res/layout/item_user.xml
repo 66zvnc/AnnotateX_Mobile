@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -32,11 +31,12 @@
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface" />
 
+        <!-- Full Name Below Username -->
         <TextView
-            android:id="@+id/statusTextView"
+            android:id="@+id/fullNameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Status"
+            android:text="Full Name"
             android:textSize="14sp"
             android:textColor="@android:color/darker_gray" />
     </LinearLayout>

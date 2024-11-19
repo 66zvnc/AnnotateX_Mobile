@@ -12,8 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.List;
 
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> {
@@ -40,8 +40,12 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         Friend user = usersList.get(position);
-        holder.nameTextView.setText(user.getName());
-        holder.statusTextView.setText(user.getStatus());
+
+        // Fetch and set the username
+        loadUsername(user, holder.nameTextView);
+
+        // Fetch and set the full name
+        loadFullName(user, holder.fullNameTextView);
 
         // Load profile image using Glide
         Glide.with(context)
@@ -54,6 +58,28 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
         // Set up click listener for the "Add Friend" button
         holder.addFriendButton.setOnClickListener(v -> sendFriendRequest(user, holder));
+    }
+
+    private void loadUsername(Friend user, TextView nameTextView) {
+        firestore.collection("users").document(user.getId()).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.contains("username")) {
+                        String username = documentSnapshot.getString("username");
+                        nameTextView.setText(username); // Set username here
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(context, "Failed to load username", Toast.LENGTH_SHORT).show());
+    }
+
+    private void loadFullName(Friend user, TextView fullNameTextView) {
+        firestore.collection("users").document(user.getId()).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.contains("fullName")) {
+                        String fullName = documentSnapshot.getString("fullName");
+                        fullNameTextView.setText(fullName); // Set full name under username
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(context, "Failed to load full name", Toast.LENGTH_SHORT).show());
     }
 
     private void checkFriendRequestStatus(Friend user, UserViewHolder holder) {
@@ -80,7 +106,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             return;
         }
 
-        // Fetch current user's full name from Firestore
         firestore.collection("users").document(currentUserId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     String senderName = documentSnapshot.getString("fullName");
@@ -120,9 +145,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
                 });
     }
 
-
-
-
     @Override
     public int getItemCount() {
         return usersList.size();
@@ -137,14 +159,14 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     public static class UserViewHolder extends RecyclerView.ViewHolder {
         ImageView profileImageView;
-        TextView nameTextView, statusTextView;
+        TextView nameTextView, fullNameTextView;
         Button addFriendButton;
 
         public UserViewHolder(@NonNull View itemView) {
             super(itemView);
             profileImageView = itemView.findViewById(R.id.profileImageView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
-            statusTextView = itemView.findViewById(R.id.statusTextView);
+            fullNameTextView = itemView.findViewById(R.id.fullNameTextView); // Added for full name
             addFriendButton = itemView.findViewById(R.id.addFriendButton);
         }
     }
