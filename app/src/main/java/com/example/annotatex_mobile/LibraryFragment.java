@@ -26,11 +26,11 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdfClickListener {
+public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfClickListener {
 
     private static final String TAG = "LibraryFragment";
     private RecyclerView pdfGalleryRecyclerView;
-    private PdfGalleryAdapter adapter;
+    private LibraryAdapter adapter;
     private List<Book> bookList;
     private List<Book> filteredList;
     private FirebaseFirestore firestore;
@@ -57,7 +57,7 @@ public class LibraryFragment extends Fragment implements PdfGalleryAdapter.OnPdf
 
         bookList = new ArrayList<>();
         filteredList = new ArrayList<>();
-        adapter = new PdfGalleryAdapter(getContext(), filteredList, this);
+        adapter = new LibraryAdapter(getContext(), filteredList, this);
 
         // Initialize UI elements
         sortAllButton = view.findViewById(R.id.sort_all);

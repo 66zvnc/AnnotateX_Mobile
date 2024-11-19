@@ -20,8 +20,8 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 
-public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.ViewHolder> {
-    private static final String TAG = "PdfGalleryAdapter";
+public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHolder> {
+    private static final String TAG = "LibraryAdapter";
     private final Context context;
     private final List<Book> bookList;
     private final OnPdfClickListener listener;
@@ -31,7 +31,7 @@ public class PdfGalleryAdapter extends RecyclerView.Adapter<PdfGalleryAdapter.Vi
         void onPdfClick(String pdfUrl);
     }
 
-    public PdfGalleryAdapter(Context context, List<Book> bookList, OnPdfClickListener listener) {
+    public LibraryAdapter(Context context, List<Book> bookList, OnPdfClickListener listener) {
         this.context = context;
         this.bookList = bookList;
         this.listener = listener;
