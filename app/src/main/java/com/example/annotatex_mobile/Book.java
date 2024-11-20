@@ -1,6 +1,8 @@
 package com.example.annotatex_mobile;
 
 import android.graphics.Bitmap;
+import android.util.Log;
+
 import java.io.Serializable;
 
 public class Book implements Serializable {
@@ -19,7 +21,7 @@ public class Book implements Serializable {
     // Constructor for user-uploaded books
     public Book(String id, String coverImageUrl, String pdfUrl, String title, String author, String description, String userId) {
         this.id = id;
-        this.coverImageUrl = coverImageUrl;
+        this.coverImageUrl = coverImageUrl != null && !coverImageUrl.trim().isEmpty() ? coverImageUrl : null;
         this.pdfUrl = pdfUrl;
         this.title = title;
         this.author = author;
@@ -92,6 +94,10 @@ public class Book implements Serializable {
     }
 
     // Setters
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public void setUserId(String userId) {
         this.userId = userId;
     }
@@ -104,13 +110,19 @@ public class Book implements Serializable {
         this.hidden = hidden;
     }
 
+    public void setCoverImageUrl(String coverImageUrl) {
+        Log.d("Book", "Updating cover image URL to: " + coverImageUrl);
+        this.coverImageUrl = coverImageUrl != null && !coverImageUrl.trim().isEmpty() ? coverImageUrl : null;
+    }
+
+
     // Utility methods
     public boolean hasBitmapCover() {
         return coverImageBitmap != null;
     }
 
     public boolean hasUrlCover() {
-        return coverImageUrl != null && !coverImageUrl.isEmpty();
+        return coverImageUrl != null && !coverImageUrl.trim().isEmpty();
     }
 
     public boolean hasResIdCover() {

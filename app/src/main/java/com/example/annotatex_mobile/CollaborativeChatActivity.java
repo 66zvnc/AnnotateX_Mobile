@@ -8,7 +8,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class CollaborativeChatActivity extends AppCompatActivity {
@@ -74,7 +76,8 @@ public class CollaborativeChatActivity extends AppCompatActivity {
     }
 
     /**
-     * Fetch books for the current user and display them in the selection dialog.
+     * Fetch books from the global "books" collection based on the current user's userId
+     * and display them in the selection dialog.
      */
     private void fetchBooksAndOpenDialog() {
         String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
@@ -85,23 +88,43 @@ public class CollaborativeChatActivity extends AppCompatActivity {
         }
 
         firestore.collection("books")
-                .whereEqualTo("userId", currentUserId)
+                .whereEqualTo("userId", currentUserId) // Filter books by userId
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
-                        List<Book> books = queryDocumentSnapshots.toObjects(Book.class);
-                        // Open the BookSelectionDialog with the fetched books
-                        BookSelectionDialog dialog = new BookSelectionDialog(this, books);
-                        dialog.show();
-                    } else {
-                        Toast.makeText(this, "No books found in your library", Toast.LENGTH_SHORT).show();
+                    List<Book> books = new ArrayList<>();
+                    for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                        Book book = documentSnapshot.toObject(Book.class);
+                        book.setId(documentSnapshot.getId()); // Set the book ID
+                        books.add(book);
                     }
+
+                    // Add preloaded books if no user-uploaded books are found
+                    if (books.isEmpty()) {
+                        addPreloadedBooks(books);
+                    }
+
+                    // Pass the context and books list to the dialog
+                    BookSelectionDialog dialog = new BookSelectionDialog(this, books);
+                    dialog.show();
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to fetch books", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to fetch books", Toast.LENGTH_SHORT).show();
+                });
     }
 
     /**
-     * Add a collaborative book for the current user and their friend.
+     * Add preloaded books to the list if no user-uploaded books exist.
+     */
+    private void addPreloadedBooks(List<Book> books) {
+        books.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "Robert T. Kiyosaki", "Financial wisdom from the rich."));
+        books.add(new Book(R.drawable.book_2, "url_to_pdf_2", "Atomic Habits", "James Clear", "Build good habits, break bad ones."));
+        books.add(new Book(R.drawable.book_3, "url_to_pdf_3", "Best Self", "Mike Bayer", "Be you, only better."));
+        books.add(new Book(R.drawable.book_4, "url_to_pdf_4", "How to Be Fine", "Kristen Meinzer", "Lessons from self-help books."));
+        books.add(new Book(R.drawable.book_5, "url_to_pdf_5", "Out of the Box", "Suzanne Dudley", "A journey of emotional resilience."));
+    }
+
+    /**
+     * Add a collaborative book for both the current user and their friend.
      */
     public void addCollaborativeBook(Book book) {
         String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
