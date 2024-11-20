@@ -1,7 +1,6 @@
 package com.example.annotatex_mobile;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,14 +13,14 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.List;
 
-public class ActivitiesAdapter extends RecyclerView.Adapter<ActivitiesAdapter.ActivityViewHolder> {
+public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.ActivityViewHolder> {
 
     private final List<FriendRequest> activitiesList;
     private final Context context;
     private final FirebaseFirestore firestore;
     private final FirebaseAuth auth;
 
-    public ActivitiesAdapter(Context context, List<FriendRequest> activitiesList) {
+    public NotificationsAdapter(Context context, List<FriendRequest> activitiesList) {
         this.context = context;
         this.activitiesList = activitiesList;
         this.firestore = FirebaseFirestore.getInstance();
@@ -31,7 +30,7 @@ public class ActivitiesAdapter extends RecyclerView.Adapter<ActivitiesAdapter.Ac
     @NonNull
     @Override
     public ActivityViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_activity, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.item_notification, parent, false);
         return new ActivityViewHolder(view);
     }
 

@@ -19,7 +19,7 @@ import java.util.List;
 public class NotificationsFragment extends Fragment {
 
     private RecyclerView friendRequestsRecyclerView;
-    private ActivitiesAdapter activitiesAdapter;
+    private NotificationsAdapter activitiesAdapter;
     private List<FriendRequest> activitiesList;
     private FirebaseFirestore firestore;
     private FirebaseAuth auth;
@@ -40,7 +40,7 @@ public class NotificationsFragment extends Fragment {
         friendRequestsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         activitiesList = new ArrayList<>();
-        activitiesAdapter = new ActivitiesAdapter(requireContext(), activitiesList);
+        activitiesAdapter = new NotificationsAdapter(requireContext(), activitiesList);
         friendRequestsRecyclerView.setAdapter(activitiesAdapter);
 
         // Start listening for friend requests
