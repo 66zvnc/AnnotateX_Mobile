@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -27,8 +28,8 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     private final Context context;
     private final List<Book> bookList;
     private final OnPdfClickListener listener;
-    private final boolean isInSelectionMode; // Flag to check whether in library or selection fragment
-    private int selectedPosition = -1; // Keep track of selected book for RadioButton
+    private final boolean isInSelectionMode;
+    private int selectedPosition = -1;
 
     public interface OnPdfClickListener {
         void onPdfClick(Book book);
@@ -62,13 +63,9 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             holder.imageView.setImageResource(book.getImageResId());
         }
 
-        // Check if in selection mode
         if (isInSelectionMode) {
-            // Show RadioButton and hide menu icon
             holder.menuIcon.setVisibility(View.GONE);
             holder.radioButton.setVisibility(View.VISIBLE);
-
-            // Handle RadioButton selection
             holder.radioButton.setChecked(position == selectedPosition);
             holder.radioButton.setOnClickListener(v -> {
                 selectedPosition = holder.getAdapterPosition();
@@ -77,13 +74,9 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
                     listener.onPdfClick(book);
                 }
             });
-
         } else {
-            // Show menu icon and hide RadioButton
             holder.menuIcon.setVisibility(View.VISIBLE);
             holder.radioButton.setVisibility(View.GONE);
-
-            // Handle menu icon click
             holder.menuIcon.setOnClickListener(v -> showPopupMenu(v, book));
         }
 
@@ -113,7 +106,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             listener.onPdfClick(book);
             return true;
         } else if (itemId == R.id.menu_share) {
-            listener.onPdfClick(book.getPdfUrl());
+            showFriendSelectionDialog(book);
             return true;
         } else if (itemId == R.id.menu_delete) {
             if (book.isPreloaded()) {
@@ -125,6 +118,22 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         } else {
             return false;
         }
+    }
+
+    private void showFriendSelectionDialog(Book book) {
+        new FriendSelectionDialog(context).show((friendId, friendName) -> {
+            FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+            String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+            // Add book to both users' collaborativeBooks collection
+            firestore.collection("users").document(currentUserId).collection("collaborativeBooks").document(book.getId()).set(book)
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "Shared book added to current user's collaborative books"))
+                    .addOnFailureListener(e -> Log.e(TAG, "Failed to add shared book for current user", e));
+
+            firestore.collection("users").document(friendId).collection("collaborativeBooks").document(book.getId()).set(book)
+                    .addOnSuccessListener(aVoid -> Toast.makeText(context, "Book shared with " + friendName, Toast.LENGTH_SHORT).show())
+                    .addOnFailureListener(e -> Toast.makeText(context, "Failed to share book with " + friendName, Toast.LENGTH_SHORT).show());
+        });
     }
 
     private void markBookAsHidden(Book book) {
