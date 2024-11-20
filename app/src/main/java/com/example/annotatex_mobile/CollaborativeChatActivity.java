@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CollaborativeChatActivity extends AppCompatActivity {
@@ -114,9 +115,10 @@ public class CollaborativeChatActivity extends AppCompatActivity {
             return;
         }
 
-        // Fetch collaborative books shared by the current user and their friend
+        // Fetch collaborative books shared by the current user and the selected friend
         firestore.collection("users").document(currentUserId)
                 .collection("collaborativeBooks")
+                .whereArrayContains("collaborators", friendId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     collaborativeBooksList.clear();
@@ -177,6 +179,9 @@ public class CollaborativeChatActivity extends AppCompatActivity {
             Toast.makeText(this, "Invalid user data", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // Add collaborators to the book
+        book.setCollaborators(Arrays.asList(currentUserId, friendId));
 
         // Add the collaborative book to the current user's library
         firestore.collection("users")
