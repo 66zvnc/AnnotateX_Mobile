@@ -9,10 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -25,16 +27,19 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     private final Context context;
     private final List<Book> bookList;
     private final OnPdfClickListener listener;
+    private final boolean isInSelectionMode; // Flag to check whether in library or selection fragment
+    private int selectedPosition = -1; // Keep track of selected book for RadioButton
 
     public interface OnPdfClickListener {
         void onPdfClick(Book book);
         void onPdfClick(String pdfUrl);
     }
 
-    public LibraryAdapter(Context context, List<Book> bookList, OnPdfClickListener listener) {
+    public LibraryAdapter(Context context, List<Book> bookList, OnPdfClickListener listener, boolean isInSelectionMode) {
         this.context = context;
         this.bookList = bookList;
         this.listener = listener;
+        this.isInSelectionMode = isInSelectionMode;
     }
 
     @NonNull
@@ -57,8 +62,32 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             holder.imageView.setImageResource(book.getImageResId());
         }
 
+        // Check if in selection mode
+        if (isInSelectionMode) {
+            // Show RadioButton and hide menu icon
+            holder.menuIcon.setVisibility(View.GONE);
+            holder.radioButton.setVisibility(View.VISIBLE);
+
+            // Handle RadioButton selection
+            holder.radioButton.setChecked(position == selectedPosition);
+            holder.radioButton.setOnClickListener(v -> {
+                selectedPosition = holder.getAdapterPosition();
+                notifyDataSetChanged();
+                if (listener != null) {
+                    listener.onPdfClick(book);
+                }
+            });
+
+        } else {
+            // Show menu icon and hide RadioButton
+            holder.menuIcon.setVisibility(View.VISIBLE);
+            holder.radioButton.setVisibility(View.GONE);
+
+            // Handle menu icon click
+            holder.menuIcon.setOnClickListener(v -> showPopupMenu(v, book));
+        }
+
         holder.itemView.setOnClickListener(v -> listener.onPdfClick(book));
-        holder.menuIcon.setOnClickListener(v -> showPopupMenu(v, book));
     }
 
     private void showPopupMenu(View view, Book book) {
@@ -99,11 +128,10 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     }
 
     private void markBookAsHidden(Book book) {
-        book.setHidden(true); // Mark the book as hidden
+        book.setHidden(true);
         Log.d(TAG, "Marked as 'Don't Suggest': " + book.getTitle());
         Toast.makeText(context, "Marked as 'Don't Suggest'", Toast.LENGTH_SHORT).show();
 
-        // Update the book list and notify adapter
         int position = bookList.indexOf(book);
         if (position != -1) {
             bookList.remove(position);
@@ -118,7 +146,6 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         pdfRef.delete().addOnSuccessListener(aVoid -> {
             Log.d(TAG, "Successfully deleted from Firebase Storage");
 
-            // Delete from Firestore
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
             firestore.collection("books")
                     .whereEqualTo("pdfUrl", book.getPdfUrl())
@@ -151,11 +178,13 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         ImageView menuIcon;
+        RadioButton radioButton;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imageView);
             menuIcon = itemView.findViewById(R.id.menu_icon);
+            radioButton = itemView.findViewById(R.id.radioButton);
         }
     }
 }

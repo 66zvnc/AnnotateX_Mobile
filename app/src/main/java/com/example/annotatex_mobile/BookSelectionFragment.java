@@ -42,7 +42,7 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
 
         // Initialize book list and adapter
         bookList = new ArrayList<>();
-        adapter = new LibraryAdapter(getContext(), bookList, this);
+        adapter = new LibraryAdapter(getContext(), bookList, this, true);
 
         // Configure RecyclerView
         bookSelectionRecyclerView = view.findViewById(R.id.bookSelectionRecyclerView);
@@ -56,6 +56,7 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
 
         return view;
     }
+
 
     /**
      * Load books from Firestore and add preloaded books.

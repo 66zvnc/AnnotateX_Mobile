@@ -57,7 +57,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
 
         bookList = new ArrayList<>();
         filteredList = new ArrayList<>();
-        adapter = new LibraryAdapter(getContext(), filteredList, this);
+        adapter = new LibraryAdapter(getContext(), filteredList, this, false); // Pass false for library mode
 
         // Initialize UI elements
         sortAllButton = view.findViewById(R.id.sort_all);
@@ -103,6 +103,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
 
         return view;
     }
+
 
     private void setupScrollListener() {
         pdfGalleryRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
