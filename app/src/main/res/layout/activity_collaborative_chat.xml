@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,7 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:paddingBottom="12dp">
 
         <!-- Go Back Button -->
         <ImageView
@@ -21,7 +23,9 @@
             android:src="@drawable/ic_back_arrow"
             android:contentDescription="Go Back"
             android:layout_marginEnd="12dp"
-            app:tint="@android:color/darker_gray" />
+            app:tint="?attr/colorOnSurface"
+            android:clickable="true"
+            android:focusable="true" />
 
         <!-- Profile Image -->
         <ImageView
@@ -31,7 +35,8 @@
             android:layout_marginEnd="12dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_default_profile"
-            android:contentDescription="Profile Image" />
+            android:contentDescription="Profile Image"
+            android:background="@drawable/circle_background" />
 
         <!-- Name Text -->
         <TextView
@@ -44,24 +49,27 @@
             android:textColor="?attr/colorOnSurface"
             android:ellipsize="end"
             android:maxLines="1" />
-
     </LinearLayout>
 
+    <!-- Add Book Button -->
     <ImageView
         android:id="@+id/addBookButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_gravity="end"
+        android:layout_marginTop="8dp"
         android:src="@drawable/ic_add_book"
-    android:contentDescription="Add Collaborative Book"
-    android:clickable="true"
-    android:focusable="true"/>
+        android:contentDescription="Add Collaborative Book"
+        android:clickable="true"
+        android:focusable="true"
+        app:tint="?attr/colorOnSurface" />
 
-
-    <!-- Chat and Book Management Content Goes Here -->
-    <!-- Add your chat layout or other features here -->
+    <!-- Placeholder for Chat and Book Management -->
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="16dp"
+        android:background="?attr/colorBackground" />
 
 </LinearLayout>

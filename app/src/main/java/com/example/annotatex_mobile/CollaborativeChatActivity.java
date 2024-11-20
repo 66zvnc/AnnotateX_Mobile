@@ -1,15 +1,25 @@
 package com.example.annotatex_mobile;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +55,7 @@ public class CollaborativeChatActivity extends AppCompatActivity {
 
         // Add functionality to the "Add Book" button
         ImageView addBookButton = findViewById(R.id.addBookButton);
-        addBookButton.setOnClickListener(v -> fetchBooksAndOpenDialog());
+        addBookButton.setOnClickListener(v -> openBookSelectionFragment());
     }
 
     /**
@@ -76,51 +86,41 @@ public class CollaborativeChatActivity extends AppCompatActivity {
     }
 
     /**
-     * Fetch books from the global "books" collection based on the current user's userId
-     * and display them in the selection dialog.
+     * Open the BookSelectionFragment to allow the user to select a book.
      */
-    private void fetchBooksAndOpenDialog() {
-        String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
-
-        if (currentUserId == null) {
-            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        firestore.collection("books")
-                .whereEqualTo("userId", currentUserId) // Filter books by userId
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Book> books = new ArrayList<>();
-                    for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                        Book book = documentSnapshot.toObject(Book.class);
-                        book.setId(documentSnapshot.getId()); // Set the book ID
-                        books.add(book);
-                    }
-
-                    // Add preloaded books if no user-uploaded books are found
-                    if (books.isEmpty()) {
-                        addPreloadedBooks(books);
-                    }
-
-                    // Pass the context and books list to the dialog
-                    BookSelectionDialog dialog = new BookSelectionDialog(this, books);
-                    dialog.show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to fetch books", Toast.LENGTH_SHORT).show();
-                });
+    private void openBookSelectionFragment() {
+        BookSelectionFragment fragment = new BookSelectionFragment();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     /**
-     * Add preloaded books to the list if no user-uploaded books exist.
+     * Save the cover image locally for faster loading and offline access.
      */
-    private void addPreloadedBooks(List<Book> books) {
-        books.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "Robert T. Kiyosaki", "Financial wisdom from the rich."));
-        books.add(new Book(R.drawable.book_2, "url_to_pdf_2", "Atomic Habits", "James Clear", "Build good habits, break bad ones."));
-        books.add(new Book(R.drawable.book_3, "url_to_pdf_3", "Best Self", "Mike Bayer", "Be you, only better."));
-        books.add(new Book(R.drawable.book_4, "url_to_pdf_4", "How to Be Fine", "Kristen Meinzer", "Lessons from self-help books."));
-        books.add(new Book(R.drawable.book_5, "url_to_pdf_5", "Out of the Box", "Suzanne Dudley", "A journey of emotional resilience."));
+    private void saveCoverImageLocally(Context context, Book book) {
+        if (book.hasUrlCover()) {
+            try {
+                String imageUrl = book.getCoverImageUrl();
+                URL url = new URL(imageUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+                InputStream input = connection.getInputStream();
+                Bitmap bitmap = BitmapFactory.decodeStream(input);
+
+                File file = new File(context.getFilesDir(), book.getId() + ".png");
+                try (FileOutputStream output = new FileOutputStream(file)) {
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
+                }
+
+                book.setCoverImageLocalPath(file.getAbsolutePath());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**

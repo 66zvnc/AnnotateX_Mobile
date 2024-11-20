@@ -1,6 +1,7 @@
 package com.example.annotatex_mobile;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 
+import java.io.File;
 import java.util.List;
 
 public class BookSelectionAdapter extends RecyclerView.Adapter<BookSelectionAdapter.BookViewHolder> {
@@ -51,16 +53,20 @@ public class BookSelectionAdapter extends RecyclerView.Adapter<BookSelectionAdap
         // Debugging logs for validation
         Log.d(TAG, "Binding book: Title=" + book.getTitle() + ", Cover URL=" + book.getCoverImageUrl());
 
-        // Load book cover image using Glide with enhanced error handling
-        if (book.hasBitmapCover()) {
+        // Check if the cover image exists locally
+        File localCoverFile = new File(context.getFilesDir(), book.getId() + ".png");
+        if (localCoverFile.exists()) {
+            Log.d(TAG, "Loading cover from local storage for book: " + book.getTitle());
+            holder.bookCoverImage.setImageBitmap(BitmapFactory.decodeFile(localCoverFile.getAbsolutePath()));
+        } else if (book.hasBitmapCover()) {
             Log.d(TAG, "Loading cover from Bitmap for book: " + book.getTitle());
             holder.bookCoverImage.setImageBitmap(book.getCoverImageBitmap());
         } else if (book.hasUrlCover()) {
             Log.d(TAG, "Loading cover from URL for book: " + book.getTitle());
             Glide.with(context)
                     .load(book.getCoverImageUrl())
-                    .placeholder(R.drawable.book_handle)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .placeholder(R.drawable.book_handle) // Placeholder image
+                    .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache for better performance
                     .listener(new RequestListener<Drawable>() {
                         @Override
                         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
@@ -75,7 +81,6 @@ public class BookSelectionAdapter extends RecyclerView.Adapter<BookSelectionAdap
                         }
                     })
                     .into(holder.bookCoverImage);
-
 
         } else if (book.hasResIdCover()) {
             Log.d(TAG, "Loading cover from resource ID for book: " + book.getTitle());

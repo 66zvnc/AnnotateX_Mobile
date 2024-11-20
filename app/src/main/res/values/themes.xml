@@ -1,9 +1,32 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
+    <!-- Base application theme -->
     <style name="Base.Theme.AnnotateX_Mobile" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Primary colors -->
+        <item name="colorPrimary">@color/my_light_primary</item>
+        <item name="colorOnPrimary">@color/my_light_on_primary</item>
+
+        <!-- Secondary colors -->
+        <item name="colorSecondary">@color/my_light_secondary</item>
+        <item name="colorOnSecondary">@color/my_light_on_secondary</item>
+
+        <!-- Background color -->
+        <item name="colorBackground">@color/my_light_background</item>
+        <item name="colorOnBackground">@color/my_light_on_background</item>
+
+        <!-- Surface colors -->
+        <item name="colorSurface">@color/my_light_surface</item>
+        <item name="colorOnSurface">@color/my_light_on_surface</item>
+
+        <!-- Error colors -->
+        <item name="colorError">@color/my_light_error</item>
+        <item name="colorOnError">@color/my_light_on_error</item>
+
+        <!-- Custom attributes for elevation or overlays -->
+        <item name="elevationOverlayColor">@color/my_elevation_overlay</item>
+        <item name="elevationOverlayEnabled">true</item>
     </style>
 
+    <!-- Application theme -->
     <style name="Theme.AnnotateX_Mobile" parent="Base.Theme.AnnotateX_Mobile" />
 </resources>

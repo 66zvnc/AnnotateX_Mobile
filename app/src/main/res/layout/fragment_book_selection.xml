@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@drawable/dialog_background">
+    android:padding="16dp">
 
     <!-- Title -->
     <TextView
@@ -18,7 +17,7 @@
 
     <!-- RecyclerView for books -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewBooks"
+        android:id="@+id/bookSelectionRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp" />
