@@ -7,6 +7,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Serializable;
+import java.util.List;
 
 public class Book implements Serializable {
     private static final String TAG = "Book";
@@ -23,6 +24,8 @@ public class Book implements Serializable {
     private String userId;
     private boolean isPreloaded;
     private boolean hidden;
+    private String ownerId; // Owner ID field for collaborative books
+    private List<String> collaborators; // Collaborators field
 
     // Constructor for user-uploaded books
     public Book(String id, String coverImageUrl, String pdfUrl, String title, String author, String description, String userId) {
@@ -72,7 +75,7 @@ public class Book implements Serializable {
     }
 
     public String getCoverImageLocalPath() {
-        return coverImageLocalPath; // Getter for the local path
+        return coverImageLocalPath;
     }
 
     public String getPdfUrl() {
@@ -103,6 +106,14 @@ public class Book implements Serializable {
         return hidden;
     }
 
+    public String getOwnerId() {
+        return ownerId;
+    }
+
+    public List<String> getCollaborators() {
+        return collaborators;
+    }
+
     // Setters
     public void setId(String id) {
         this.id = id;
@@ -126,7 +137,15 @@ public class Book implements Serializable {
     }
 
     public void setCoverImageLocalPath(String coverImageLocalPath) {
-        this.coverImageLocalPath = coverImageLocalPath; // Setter for the local path
+        this.coverImageLocalPath = coverImageLocalPath;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public void setCollaborators(List<String> collaborators) {
+        this.collaborators = collaborators;
     }
 
     // Utility methods
@@ -151,7 +170,7 @@ public class Book implements Serializable {
         File coverFile = new File(directory, id + ".png");
         try (FileOutputStream out = new FileOutputStream(coverFile)) {
             coverImageBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-            setCoverImageLocalPath(coverFile.getAbsolutePath()); // Save the local path
+            setCoverImageLocalPath(coverFile.getAbsolutePath());
             Log.d(TAG, "Cover image saved locally for book: " + title);
         } catch (Exception e) {
             Log.e(TAG, "Error saving cover image locally for book: " + title, e);
@@ -167,7 +186,7 @@ public class Book implements Serializable {
         File coverFile = new File(directory, id + ".png");
         if (coverFile.exists()) {
             coverImageBitmap = BitmapFactory.decodeFile(coverFile.getAbsolutePath());
-            setCoverImageLocalPath(coverFile.getAbsolutePath()); // Update the local path
+            setCoverImageLocalPath(coverFile.getAbsolutePath());
             Log.d(TAG, "Cover image loaded locally for book: " + title);
             return true;
         } else {

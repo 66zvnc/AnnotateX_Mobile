@@ -13,14 +13,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CollaborativeChatActivity extends AppCompatActivity {
@@ -69,7 +67,7 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                         String profileImageUrl = documentSnapshot.getString("profileImageUrl");
 
                         // Set profile name and image
-                        nameTextView.setText(userName);
+                        nameTextView.setText(userName != null ? userName : "Unknown User");
                         if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
                             Glide.with(this)
                                     .load(profileImageUrl)
@@ -82,7 +80,10 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                         Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
                     }
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Error loading profile", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error loading profile", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                });
     }
 
     /**
@@ -134,6 +135,10 @@ public class CollaborativeChatActivity extends AppCompatActivity {
             return;
         }
 
+        // Add necessary fields to the book object to satisfy Firestore rules
+        book.setOwnerId(currentUserId); // Set the owner ID
+        book.setCollaborators(List.of(currentUserId, friendId)); // Add collaborators
+
         // Add the collaborative book to the current user's library
         firestore.collection("users")
                 .document(currentUserId)
@@ -142,14 +147,23 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                 .set(book)
                 .addOnSuccessListener(aVoid -> {
                     // Add the collaborative book to the friend's library
+                    book.setOwnerId(friendId); // Set friend's ownership
                     firestore.collection("users")
                             .document(friendId)
                             .collection("collaborativeBooks")
                             .document(book.getId())
                             .set(book)
-                            .addOnSuccessListener(aVoid1 -> Toast.makeText(this, "Collaborative book added", Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to add collaborative book to friend's library", Toast.LENGTH_SHORT).show());
+                            .addOnSuccessListener(aVoid1 -> {
+                                Toast.makeText(this, "Collaborative book added", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(this, "Failed to add collaborative book to friend's library", Toast.LENGTH_SHORT).show();
+                                e.printStackTrace();
+                            });
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to add collaborative book to your library", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to add collaborative book to your library", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                });
     }
 }
