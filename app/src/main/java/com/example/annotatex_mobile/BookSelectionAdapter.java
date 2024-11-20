@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,6 +31,7 @@ public class BookSelectionAdapter extends RecyclerView.Adapter<BookSelectionAdap
     private final Context context;
     private final List<Book> books;
     private final OnBookClickListener listener;
+    private int selectedPosition = -1; // Keep track of selected book
 
     // Constructor
     public BookSelectionAdapter(Context context, List<Book> books, OnBookClickListener listener) {
@@ -41,18 +43,42 @@ public class BookSelectionAdapter extends RecyclerView.Adapter<BookSelectionAdap
     @NonNull
     @Override
     public BookViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Inflate the item_book_selection layout
-        View view = LayoutInflater.from(context).inflate(R.layout.item_book_selection, parent, false);
+        // Inflate the updated item_selection layout
+        View view = LayoutInflater.from(context).inflate(R.layout.item_selection, parent, false);
         return new BookViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull BookViewHolder holder, int position) {
-        Book book = books.get(position);
+        Book book = books.get(holder.getAdapterPosition());
 
-        // Debugging logs for validation
         Log.d(TAG, "Binding book: Title=" + book.getTitle() + ", Cover URL=" + book.getCoverImageUrl());
 
+        // Load the book cover
+        loadBookCover(holder, book);
+
+        // Handle RadioButton selection
+        holder.radioButton.setChecked(holder.getAdapterPosition() == selectedPosition); // Highlight selected book
+        holder.radioButton.setOnClickListener(v -> {
+            selectedPosition = holder.getAdapterPosition(); // Update the selected position
+            notifyDataSetChanged(); // Refresh the view to update the selected state
+            if (listener != null) {
+                listener.onBookClick(book);
+            }
+        });
+
+        // Handle item clicks for book selection
+        holder.itemView.setOnClickListener(v -> {
+            selectedPosition = holder.getAdapterPosition();
+            notifyDataSetChanged(); // Update RadioButton state
+            if (listener != null) {
+                listener.onBookClick(book);
+            }
+        });
+    }
+
+
+    private void loadBookCover(@NonNull BookViewHolder holder, @NonNull Book book) {
         // Check if the cover image exists locally
         File localCoverFile = new File(context.getFilesDir(), book.getId() + ".png");
         if (localCoverFile.exists()) {
@@ -70,18 +96,17 @@ public class BookSelectionAdapter extends RecyclerView.Adapter<BookSelectionAdap
                     .listener(new RequestListener<Drawable>() {
                         @Override
                         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                            Log.e("GlideError", "Error loading image for book: " + book.getTitle(), e);
+                            Log.e(TAG, "Error loading image for book: " + book.getTitle(), e);
                             return false;
                         }
 
                         @Override
                         public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                            Log.d("GlideSuccess", "Image loaded for book: " + book.getTitle());
+                            Log.d(TAG, "Image loaded for book: " + book.getTitle());
                             return false;
                         }
                     })
                     .into(holder.bookCoverImage);
-
         } else if (book.hasResIdCover()) {
             Log.d(TAG, "Loading cover from resource ID for book: " + book.getTitle());
             holder.bookCoverImage.setImageResource(book.getImageResId());
@@ -89,13 +114,6 @@ public class BookSelectionAdapter extends RecyclerView.Adapter<BookSelectionAdap
             Log.d(TAG, "Loading default cover for book: " + book.getTitle());
             holder.bookCoverImage.setImageResource(R.drawable.book_handle); // Default fallback image
         }
-
-        // Handle book selection
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onBookClick(book);
-            }
-        });
     }
 
     @Override
@@ -106,14 +124,16 @@ public class BookSelectionAdapter extends RecyclerView.Adapter<BookSelectionAdap
     public static class BookViewHolder extends RecyclerView.ViewHolder {
 
         final ImageView bookCoverImage;
+        final RadioButton radioButton;
 
         public BookViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Bind ImageView for book cover
+            // Bind ImageView and RadioButton for book cover and selection
             bookCoverImage = itemView.findViewById(R.id.bookCoverImage);
+            radioButton = itemView.findViewById(R.id.radioButton);
 
-            if (bookCoverImage == null) {
-                throw new IllegalStateException("ImageView with id 'bookCoverImage' not found in item_book_selection layout.");
+            if (bookCoverImage == null || radioButton == null) {
+                throw new IllegalStateException("Required views not found in item_selection layout.");
             }
         }
     }

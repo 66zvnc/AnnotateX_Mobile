@@ -57,6 +57,9 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
         return view;
     }
 
+    /**
+     * Load books from Firestore and add preloaded books.
+     */
     private void loadBooksFromFirestore() {
         CollectionReference booksCollection = firestore.collection("books");
         String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
@@ -87,6 +90,9 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
         }
     }
 
+    /**
+     * Add predefined books to the list.
+     */
     private void addPreloadedBooks() {
         Log.d(TAG, "Adding preloaded books.");
         bookList.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "Robert T. Kiyosaki", "Financial wisdom from the rich."));
@@ -115,6 +121,9 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
         // Handle PDF URL click if necessary
     }
 
+    /**
+     * Adds spacing between items in the RecyclerView.
+     */
     private static class SpaceItemDecoration extends RecyclerView.ItemDecoration {
         private final int space;
 

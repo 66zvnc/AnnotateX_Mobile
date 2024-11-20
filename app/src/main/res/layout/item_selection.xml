@@ -1,7 +1,7 @@
 <com.google.android.material.card.MaterialCardView
     android:id="@+id/cardView"
-    android:layout_width="120dp"
-    android:layout_height="160dp"
+    android:layout_width="160dp"
+    android:layout_height="120dp"
     android:layout_margin="8dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="4dp"
@@ -20,4 +20,14 @@
         android:adjustViewBounds="true"
         android:background="@color/placeholderBackground"
         android:padding="4dp" />
+
+    <!-- Add the RadioButton -->
+    <RadioButton
+        android:id="@+id/radioButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:visibility="gone"
+        android:layout_margin="8dp" />
 </com.google.android.material.card.MaterialCardView>
