@@ -1,5 +1,6 @@
 package com.example.annotatex_mobile;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -56,7 +57,17 @@ public class CollaborativeChatActivity extends AppCompatActivity {
 
         // Initialize RecyclerView
         collaborativeBooksList = new ArrayList<>();
-        adapter = new CollaborativeBooksAdapter(this, collaborativeBooksList);
+        adapter = new CollaborativeBooksAdapter(this, collaborativeBooksList, new CollaborativeBooksAdapter.OnBookInteractionListener() {
+            @Override
+            public void onViewDetails(Book book) {
+                openBookDetails(book);
+            }
+
+            @Override
+            public void onStopCollab(Book book) {
+                stopCollaboration(book);
+            }
+        });
         collaborativeBooksRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         collaborativeBooksRecyclerView.setAdapter(adapter);
 
@@ -128,6 +139,35 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    private void openBookDetails(Book book) {
+        Intent intent = new Intent(this, DetailsActivity.class);
+        intent.putExtra("book", book); // Assuming `Book` implements `Serializable`
+        startActivity(intent);
+    }
+
+    private void stopCollaboration(Book book) {
+        String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
+
+        if (currentUserId == null) {
+            Toast.makeText(this, "Invalid user data", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        firestore.collection("users").document(currentUserId)
+                .collection("collaborativeBooks")
+                .document(book.getId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    collaborativeBooksList.remove(book);
+                    adapter.notifyDataSetChanged();
+                    Toast.makeText(this, "Collaboration stopped", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to stop collaboration", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                });
     }
 
     public void addCollaborativeBook(Book book) {
