@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
@@ -58,8 +59,12 @@ public class MainActivity extends AppCompatActivity {
         bottomNav.setOnNavigationItemSelectedListener(navListener);
 
         if (savedInstanceState == null) {
-            // Set default selected tab
-            bottomNav.setSelectedItemId(R.id.nav_library);
+            // Check if launched from a notification
+            if (getIntent() != null && "friend_request".equals(getIntent().getStringExtra("notification_type"))) {
+                openNotificationsFragment(); // Navigate to NotificationsFragment
+            } else {
+                bottomNav.setSelectedItemId(R.id.nav_library);
+            }
         }
 
         // Set up the notification channel for friend requests
@@ -91,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra("notification_type", "friend_request"); // Pass notification type
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this,
                 0,
@@ -122,6 +128,13 @@ public class MainActivity extends AppCompatActivity {
                 notificationManager.createNotificationChannel(channel);
             }
         }
+    }
+
+    private void openNotificationsFragment() {
+        Fragment notificationsFragment = new NotificationsFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, notificationsFragment)
+                .commit();
     }
 
     @Override
@@ -156,5 +169,4 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     };
-
 }
