@@ -64,11 +64,42 @@
         app:tint="?attr/colorOnSurface" />
 
     <!-- Collaborative Books RecyclerView -->
+    <TextView
+        android:id="@+id/booksSectionHeader"
+        android:layout_width="match_parent"
+        android:layout_height="49dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp"
+        android:text="Books"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <!-- Notes Section -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/collaborativeBooksRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_marginTop="16dp"
+        android:layout_weight="1"
+        android:background="?attr/colorBackground" />
+
+    <TextView
+        android:id="@+id/notesSectionHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Notes"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/notesRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:background="?attr/colorBackground" />
 
     <!-- FrameLayout for BookSelectionFragment (hidden initially) -->
