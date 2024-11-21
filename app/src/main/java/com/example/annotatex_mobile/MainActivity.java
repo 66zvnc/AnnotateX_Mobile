@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
     private ListenerRegistration friendRequestListener;
+    private Fragment activeFragment; // Keep track of the active fragment
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,14 +57,40 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up bottom navigation view
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
-        bottomNav.setOnNavigationItemSelectedListener(navListener);
+        bottomNav.setOnItemSelectedListener(item -> {
+            Fragment selectedFragment = null;
+            int itemId = item.getItemId();
+
+            // Prevent reloading the same fragment
+            if (itemId == R.id.nav_library && !(activeFragment instanceof LibraryFragment)) {
+                selectedFragment = new LibraryFragment();
+            } else if (itemId == R.id.nav_categories && !(activeFragment instanceof CategoriesFragment)) {
+                selectedFragment = new CategoriesFragment();
+            } else if (itemId == R.id.nav_add_book && !(activeFragment instanceof PdfViewerFragment)) {
+                selectedFragment = new PdfViewerFragment();
+            } else if (itemId == R.id.nav_friends && !(activeFragment instanceof FriendsFragment)) {
+                selectedFragment = new FriendsFragment();
+            } else if (itemId == R.id.nav_profile && !(activeFragment instanceof ProfileFragment)) {
+                selectedFragment = new ProfileFragment();
+            }
+
+            if (selectedFragment != null) {
+                // Replace the fragment and update the active fragment reference
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, selectedFragment)
+                        .commit();
+                activeFragment = selectedFragment;
+                return true;
+            }
+            return false;
+        });
 
         if (savedInstanceState == null) {
             // Check if launched from a notification
             if (getIntent() != null && "friend_request".equals(getIntent().getStringExtra("notification_type"))) {
                 openNotificationsFragment(); // Navigate to NotificationsFragment
             } else {
-                bottomNav.setSelectedItemId(R.id.nav_library);
+                bottomNav.setSelectedItemId(R.id.nav_library); // Default tab
             }
         }
 
@@ -135,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, notificationsFragment)
                 .commit();
+        activeFragment = notificationsFragment; // Update active fragment
     }
 
     @Override
@@ -144,29 +172,4 @@ public class MainActivity extends AppCompatActivity {
             friendRequestListener.remove();
         }
     }
-
-    private final BottomNavigationView.OnNavigationItemSelectedListener navListener = item -> {
-        Fragment selectedFragment = null;
-        int itemId = item.getItemId();
-
-        if (itemId == R.id.nav_library) {
-            selectedFragment = new LibraryFragment();
-        } else if (itemId == R.id.nav_categories) {
-            selectedFragment = new CategoriesFragment();
-        } else if (itemId == R.id.nav_add_book) {
-            selectedFragment = new PdfViewerFragment();
-        } else if (itemId == R.id.nav_friends) {
-            selectedFragment = new FriendsFragment();
-        } else if (itemId == R.id.nav_profile) {
-            selectedFragment = new ProfileFragment();
-        }
-
-        if (selectedFragment != null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, selectedFragment)
-                    .commit();
-            return true;
-        }
-        return false;
-    };
 }
