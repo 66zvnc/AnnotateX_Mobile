@@ -30,6 +30,8 @@ public class SettingsProfileActivity extends AppCompatActivity {
         Switch darkModeSwitch = findViewById(R.id.darkModeSwitch);
         Button deleteAccountButton = findViewById(R.id.deleteAccountButton);
         Button preferencesButton = findViewById(R.id.preferencesButton);
+        Button privacyButton = findViewById(R.id.privacyButton);
+        Button permissionsButton = findViewById(R.id.permissionsButton); // New Permissions button
 
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
@@ -55,12 +57,16 @@ public class SettingsProfileActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        Button privacyButton = findViewById(R.id.privacyButton);
         privacyButton.setOnClickListener(v -> {
             Intent intent = new Intent(SettingsProfileActivity.this, PrivacyActivity.class);
             startActivity(intent);
         });
 
+        // Open PermissionsActivity when Permissions button is clicked
+        permissionsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsProfileActivity.this, PermissionsActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void applyDarkMode(boolean isDarkMode) {

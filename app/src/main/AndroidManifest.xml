@@ -33,7 +33,6 @@
             android:name="com.pspdfkit.ui.PdfActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
 
-        <!-- New Profile Activities -->
         <activity android:name=".PrivacyPolicyActivity" />
         <activity android:name=".HelpCenterProfileActivity" />
         <activity android:name=".PaymentMethodsProfileActivity" />
@@ -43,6 +42,7 @@
         <activity android:name=".PrivacyActivity" />
         <activity android:name=".SearchUsersActivity"/>
         <activity android:name=".CollaborativeChatActivity"/>
+        <activity android:name=".PermissionsActivity"/>
 
         <service
             android:name=".MyFirebaseMessagingService"
@@ -83,6 +83,9 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <!-- <uses-permission android:name="android.permission.CAMERA"/> -->
 
 </manifest>
