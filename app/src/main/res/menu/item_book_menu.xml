@@ -6,7 +6,7 @@
         android:title="View Details" />
     <item
         android:id="@+id/menu_share"
-        android:title="Share" />
+        android:title="Collaborate" />
     <item
         android:id="@+id/menu_delete"
         android:title="Delete" />

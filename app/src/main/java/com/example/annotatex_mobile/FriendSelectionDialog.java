@@ -2,8 +2,13 @@ package com.example.annotatex_mobile;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.widget.ArrayAdapter;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -37,30 +42,49 @@ public class FriendSelectionDialog {
         firestore.collection("users").document(currentUserId).collection("friends")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<String> friendIds = new ArrayList<>();
-                    List<String> friendNames = new ArrayList<>();
+                    List<Friend> friends = new ArrayList<>();
 
                     queryDocumentSnapshots.forEach(doc -> {
-                        friendIds.add(doc.getId());
-                        String name = doc.getString("name");
-                        friendNames.add(name != null ? name : "Unknown Friend");
+                        Friend friend = new Friend(
+                                doc.getId(),
+                                doc.getString("name"),
+                                doc.getString("profileImageUrl"),
+                                doc.getString("status"),
+                                doc.getBoolean("removed") != null && doc.getBoolean("removed")
+                        );
+                        friends.add(friend);
                     });
 
-                    if (friendNames.isEmpty()) {
+                    if (friends.isEmpty()) {
                         Toast.makeText(context, "No friends available to share with", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
+                    // Inflate the dialog layout
+                    View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_friend_selection, null);
+
+                    RecyclerView recyclerView = dialogView.findViewById(R.id.friendsRecyclerView);
+                    recyclerView.setLayoutManager(new LinearLayoutManager(context));
+
+                    // Use FriendsAdapter to display friends in the dialog
+                    FriendsAdapter adapter = new FriendsAdapter(context, friends) {
+                        @Override
+                        public void onBindViewHolder(@NonNull FriendViewHolder holder, int position) {
+                            super.onBindViewHolder(holder, position);
+
+                            // Add click listener for each friend to trigger the selection callback
+                            holder.itemView.setOnClickListener(v -> {
+                                Friend selectedFriend = friends.get(position);
+                                listener.onFriendSelected(selectedFriend.getId(), selectedFriend.getName());
+                            });
+                        }
+                    };
+                    recyclerView.setAdapter(adapter);
+
+                    // Build and show the dialog
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setTitle("Select a Friend");
-
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, friendNames);
-                    builder.setAdapter(adapter, (dialog, which) -> {
-                        String selectedFriendId = friendIds.get(which);
-                        String selectedFriendName = friendNames.get(which);
-                        listener.onFriendSelected(selectedFriendId, selectedFriendName);
-                    });
-
+                    builder.setTitle("Select a Friend to Collaborate With");
+                    builder.setView(dialogView);
                     builder.setCancelable(true);
                     builder.create().show();
                 })
