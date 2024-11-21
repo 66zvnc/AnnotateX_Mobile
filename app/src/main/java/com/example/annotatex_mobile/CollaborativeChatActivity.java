@@ -53,8 +53,8 @@ public class CollaborativeChatActivity extends AppCompatActivity {
             loadUserProfile(friendId, profileImageView, nameTextView);
         }
 
-        // Set up "Go Back" button functionality
-        goBackButton.setOnClickListener(v -> onBackPressed());
+        // Set up "Go Back" button functionality to navigate to FriendsFragment
+        goBackButton.setOnClickListener(v -> navigateToFriendsFragment());
 
         // Initialize RecyclerView
         collaborativeBooksList = new ArrayList<>();
@@ -78,6 +78,14 @@ public class CollaborativeChatActivity extends AppCompatActivity {
         // Add functionality to the "Add Book" button
         ImageView addBookButton = findViewById(R.id.addBookButton);
         addBookButton.setOnClickListener(v -> openBookSelectionFragment());
+    }
+
+    private void navigateToFriendsFragment() {
+        Intent intent = new Intent(this, MainActivity.class); // Assuming MainActivity hosts the FriendsFragment
+        intent.putExtra("navigate_to", "friends_fragment");
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish(); // Close the current activity
     }
 
     private void loadUserProfile(String userId, ImageView profileImageView, TextView nameTextView) {

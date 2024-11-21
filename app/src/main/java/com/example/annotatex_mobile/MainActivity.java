@@ -13,6 +13,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -20,7 +21,6 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.appcheck.FirebaseAppCheck;
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory;
-import com.google.firebase.FirebaseApp;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,9 +41,11 @@ public class MainActivity extends AppCompatActivity {
         FirebaseAppCheck firebaseAppCheck = FirebaseAppCheck.getInstance();
         firebaseAppCheck.installAppCheckProviderFactory(PlayIntegrityAppCheckProviderFactory.getInstance());
 
+        // Initialize Firebase services
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
+        // Check if user is authenticated
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
@@ -51,14 +53,16 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // Set up bottom navigation view
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setOnNavigationItemSelectedListener(navListener);
 
         if (savedInstanceState == null) {
+            // Set default selected tab
             bottomNav.setSelectedItemId(R.id.nav_library);
         }
 
-        // Set up the notification channel
+        // Set up the notification channel for friend requests
         createNotificationChannel();
 
         // Start listening for friend requests
@@ -152,4 +156,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     };
+
 }
