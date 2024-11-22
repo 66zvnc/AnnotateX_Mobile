@@ -20,7 +20,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.HashMap;
 
@@ -32,7 +31,6 @@ public class ProfileFragment extends Fragment {
     private FirebaseAuth auth;
     private FirebaseUser user;
     private FirebaseFirestore firestore;
-    private FirebaseStorage storage;
     private ImageView profileImageView;
     private String profileImageUrl;
 
@@ -45,7 +43,6 @@ public class ProfileFragment extends Fragment {
         // Initialize Firebase services
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
         user = auth.getCurrentUser();
 
         profileImageView = view.findViewById(R.id.profileImageView);
@@ -61,15 +58,19 @@ public class ProfileFragment extends Fragment {
             usernameTextView.setText("No user logged in");
         }
 
-        // Set up onClick listeners for the navigation buttons
+        // Set up onClick listeners for navigation options
+        setupNavigationListeners(view);
+
+        return view;
+    }
+
+    private void setupNavigationListeners(View view) {
         view.findViewById(R.id.settingsOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), SettingsProfileActivity.class)));
         view.findViewById(R.id.paymentOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), PaymentMethodsProfileActivity.class)));
         view.findViewById(R.id.helpOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), HelpCenterProfileActivity.class)));
         view.findViewById(R.id.privacyPolicyOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), PrivacyPolicyActivity.class)));
         view.findViewById(R.id.logoutOption).setOnClickListener(v -> logoutUser());
         view.findViewById(R.id.editProfileImageIcon).setOnClickListener(v -> startActivity(new Intent(getActivity(), EditProfileActivity.class)));
-
-        return view;
     }
 
     private void loadFullName(TextView nameTextView) {
@@ -77,14 +78,10 @@ public class ProfileFragment extends Fragment {
 
         firestore.collection("users").document(user.getUid()).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.contains("fullName")) {
-                        String fullName = documentSnapshot.getString("fullName");
-                        nameTextView.setText(fullName);
-                    } else {
-                        nameTextView.setText("Your Name"); // Default if no name is set
-                    }
+                    String fullName = documentSnapshot.getString("fullName");
+                    nameTextView.setText(fullName != null ? fullName : "Your Name");
                 })
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to load full name", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> showToast("Failed to load full name"));
     }
 
     private void loadUsername(TextView usernameTextView) {
@@ -92,26 +89,25 @@ public class ProfileFragment extends Fragment {
 
         firestore.collection("users").document(user.getUid()).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.contains("username")) {
-                        String username = documentSnapshot.getString("username");
-                        usernameTextView.setText("@" + username); // Prefix "@" to the username
-                    }
+                    String username = documentSnapshot.getString("username");
+                    usernameTextView.setText(username != null ? "@" + username : "@unknown");
                 })
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to load username", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> showToast("Failed to load username"));
     }
 
     private void createUserDocumentIfNeeded() {
         if (user == null) return;
 
         DocumentReference userRef = firestore.collection("users").document(user.getUid());
-
-        // Check if the document exists, if not create it with default values
         userRef.get().addOnSuccessListener(documentSnapshot -> {
             if (!documentSnapshot.exists()) {
-                userRef.set(new HashMap<>()).addOnSuccessListener(aVoid ->
-                                Toast.makeText(getContext(), "User profile created", Toast.LENGTH_SHORT).show())
-                        .addOnFailureListener(e ->
-                                Toast.makeText(getContext(), "Failed to create profile document", Toast.LENGTH_SHORT).show());
+                HashMap<String, Object> defaultData = new HashMap<>();
+                defaultData.put("fullName", "Your Name");
+                defaultData.put("username", "unknown");
+                defaultData.put("profileImageUrl", "");
+                userRef.set(defaultData)
+                        .addOnSuccessListener(aVoid -> showToast("User profile created"))
+                        .addOnFailureListener(e -> showToast("Failed to create profile document"));
             }
         });
     }
@@ -124,7 +120,7 @@ public class ProfileFragment extends Fragment {
                     if (documentSnapshot.contains("profileImageUrl")) {
                         profileImageUrl = documentSnapshot.getString("profileImageUrl");
                         displayProfileImage(profileImageUrl);
-                        saveProfileImageUrlLocally(profileImageUrl); // Cache for offline use
+                        saveProfileImageUrlLocally(profileImageUrl);
                     } else {
                         profileImageView.setImageResource(R.drawable.ic_default_profile);
                     }
@@ -133,17 +129,21 @@ public class ProfileFragment extends Fragment {
     }
 
     private void displayProfileImage(String url) {
-        Glide.with(this)
-                .load(url)
-                .placeholder(R.drawable.ic_default_profile)
-                .into(profileImageView);
+        if (isAdded()) {
+            Glide.with(this)
+                    .load(url)
+                    .placeholder(R.drawable.ic_default_profile)
+                    .error(R.drawable.ic_default_profile)
+                    .circleCrop()
+                    .into(profileImageView);
+        }
     }
 
     private void saveProfileImageUrlLocally(String url) {
-        SharedPreferences prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(KEY_PROFILE_IMAGE_URL, url);
-        editor.apply();
+        if (isAdded()) {
+            SharedPreferences prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            prefs.edit().putString(KEY_PROFILE_IMAGE_URL, url).apply();
+        }
     }
 
     private void logoutUser() {
@@ -152,5 +152,11 @@ public class ProfileFragment extends Fragment {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         requireActivity().finish();
+    }
+
+    private void showToast(String message) {
+        if (isAdded()) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        }
     }
 }

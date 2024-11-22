@@ -1,16 +1,17 @@
 package com.example.annotatex_mobile;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -25,13 +26,14 @@ public class SettingsProfileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_profile_settings);
+        setContentView(R.layout.activity_profile_settings);
 
         Switch darkModeSwitch = findViewById(R.id.darkModeSwitch);
         Button deleteAccountButton = findViewById(R.id.deleteAccountButton);
         Button preferencesButton = findViewById(R.id.preferencesButton);
         Button privacyButton = findViewById(R.id.privacyButton);
-        Button permissionsButton = findViewById(R.id.permissionsButton); // New Permissions button
+        Button permissionsButton = findViewById(R.id.permissionsButton);
+        ImageView goBackButton = findViewById(R.id.goBackButton);
 
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
@@ -43,7 +45,7 @@ public class SettingsProfileActivity extends AppCompatActivity {
         applyDarkMode(isDarkMode);
 
         // Dark mode switch listener
-        darkModeSwitch.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) -> {
+        darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = preferences.edit();
             editor.putBoolean(KEY_DARK_MODE, isChecked);
             editor.apply();
@@ -62,10 +64,18 @@ public class SettingsProfileActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Open PermissionsActivity when Permissions button is clicked
         permissionsButton.setOnClickListener(v -> {
             Intent intent = new Intent(SettingsProfileActivity.this, PermissionsActivity.class);
             startActivity(intent);
+        });
+
+        // Go Back button functionality
+        goBackButton.setOnClickListener(v -> {
+            // Navigate back to ProfileFragment
+            Intent intent = new Intent(SettingsProfileActivity.this, MainActivity.class);
+            intent.putExtra("navigateTo", "ProfileFragment"); // Add extra to identify navigation
+            startActivity(intent);
+            finish();
         });
     }
 
@@ -81,7 +91,7 @@ public class SettingsProfileActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Account")
                 .setMessage("Are you sure you want to delete your account? This action cannot be undone.")
-                .setPositiveButton("Yes, Im sure", (dialog, which) -> deleteAccount())
+                .setPositiveButton("Yes, I'm sure", (dialog, which) -> deleteAccount())
                 .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
                 .show();
     }

@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
@@ -86,12 +85,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (savedInstanceState == null) {
-            // Check if launched from a notification
-            if (getIntent() != null && "friend_request".equals(getIntent().getStringExtra("notification_type"))) {
-                openNotificationsFragment(); // Navigate to NotificationsFragment
-            } else {
-                bottomNav.setSelectedItemId(R.id.nav_library); // Default tab
-            }
+            handleIntentNavigation(getIntent());
         }
 
         // Set up the notification channel for friend requests
@@ -163,6 +157,43 @@ public class MainActivity extends AppCompatActivity {
                 .replace(R.id.fragment_container, notificationsFragment)
                 .commit();
         activeFragment = notificationsFragment; // Update active fragment
+    }
+
+    private void handleIntentNavigation(Intent intent) {
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+
+        if (intent != null && "friend_request".equals(intent.getStringExtra("notification_type"))) {
+            openNotificationsFragment(); // Navigate to NotificationsFragment
+        } else if (intent != null && "ProfileFragment".equals(intent.getStringExtra("navigateTo"))) {
+            // Handle navigation back to ProfileFragment
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new ProfileFragment())
+                    .commit();
+            bottomNav.setSelectedItemId(R.id.nav_profile);
+        } else {
+            bottomNav.setSelectedItemId(R.id.nav_library); // Default tab
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleIntentNavigation(intent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (activeFragment instanceof ProfileFragment) {
+            super.onBackPressed(); // Exit the app if on the ProfileFragment
+        } else {
+            BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+            bottomNav.setSelectedItemId(R.id.nav_profile);
+            Fragment profileFragment = new ProfileFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, profileFragment)
+                    .commit();
+            activeFragment = profileFragment; // Set active fragment to ProfileFragment
+        }
     }
 
     @Override
