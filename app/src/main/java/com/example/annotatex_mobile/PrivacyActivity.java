@@ -1,9 +1,11 @@
 package com.example.annotatex_mobile;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Switch;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,6 +22,7 @@ public class PrivacyActivity extends AppCompatActivity {
 
         Switch syncContactsSwitch = findViewById(R.id.syncContactsSwitch);
         Switch syncFacebookSwitch = findViewById(R.id.syncFacebookSwitch);
+        ImageView goBackButton = findViewById(R.id.goBackButton);
 
         // Load preferences
         SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
@@ -31,16 +34,24 @@ public class PrivacyActivity extends AppCompatActivity {
         syncFacebookSwitch.setChecked(syncFacebookFriends);
 
         // Set listeners for the switches
-        syncContactsSwitch.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) -> {
+        syncContactsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = preferences.edit();
             editor.putBoolean(KEY_SYNC_CONTACTS, isChecked);
             editor.apply();
         });
 
-        syncFacebookSwitch.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) -> {
+        syncFacebookSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = preferences.edit();
             editor.putBoolean(KEY_SYNC_FACEBOOK_FRIENDS, isChecked);
             editor.apply();
+        });
+
+        // Go Back button functionality
+        goBackButton.setOnClickListener(v -> {
+            // Navigate back to SettingsActivity
+            Intent intent = new Intent(PrivacyActivity.this, SettingsProfileActivity.class);
+            startActivity(intent);
+            finish(); // Finish the current activity
         });
     }
 }

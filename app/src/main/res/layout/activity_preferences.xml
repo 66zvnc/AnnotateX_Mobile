@@ -5,20 +5,35 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Suggest Books Switch -->
+    <ImageView
+        android:id="@+id/goBackButton"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="17dp"
+        android:layout_marginTop="20dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Go Back"
+        android:padding="8dp"
+        android:src="@drawable/ic_back_arrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/dark_pink" />
+
     <TextView
         android:id="@+id/preferencesTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
         android:text="Preferences"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginTop="32dp"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Suggest Books Switch -->
     <Switch
         android:id="@+id/suggestBooksSwitch"
         android:layout_width="wrap_content"

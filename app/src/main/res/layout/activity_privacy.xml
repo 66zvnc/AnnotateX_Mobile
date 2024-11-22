@@ -6,7 +6,21 @@
     android:layout_height="match_parent"
     android:padding="24dp">
 
-    <!-- Title -->
+    <ImageView
+        android:id="@+id/goBackButton"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="2dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Go Back"
+        android:padding="8dp"
+        android:src="@drawable/ic_back_arrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/dark_pink" />
+
+
     <TextView
         android:id="@+id/privacySettingsTitle"
         android:layout_width="0dp"
@@ -24,19 +38,22 @@
         android:id="@+id/syncContactsSwitch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:text="Sync with Contacts"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintTop_toBottomOf="@id/privacySettingsTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/privacySettingsTitle" />
 
     <Switch
         android:id="@+id/syncFacebookSwitch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
         android:text="Sync with Facebook Friends"
-        app:layout_constraintTop_toBottomOf="@id/syncContactsSwitch"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/syncContactsSwitch" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -16,6 +17,7 @@ import androidx.core.content.ContextCompat;
 public class PermissionsActivity extends AppCompatActivity {
 
     private Switch switchNotifications, switchPhotos, switchFiles, switchContacts;
+    private ImageView goBackButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,11 +29,12 @@ public class PermissionsActivity extends AppCompatActivity {
         switchPhotos = findViewById(R.id.switchPhotos);
         switchFiles = findViewById(R.id.switchFiles);
         switchContacts = findViewById(R.id.switchContacts);
+        goBackButton = findViewById(R.id.goBackButton);
 
         // Load current preferences
         loadPreferences();
 
-        // Set listeners for each switch
+        // Set listeners for switches
         switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 enableNotifications();
@@ -66,6 +69,12 @@ public class PermissionsActivity extends AppCompatActivity {
                 Toast.makeText(this, "Contacts access disabled", Toast.LENGTH_SHORT).show();
             }
             savePreferences();
+        });
+
+        // Set listener for the Go Back button
+        goBackButton.setOnClickListener(v -> {
+            // Navigate back to the ProfileSettingsFragment
+            finish(); // Closes the activity and returns to the previous one
         });
     }
 

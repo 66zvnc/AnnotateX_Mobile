@@ -48,7 +48,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_library, container, false);
+        View view = inflater.inflate(R.layout.fragment_library, container, false);
 
         firestore = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
