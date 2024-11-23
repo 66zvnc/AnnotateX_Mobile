@@ -1,6 +1,7 @@
 package com.example.annotatex_mobile;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
@@ -44,6 +45,13 @@ public class CollaborativeBooksAdapter extends RecyclerView.Adapter<Collaborativ
         } else {
             holder.coverImageView.setImageResource(R.drawable.book_handle);
         }
+
+        // Set click listener to open book details
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, DetailsActivity.class);
+            intent.putExtra("book", book); // Assuming Book implements Serializable or Parcelable
+            context.startActivity(intent);
+        });
 
         // Set long-press listener to show the popup menu
         holder.itemView.setOnLongClickListener(v -> {
