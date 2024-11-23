@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHolder> {
@@ -125,16 +126,44 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
             String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-            // Add book to both users' collaborativeBooks collection
-            firestore.collection("users").document(currentUserId).collection("collaborativeBooks").document(book.getId()).set(book)
-                    .addOnSuccessListener(aVoid -> Log.d(TAG, "Shared book added to current user's collaborative books"))
-                    .addOnFailureListener(e -> Log.e(TAG, "Failed to add shared book for current user", e));
+            if (currentUserId == null || friendId == null || book == null) {
+                Toast.makeText(context, "Invalid data for collaboration", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-            firestore.collection("users").document(friendId).collection("collaborativeBooks").document(book.getId()).set(book)
-                    .addOnSuccessListener(aVoid -> Toast.makeText(context, "Book shared with " + friendName, Toast.LENGTH_SHORT).show())
-                    .addOnFailureListener(e -> Toast.makeText(context, "Failed to share book with " + friendName, Toast.LENGTH_SHORT).show());
+            // Add collaborators to the book object
+            book.setCollaborators(Arrays.asList(currentUserId, friendId));
+
+            // Add the book to the current user's collaborativeBooks collection
+            firestore.collection("users")
+                    .document(currentUserId)
+                    .collection("collaborativeBooks")
+                    .document(book.getId())
+                    .set(book)
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d(TAG, "Book added to current user's collaborativeBooks");
+
+                        // Add the book to the friend's collaborativeBooks collection
+                        firestore.collection("users")
+                                .document(friendId)
+                                .collection("collaborativeBooks")
+                                .document(book.getId())
+                                .set(book)
+                                .addOnSuccessListener(aVoid1 -> {
+                                    Toast.makeText(context, "Book shared with " + friendName, Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Failed to add book to friend's collaborativeBooks", e);
+                                    Toast.makeText(context, "Failed to share book with " + friendName, Toast.LENGTH_SHORT).show();
+                                });
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to add book to current user's collaborativeBooks", e);
+                        Toast.makeText(context, "Failed to collaborate on book", Toast.LENGTH_SHORT).show();
+                    });
         });
     }
+
 
     private void markBookAsHidden(Book book) {
         book.setHidden(true);
