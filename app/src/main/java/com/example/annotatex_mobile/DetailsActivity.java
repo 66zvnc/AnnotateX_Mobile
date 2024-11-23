@@ -9,8 +9,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.bumptech.glide.Glide;
 import com.example.annotatex_mobile.databinding.ActivityDetailsBinding;
 import com.google.firebase.firestore.CollectionReference;
@@ -20,13 +22,9 @@ import com.google.firebase.storage.StorageReference;
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
-import com.pspdfkit.annotations.Annotation;
-import com.pspdfkit.annotations.AnnotationType;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
 
 public class DetailsActivity extends AppCompatActivity {
     private static final String TAG = "DetailsActivity";
@@ -74,11 +72,8 @@ public class DetailsActivity extends AppCompatActivity {
         // Back button functionality
         ImageView goBackButton = findViewById(R.id.goBackButton);
         goBackButton.setOnClickListener(v -> {
-            // Navigate back to the library
-            Intent intent = new Intent(DetailsActivity.this, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
+            // Navigate back to the previous activity or fragment
+            onBackPressed();
         });
     }
 
