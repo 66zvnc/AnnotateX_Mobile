@@ -8,7 +8,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -69,7 +69,10 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                 stopCollaboration(book);
             }
         });
-        collaborativeBooksRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Set up RecyclerView with a GridLayoutManager for grid-style display
+        int columns = getResources().getConfiguration().screenWidthDp >= 600 ? 3 : 2; // 3 columns for tablets, 2 for phones
+        collaborativeBooksRecyclerView.setLayoutManager(new GridLayoutManager(this, columns));
         collaborativeBooksRecyclerView.setAdapter(adapter);
 
         // Load collaborative books
@@ -210,4 +213,5 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                     e.printStackTrace();
                 });
     }
+
 }
