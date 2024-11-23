@@ -19,10 +19,12 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,7 +95,9 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
 
         setupIcons(view);
 
-        loadBooksFromFirestore();
+        addPredefinedBooks(); // Add preloaded books first
+        showLoadingIndicator();
+        loadBooksFromFirestore(); // Load Firestore books
 
         setupScrollListener();
 
@@ -103,7 +107,6 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
 
         return view;
     }
-
 
     private void setupScrollListener() {
         pdfGalleryRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -174,6 +177,12 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
         return title.contains(query) || author.contains(query);
     }
 
+    private void showLoadingIndicator() {
+        filteredList.clear();
+        filteredList.add(new Book("loading", "", "", "Loading books...", "", "", ""));
+        adapter.notifyDataSetChanged();
+    }
+
     private void loadBooksFromFirestore() {
         CollectionReference booksCollection = firestore.collection("books");
         String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
@@ -181,7 +190,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
         if (userId != null) {
             booksCollection.whereEqualTo("userId", userId).get().addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    bookList.clear();
+                    List<Book> firestoreBooks = new ArrayList<>();
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         String pdfUrl = document.getString("pdfUrl");
                         String title = document.getString("title");
@@ -192,8 +201,12 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
                         boolean hidden = document.getBoolean("hidden") != null && document.getBoolean("hidden");
                         Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
                         book.setHidden(hidden);
-                        bookList.add(book);
+                        firestoreBooks.add(book);
                     }
+
+                    // Add Firestore books first, then preloaded books
+                    bookList.clear();
+                    bookList.addAll(firestoreBooks);
                     addPredefinedBooks();
                     filterBooks(searchView.getQuery().toString());
                 } else {
@@ -202,6 +215,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
             });
         }
     }
+
 
     private void addPredefinedBooks() {
         bookList.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "Robert T. Kiyosaki", "Financial wisdom from the rich."));
@@ -217,25 +231,21 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
     }
 
     private void setUnderlinePosition(View selectedButton) {
-        // Highlight the selected button
         if (selectedButton instanceof TextView) {
             TextView button = (TextView) selectedButton;
-            button.setTextColor(getResources().getColor(R.color.dark_pink)); // Color for the selected button
+            button.setTextColor(getResources().getColor(R.color.dark_pink));
         }
 
-        // Adjust underline to the selected button
         ViewGroup.LayoutParams layoutParams = underline.getLayoutParams();
-        layoutParams.width = selectedButton.getWidth(); // Set the underline width to match button width
+        layoutParams.width = selectedButton.getWidth();
         underline.setLayoutParams(layoutParams);
 
-        // Move the underline to the selected button's position
         float xPosition = selectedButton.getX();
-        underline.setTranslationX(xPosition); // Set the underline position to the button
+        underline.setTranslationX(xPosition);
     }
 
     @Override
     public void onPdfClick(Book book) {
-        // Navigate to DetailsActivity when a book is clicked
         Intent intent = new Intent(getActivity(), DetailsActivity.class);
         intent.putExtra("book", book);
         startActivity(intent);
@@ -264,4 +274,3 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
         }
     }
 }
-
