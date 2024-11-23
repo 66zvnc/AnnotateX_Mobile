@@ -4,15 +4,19 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +46,10 @@ public class NotificationsFragment extends Fragment {
         activitiesList = new ArrayList<>();
         activitiesAdapter = new NotificationsAdapter(requireContext(), activitiesList);
         friendRequestsRecyclerView.setAdapter(activitiesAdapter);
+
+        // Set up "Go Back" button
+        ImageView goBackButton = view.findViewById(R.id.goBackButton);
+        goBackButton.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
 
         // Start listening for friend requests
         listenForFriendRequests();
