@@ -1,7 +1,7 @@
 <com.google.android.material.card.MaterialCardView
     android:id="@+id/cardView"
-    android:layout_width="match_parent"
-    android:layout_height="120dp"
+    android:layout_width="170dp"
+    android:layout_height="250dp"
     android:layout_margin="8dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="4dp"
@@ -13,48 +13,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Book Cover Image -->
+        <!-- Full-Screen Book Cover Image -->
         <ImageView
             android:id="@+id/bookCoverImageView"
-            android:layout_width="80dp"
-            android:layout_height="100dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:scaleType="centerCrop"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:contentDescription="@string/book_cover_desc" />
 
-        <!-- Book Title -->
-        <TextView
-            android:id="@+id/bookTitleTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:text="Book Title"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/bookCoverImageView"
-            app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Menu Icon -->
-
-        <!-- RadioButton -->
-        <RadioButton
-            android:id="@+id/radioButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="8dp"
-            android:layout_marginTop="8dp"
-            android:visibility="gone" />
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </com.google.android.material.card.MaterialCardView>
