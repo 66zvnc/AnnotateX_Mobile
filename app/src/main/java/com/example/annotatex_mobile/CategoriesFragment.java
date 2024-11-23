@@ -27,7 +27,7 @@ public class CategoriesFragment extends Fragment {
         categoriesRecyclerView = view.findViewById(R.id.categoriesRecyclerView);
 
         // Use GridLayoutManager with 1 column per row
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 1); // 1 column per row
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 1);
 
         categoriesRecyclerView.setLayoutManager(gridLayoutManager);
 

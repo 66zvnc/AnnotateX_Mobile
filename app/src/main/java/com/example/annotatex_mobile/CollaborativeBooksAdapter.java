@@ -3,12 +3,10 @@ package com.example.annotatex_mobile;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -39,15 +37,15 @@ public class CollaborativeBooksAdapter extends RecyclerView.Adapter<Collaborativ
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Book book = books.get(position);
-        holder.titleTextView.setText(book.getTitle());
 
+        // Load the book cover image using Glide or set a default image
         if (book.hasUrlCover()) {
             Glide.with(context).load(book.getCoverImageUrl()).into(holder.coverImageView);
         } else {
             holder.coverImageView.setImageResource(R.drawable.book_handle);
         }
 
-        // Set long-press listener for popup menu
+        // Set long-press listener to show the popup menu
         holder.itemView.setOnLongClickListener(v -> {
             showPopupMenu(v, book);
             return true;
@@ -59,6 +57,7 @@ public class CollaborativeBooksAdapter extends RecyclerView.Adapter<Collaborativ
         return books.size();
     }
 
+    // Method to show the popup menu on long press
     private void showPopupMenu(View view, Book book) {
         PopupMenu popupMenu = new PopupMenu(context, view);
         MenuInflater inflater = popupMenu.getMenuInflater();
@@ -67,6 +66,7 @@ public class CollaborativeBooksAdapter extends RecyclerView.Adapter<Collaborativ
         popupMenu.setOnMenuItemClickListener(item -> {
             if (listener == null) return false;
 
+            // Handle menu item clicks
             if (item.getItemId() == R.id.menu_view_details) {
                 listener.onViewDetails(book);
                 return true;
@@ -82,17 +82,15 @@ public class CollaborativeBooksAdapter extends RecyclerView.Adapter<Collaborativ
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView coverImageView;
-        TextView titleTextView;
+        ImageView coverImageView; // Displays the book cover
 
         ViewHolder(View itemView) {
             super(itemView);
             coverImageView = itemView.findViewById(R.id.bookCoverImageView);
-            titleTextView = itemView.findViewById(R.id.bookTitleTextView);
         }
     }
 
-    // Listener interface
+    // Interface for handling interactions with books
     public interface OnBookInteractionListener {
         void onViewDetails(Book book);
 
