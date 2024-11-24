@@ -14,17 +14,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CollaborativeBooksAdapter extends RecyclerView.Adapter<CollaborativeBooksAdapter.ViewHolder> {
 
     private final Context context;
-    private final List<Book> books;
+    private final List<Book> originalBooks; // Keeps the original list for filtering
+    private final List<Book> books; // The list displayed in the RecyclerView
     private final OnBookInteractionListener listener;
 
     public CollaborativeBooksAdapter(Context context, List<Book> books, OnBookInteractionListener listener) {
         this.context = context;
-        this.books = books;
+        this.originalBooks = new ArrayList<>(books); // Initialize with a copy of the original list
+        this.books = new ArrayList<>(books); // Initialize the displayed list
         this.listener = listener;
     }
 
@@ -87,6 +90,36 @@ public class CollaborativeBooksAdapter extends RecyclerView.Adapter<Collaborativ
         });
 
         popupMenu.show();
+    }
+
+    // Method to update the book list dynamically (e.g., for filtering)
+    public void updateBooks(List<Book> newBooks) {
+        books.clear();
+        books.addAll(newBooks);
+        notifyDataSetChanged();
+    }
+
+    // Method to reset the book list to the original list
+    public void resetBooks() {
+        books.clear();
+        books.addAll(originalBooks);
+        notifyDataSetChanged();
+    }
+
+    // Method to filter books based on a query
+    public void filterBooks(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            resetBooks(); // Show the original list if the query is empty
+            return;
+        }
+
+        List<Book> filteredList = new ArrayList<>();
+        for (Book book : originalBooks) {
+            if (book.getTitle().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(book);
+            }
+        }
+        updateBooks(filteredList); // Update the displayed list with the filtered results
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

@@ -8,6 +8,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView; // Correct import for SearchView
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -81,6 +82,32 @@ public class CollaborativeChatActivity extends AppCompatActivity {
         // Add functionality to the "Add Book" button
         ImageView addBookButton = findViewById(R.id.addBookButton);
         addBookButton.setOnClickListener(v -> openBookSelectionFragment());
+
+        // Add SearchView functionality
+        SearchView searchView = findViewById(R.id.searchView); // Correctly cast to androidx.appcompat.widget.SearchView
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                filterBooks(query); // Filter books on submit
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterBooks(newText); // Filter books in real-time
+                return false;
+            }
+        });
+    }
+
+    private void filterBooks(String query) {
+        List<Book> filteredList = new ArrayList<>();
+        for (Book book : collaborativeBooksList) {
+            if (book.getTitle().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(book);
+            }
+        }
+        adapter.updateBooks(filteredList);
     }
 
     private void loadUserProfile(String userId, ImageView profileImageView, TextView nameTextView) {
@@ -126,7 +153,7 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     collaborativeBooksList.clear();
                     collaborativeBooksList.addAll(queryDocumentSnapshots.toObjects(Book.class));
-                    adapter.notifyDataSetChanged();
+                    adapter.updateBooks(collaborativeBooksList); // Update the adapter with the full list
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to load collaborative books", Toast.LENGTH_SHORT).show();
@@ -166,7 +193,7 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                 .delete()
                 .addOnSuccessListener(aVoid -> {
                     collaborativeBooksList.remove(book);
-                    adapter.notifyDataSetChanged();
+                    adapter.updateBooks(collaborativeBooksList);
                     Toast.makeText(this, "Collaboration stopped", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
@@ -213,5 +240,4 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                     e.printStackTrace();
                 });
     }
-
 }
