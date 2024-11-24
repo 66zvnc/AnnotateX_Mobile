@@ -91,7 +91,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:text="Payment Method"
+            android:text="Manage Subscription"
             android:textSize="16sp"
             android:drawablePadding="8dp"
             android:drawableEnd="@drawable/ic_right_arrow"
