@@ -38,7 +38,6 @@
             android:background="@drawable/circle_background"
             android:clipToOutline="true" />
 
-
         <!-- Name Text -->
         <TextView
             android:id="@+id/nameTextView"
@@ -52,24 +51,40 @@
             android:maxLines="1" />
     </LinearLayout>
 
-    <!-- Add Book Button -->
-    <ImageView
-        android:id="@+id/addBookButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="end"
-        android:layout_marginTop="8dp"
-        android:src="@drawable/ic_add_book"
-        android:contentDescription="Add Collaborative Book"
-        android:clickable="true"
-        android:focusable="true"
-        app:tint="?attr/colorOnSurface" />
+    <!-- Search Bar and Add Book Button Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp">
+
+        <!-- Search Bar -->
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:queryHint="Search Books or Notes"/>
+
+        <!-- Add Book Button -->
+        <ImageView
+            android:id="@+id/addBookButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="12dp"
+            android:src="@drawable/ic_add_book"
+            android:contentDescription="Add Collaborative Book"
+            android:clickable="true"
+            android:focusable="true"
+            app:tint="?attr/colorOnSurface" />
+    </LinearLayout>
 
     <!-- Collaborative Books RecyclerView -->
     <TextView
         android:id="@+id/booksSectionHeader"
         android:layout_width="match_parent"
-        android:layout_height="49dp"
+        android:layout_height="wrap_content"
         android:paddingTop="16dp"
         android:paddingBottom="8dp"
         android:text="Books"
@@ -77,7 +92,7 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <!-- Notes Section -->
+    <!-- Collaborative Books RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/collaborativeBooksRecyclerView"
         android:layout_width="match_parent"
@@ -86,6 +101,7 @@
         android:layout_weight="1"
         android:background="?attr/colorBackground" />
 
+    <!-- Notes Section Header -->
     <TextView
         android:id="@+id/notesSectionHeader"
         android:layout_width="match_parent"
@@ -97,6 +113,7 @@
         android:paddingTop="16dp"
         android:paddingBottom="8dp" />
 
+    <!-- Notes RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/notesRecyclerView"
         android:layout_width="match_parent"
