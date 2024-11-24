@@ -5,4 +5,5 @@
     <string name="cover_preview">Cover Preview</string>
     <string name="book_cover_desc">Book cover image</string>
     <string name="default_notification_channel_id">notifications</string>
+    <string name = "terms_notice">By placing this order, you agree to the Terms of Service and Privacy Policy. Subscription automatically renews unless auto-renew is turned off at least 24-hours before the end of the current period.</string>
 </resources>

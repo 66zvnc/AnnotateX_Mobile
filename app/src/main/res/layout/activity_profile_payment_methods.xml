@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/light_blue">
+
+    <!-- Back Button and Title -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <!-- Back Button -->
+        <ImageView
+            android:id="@+id/goBackButton"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@drawable/ic_back_arrow"
+            android:contentDescription="Go Back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/dark_pink" />
+
+        <!-- Page Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Get Premium"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/dark_blue" />
+    </LinearLayout>
+
+    <!-- Description -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:text="Unlock all the power of this mobile tool and enjoy digital experience like never before!"
+        android:textSize="16sp"
+        android:textColor="@color/dark_blue" />
+
+    <!-- Illustration Image -->
+    <ImageView
+        android:layout_width="242dp"
+        android:layout_height="202dp"
+        android:layout_gravity="center"
+        android:contentDescription="Premium Illustration"
+        android:src="@drawable/ic_premium_box" />
+
+    <!-- Annual Plan -->
+    <LinearLayout
+        android:id="@+id/annualPlan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="horizontal"
+        android:background="@drawable/plan_selector"
+        android:padding="16dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Annual\nFirst 30 days free - Then $999/Year"
+            android:textColor="@color/dark_blue"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Best Value"
+            android:textColor="@color/green"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Monthly Plan -->
+    <LinearLayout
+        android:id="@+id/monthlyPlan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        android:background="@drawable/plan_selector"
+        android:padding="16dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Monthly\nFirst 7 days free - Then $99/Month"
+            android:textColor="@color/dark_blue"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- Start Free Trial Button -->
+    <Button
+        android:id="@+id/startFreeTrialButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:backgroundTint="@color/dark_blue"
+        android:text="Start 30-day free trial"
+        android:textColor="@android:color/white"
+        android:textStyle="bold" />
+
+    <!-- Terms and Privacy -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/terms_notice"
+        android:textColor="@color/dark_blue"
+        android:textSize="12sp"
+        android:gravity="center" />
+</LinearLayout>
