@@ -66,7 +66,7 @@ public class ProfileFragment extends Fragment {
 
     private void setupNavigationListeners(View view) {
         view.findViewById(R.id.settingsOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), SettingsProfileActivity.class)));
-        view.findViewById(R.id.paymentOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), PaymentMethodsProfileActivity.class)));
+        view.findViewById(R.id.paymentOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), ManageSubscriptionActivity.class)));
         view.findViewById(R.id.helpOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), HelpCenterProfileActivity.class)));
         view.findViewById(R.id.privacyPolicyOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), PrivacyPolicyActivity.class)));
         view.findViewById(R.id.logoutOption).setOnClickListener(v -> logoutUser());

@@ -8,48 +8,41 @@
     android:padding="16dp"
     android:background="@color/light_blue">
 
-    <!-- Back Button and Title -->
-    <LinearLayout
+    <!-- Back Button -->
+    <ImageView
+        android:id="@+id/goBackButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Go Back"
+        android:src="@drawable/ic_x"/>
+
+    <!-- Title Text -->
+    <TextView
+        android:id="@+id/titleTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="16dp">
-
-        <!-- Back Button -->
-        <ImageView
-            android:id="@+id/goBackButton"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:src="@drawable/ic_back_arrow"
-            android:contentDescription="Go Back"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="@color/dark_pink" />
-
-        <!-- Page Title -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="Get Premium"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@color/dark_blue" />
-    </LinearLayout>
+        android:layout_marginTop="16dp"
+        android:text="Get Premium"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/dark_blue"
+        android:gravity="center" />
 
     <!-- Description -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:layout_marginBottom="24dp"
-        android:text="Unlock all the power of this mobile tool and enjoy digital experience like never before!"
+        android:text="Unlock all the power of this mobile tool and enjoy a digital experience like never before!"
         android:textSize="16sp"
         android:textColor="@color/dark_blue" />
 
     <!-- Illustration Image -->
     <ImageView
-        android:layout_width="242dp"
-        android:layout_height="202dp"
+        android:layout_width="302dp"
+        android:layout_height="238dp"
         android:layout_gravity="center"
         android:contentDescription="Premium Illustration"
         android:src="@drawable/ic_premium_box" />
@@ -109,9 +102,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:backgroundTint="@color/dark_blue"
-        android:text="Start 30-day free trial"
+        android:text="@string/start_30_day_free_trial"
         android:textColor="@android:color/white"
+        android:background="@drawable/rounded_background"
         android:textStyle="bold" />
 
     <!-- Terms and Privacy -->
