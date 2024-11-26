@@ -21,17 +21,42 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHolder> {
     private static final String TAG = "LibraryAdapter";
     private final Context context;
-    private final List<Book> bookList;
+    private final List<Book> bookList; // Original list
+    private List<Book> filteredList; // For filtered results
     private final OnPdfClickListener listener;
     private final boolean isInSelectionMode;
     private int selectedPosition = -1;
 
+    /**
+     * Updates the adapter with a new list of books, ensuring proper updates.
+     * @param updatedBooks The new list of books to display.
+     */
+    public void updateBooks(List<Book> updatedBooks) {
+        Log.d(TAG, "Updating books in adapter. New size: " + updatedBooks.size());
+        bookList.clear(); // Clear the original list
+        bookList.addAll(updatedBooks); // Add the updated list
+        resetBooks(); // Reset filteredList to match bookList
+    }
+
+    /**
+     * Resets the adapter to the original list of books.
+     */
+    public void resetBooks() {
+        Log.d(TAG, "Resetting to original book list. Size: " + bookList.size());
+        filteredList = new ArrayList<>(bookList); // Reset to the full book list
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Listener interface for handling PDF clicks.
+     */
     public interface OnPdfClickListener {
         void onPdfClick(Book book);
         void onPdfClick(String pdfUrl);
@@ -39,7 +64,8 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
     public LibraryAdapter(Context context, List<Book> bookList, OnPdfClickListener listener, boolean isInSelectionMode) {
         this.context = context;
-        this.bookList = bookList;
+        this.bookList = bookList != null ? new ArrayList<>(bookList) : new ArrayList<>(); // Ensure non-null and preserve the original list
+        this.filteredList = new ArrayList<>(this.bookList); // Start with the full book list
         this.listener = listener;
         this.isInSelectionMode = isInSelectionMode;
     }
@@ -53,7 +79,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Book book = bookList.get(position);
+        Book book = filteredList.get(position);
 
         // Load book cover
         if (book.hasBitmapCover()) {
@@ -64,6 +90,20 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             holder.imageView.setImageResource(book.getImageResId());
         }
 
+        // Configure collaborator profile picture
+        if (book.getCollaborators() != null && !book.getCollaborators().isEmpty()) {
+            String collaboratorId = getCollaboratorId(book);
+            if (collaboratorId != null) {
+                holder.collaboratorImageView.setVisibility(View.VISIBLE);
+                loadCollaboratorProfilePicture(collaboratorId, holder.collaboratorImageView);
+            } else {
+                holder.collaboratorImageView.setVisibility(View.GONE);
+            }
+        } else {
+            holder.collaboratorImageView.setVisibility(View.GONE);
+        }
+
+        // Configure selection or menu mode
         if (isInSelectionMode) {
             holder.menuIcon.setVisibility(View.GONE);
             holder.radioButton.setVisibility(View.VISIBLE);
@@ -81,7 +121,44 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             holder.menuIcon.setOnClickListener(v -> showPopupMenu(v, book));
         }
 
+        // Handle item click
         holder.itemView.setOnClickListener(v -> listener.onPdfClick(book));
+    }
+
+    private void loadCollaboratorProfilePicture(String collaboratorId, ImageView imageView) {
+        FirebaseFirestore.getInstance().collection("users").document(collaboratorId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String profilePictureUrl = documentSnapshot.getString("profileImageUrl");
+                        if (profilePictureUrl != null && !profilePictureUrl.isEmpty()) {
+                            Glide.with(context)
+                                    .load(profilePictureUrl)
+                                    .placeholder(R.drawable.ic_default_profile)
+                                    .error(R.drawable.ic_default_profile)
+                                    .circleCrop()
+                                    .into(imageView);
+                        } else {
+                            imageView.setImageResource(R.drawable.ic_default_profile);
+                        }
+                    } else {
+                        imageView.setImageResource(R.drawable.ic_default_profile);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to load collaborator profile picture", e);
+                    imageView.setImageResource(R.drawable.ic_default_profile);
+                });
+    }
+
+    private String getCollaboratorId(Book book) {
+        String currentUserId = FirebaseAuth.getInstance().getUid();
+        for (String collaborator : book.getCollaborators()) {
+            if (!collaborator.equals(currentUserId)) {
+                return collaborator;
+            }
+        }
+        return null;
     }
 
     private void showPopupMenu(View view, Book book) {
@@ -124,105 +201,76 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     private void showFriendSelectionDialog(Book book) {
         new FriendSelectionDialog(context).show((friendId, friendName) -> {
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-            String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            String currentUserId = FirebaseAuth.getInstance().getUid();
 
             if (currentUserId == null || friendId == null || book == null) {
                 Toast.makeText(context, "Invalid data for collaboration", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Add collaborators to the book object
             book.setCollaborators(Arrays.asList(currentUserId, friendId));
-
-            // Add the book to the current user's collaborativeBooks collection
             firestore.collection("users")
                     .document(currentUserId)
                     .collection("collaborativeBooks")
                     .document(book.getId())
                     .set(book)
-                    .addOnSuccessListener(aVoid -> {
-                        Log.d(TAG, "Book added to current user's collaborativeBooks");
-
-                        // Add the book to the friend's collaborativeBooks collection
-                        firestore.collection("users")
-                                .document(friendId)
-                                .collection("collaborativeBooks")
-                                .document(book.getId())
-                                .set(book)
-                                .addOnSuccessListener(aVoid1 -> {
-                                    Toast.makeText(context, "Book shared with " + friendName, Toast.LENGTH_SHORT).show();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Failed to add book to friend's collaborativeBooks", e);
-                                    Toast.makeText(context, "Failed to share book with " + friendName, Toast.LENGTH_SHORT).show();
-                                });
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e(TAG, "Failed to add book to current user's collaborativeBooks", e);
-                        Toast.makeText(context, "Failed to collaborate on book", Toast.LENGTH_SHORT).show();
-                    });
+                    .addOnSuccessListener(aVoid -> firestore.collection("users")
+                            .document(friendId)
+                            .collection("collaborativeBooks")
+                            .document(book.getId())
+                            .set(book)
+                            .addOnSuccessListener(aVoid1 -> Toast.makeText(context, "Book shared with " + friendName, Toast.LENGTH_SHORT).show())
+                            .addOnFailureListener(e -> Toast.makeText(context, "Failed to share book with " + friendName, Toast.LENGTH_SHORT).show()))
+                    .addOnFailureListener(e -> Toast.makeText(context, "Failed to collaborate on book", Toast.LENGTH_SHORT).show());
         });
     }
 
-
     private void markBookAsHidden(Book book) {
         book.setHidden(true);
-        Log.d(TAG, "Marked as 'Don't Suggest': " + book.getTitle());
-        Toast.makeText(context, "Marked as 'Don't Suggest'", Toast.LENGTH_SHORT).show();
-
-        int position = bookList.indexOf(book);
+        int position = filteredList.indexOf(book);
         if (position != -1) {
-            bookList.remove(position);
+            filteredList.remove(position);
             notifyItemRemoved(position);
         }
     }
 
     private void deleteBook(Book book) {
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference pdfRef = storage.getReferenceFromUrl(book.getPdfUrl());
-
-        pdfRef.delete().addOnSuccessListener(aVoid -> {
-            Log.d(TAG, "Successfully deleted from Firebase Storage");
-
-            FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-            firestore.collection("books")
-                    .whereEqualTo("pdfUrl", book.getPdfUrl())
-                    .get()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                            String docId = task.getResult().getDocuments().get(0).getId();
-                            firestore.collection("books").document(docId).delete()
-                                    .addOnSuccessListener(aVoid1 -> Log.d(TAG, "Successfully deleted from Firestore"))
-                                    .addOnFailureListener(e -> Log.e(TAG, "Failed to delete from Firestore", e));
-                        } else {
-                            Log.e(TAG, "No document found in Firestore matching the pdfUrl");
-                        }
-                    });
-
-            int position = bookList.indexOf(book);
-            if (position != -1) {
-                bookList.remove(position);
-                notifyItemRemoved(position);
-            }
-
-        }).addOnFailureListener(e -> Log.e(TAG, "Failed to delete from Firebase Storage", e));
+        StorageReference pdfRef = FirebaseStorage.getInstance().getReferenceFromUrl(book.getPdfUrl());
+        pdfRef.delete()
+                .addOnSuccessListener(aVoid -> FirebaseFirestore.getInstance().collection("books")
+                        .whereEqualTo("pdfUrl", book.getPdfUrl())
+                        .get()
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                                String docId = task.getResult().getDocuments().get(0).getId();
+                                FirebaseFirestore.getInstance().collection("books").document(docId).delete();
+                            }
+                            int position = filteredList.indexOf(book);
+                            if (position != -1) {
+                                filteredList.remove(position);
+                                notifyItemRemoved(position);
+                            }
+                        }))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to delete book", e));
     }
 
     @Override
     public int getItemCount() {
-        return bookList.size();
+        return filteredList.size();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         ImageView menuIcon;
         RadioButton radioButton;
+        ImageView collaboratorImageView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imageView);
             menuIcon = itemView.findViewById(R.id.menu_icon);
             radioButton = itemView.findViewById(R.id.radioButton);
+            collaboratorImageView = itemView.findViewById(R.id.collaboratorProfilePicture);
         }
     }
 }
