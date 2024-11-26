@@ -8,7 +8,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView; // Correct import for SearchView
+import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -55,7 +55,7 @@ public class CollaborativeChatActivity extends AppCompatActivity {
         }
 
         // Set up "Go Back" button functionality
-        goBackButton.setOnClickListener(v -> finish()); // Close the activity and go back
+        goBackButton.setOnClickListener(v -> finish());
 
         // Initialize RecyclerView
         collaborativeBooksList = new ArrayList<>();
@@ -71,8 +71,8 @@ public class CollaborativeChatActivity extends AppCompatActivity {
             }
         });
 
-        // Set up RecyclerView with a GridLayoutManager for grid-style display
-        int columns = getResources().getConfiguration().screenWidthDp >= 600 ? 3 : 2; // 3 columns for tablets, 2 for phones
+        // Set up RecyclerView with a GridLayoutManager
+        int columns = getResources().getConfiguration().screenWidthDp >= 600 ? 3 : 2; // Adjust for tablets/phones
         collaborativeBooksRecyclerView.setLayoutManager(new GridLayoutManager(this, columns));
         collaborativeBooksRecyclerView.setAdapter(adapter);
 
@@ -84,17 +84,17 @@ public class CollaborativeChatActivity extends AppCompatActivity {
         addBookButton.setOnClickListener(v -> openBookSelectionFragment());
 
         // Add SearchView functionality
-        SearchView searchView = findViewById(R.id.searchView); // Correctly cast to androidx.appcompat.widget.SearchView
+        SearchView searchView = findViewById(R.id.searchView);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                filterBooks(query); // Filter books on submit
+                filterBooks(query);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                filterBooks(newText); // Filter books in real-time
+                filterBooks(newText);
                 return false;
             }
         });
@@ -153,7 +153,7 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     collaborativeBooksList.clear();
                     collaborativeBooksList.addAll(queryDocumentSnapshots.toObjects(Book.class));
-                    adapter.updateBooks(collaborativeBooksList); // Update the adapter with the full list
+                    adapter.updateBooks(collaborativeBooksList);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to load collaborative books", Toast.LENGTH_SHORT).show();
@@ -175,7 +175,7 @@ public class CollaborativeChatActivity extends AppCompatActivity {
 
     private void openBookDetails(Book book) {
         Intent intent = new Intent(this, DetailsActivity.class);
-        intent.putExtra("book", book); // Assuming `Book` implements `Serializable`
+        intent.putExtra("book", book);
         startActivity(intent);
     }
 
@@ -228,7 +228,7 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                             .set(book)
                             .addOnSuccessListener(aVoid1 -> {
                                 Toast.makeText(this, "Collaborative book added", Toast.LENGTH_SHORT).show();
-                                loadCollaborativeBooks(); // Refresh the RecyclerView
+                                loadCollaborativeBooks();
                             })
                             .addOnFailureListener(e -> {
                                 Toast.makeText(this, "Failed to add collaborative book to friend's library", Toast.LENGTH_SHORT).show();

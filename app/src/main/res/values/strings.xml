@@ -7,4 +7,5 @@
     <string name="default_notification_channel_id">notifications</string>
     <string name = "terms_notice">By placing this order, you agree to the Terms of Service and Privacy Policy. Subscription automatically renews unless auto-renew is turned off at least 24-hours before the end of the current period.</string>
     <string name="start_30_day_free_trial">Start 30-day free trial</string>
+    <string name="collaborator_profile_picture_desc">Collaborator Profile Picture</string>
 </resources>

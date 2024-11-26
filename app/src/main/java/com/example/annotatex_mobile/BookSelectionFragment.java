@@ -57,9 +57,8 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
         return view;
     }
 
-
     /**
-     * Load books from Firestore and add preloaded books.
+     * Load books from Firestore and ensure collaborative books are properly fetched.
      */
     private void loadBooksFromFirestore() {
         CollectionReference booksCollection = firestore.collection("books");
@@ -79,8 +78,7 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
                         Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
                         bookList.add(book);
                     }
-                    addPreloadedBooks(); // Add predefined books
-                    adapter.notifyDataSetChanged();
+                    loadCollaborativeBooks(userId);
                 } else {
                     Log.e(TAG, "Error getting documents: ", task.getException());
                 }
@@ -89,6 +87,27 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
             addPreloadedBooks(); // Add predefined books if the user is not logged in
             adapter.notifyDataSetChanged();
         }
+    }
+
+    /**
+     * Load collaborative books from Firestore and add them to the list.
+     */
+    private void loadCollaborativeBooks(String userId) {
+        firestore.collection("users")
+                .document(userId)
+                .collection("collaborativeBooks")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Book collaborativeBook = document.toObject(Book.class);
+                        if (!bookList.contains(collaborativeBook)) {
+                            bookList.add(collaborativeBook);
+                        }
+                    }
+                    addPreloadedBooks(); // Add predefined books after fetching collaborative ones
+                    adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Error fetching collaborative books: ", e));
     }
 
     /**
