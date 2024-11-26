@@ -7,6 +7,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Book implements Serializable {
@@ -25,7 +26,7 @@ public class Book implements Serializable {
     private boolean isPreloaded;
     private boolean hidden;
     private String ownerId; // Owner ID field for collaborative books
-    private List<String> collaborators; // Collaborators field
+    private List<String> collaborators = new ArrayList<>(); // Collaborators field
 
     // Constructor for user-uploaded books
     public Book(String id, String coverImageUrl, String pdfUrl, String title, String author, String description, String userId) {
@@ -145,7 +146,20 @@ public class Book implements Serializable {
     }
 
     public void setCollaborators(List<String> collaborators) {
-        this.collaborators = collaborators;
+        if (collaborators != null) {
+            this.collaborators = collaborators;
+        } else {
+            this.collaborators = new ArrayList<>();
+        }
+    }
+
+    public void addCollaborator(String collaboratorId) {
+        if (!collaborators.contains(collaboratorId)) {
+            collaborators.add(collaboratorId);
+            Log.d(TAG, "Added collaborator: " + collaboratorId);
+        } else {
+            Log.d(TAG, "Collaborator already exists: " + collaboratorId);
+        }
     }
 
     // Utility methods
