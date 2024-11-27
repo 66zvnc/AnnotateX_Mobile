@@ -53,5 +53,19 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:visibility="gone" />
+
+        <!-- Collaborator Profile Picture -->
+        <ImageView
+            android:id="@+id/collaboratorProfilePicture"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="8dp"
+            android:layout_gravity="bottom|end"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/collaborator_profile_picture_desc"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/ic_default_profile" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

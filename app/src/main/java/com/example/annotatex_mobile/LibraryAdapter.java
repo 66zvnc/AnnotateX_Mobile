@@ -23,7 +23,9 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHolder> {
     private static final String TAG = "LibraryAdapter";
@@ -34,15 +36,63 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     private final boolean isInSelectionMode;
     private int selectedPosition = -1;
 
-    /**
-     * Updates the adapter with a new list of books, ensuring proper updates.
-     * @param updatedBooks The new list of books to display.
-     */
     public void updateBooks(List<Book> updatedBooks) {
-        Log.d(TAG, "Updating books in adapter. New size: " + updatedBooks.size());
+        Log.d(TAG, "Updating books in adapter. Initial size: " + updatedBooks.size());
         bookList.clear(); // Clear the original list
-        bookList.addAll(updatedBooks); // Add the updated list
+        List<Book> allBooks = new ArrayList<>(updatedBooks);
+
+        // Add preloaded books
+        addPreloadedBooks(allBooks);
+
+        // Remove duplicates
+        bookList.addAll(removeDuplicateBooks(allBooks)); // Add unique books
         resetBooks(); // Reset filteredList to match bookList
+        Log.d(TAG, "Books updated. Final size: " + bookList.size());
+    }
+
+    private void addPreloadedBooks(List<Book> allBooks) {
+
+        bookList.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "Robert T. Kiyosaki", "Financial wisdom from the rich."));
+        bookList.add(new Book(R.drawable.book_2, "url_to_pdf_2", "Atomic Habits", "James Clear", "Build good habits, break bad ones."));
+        bookList.add(new Book(R.drawable.book_3, "url_to_pdf_3", "Best Self", "Mike Bayer", "Be you, only better."));
+        bookList.add(new Book(R.drawable.book_4, "url_to_pdf_4", "How to Be Fine", "Kristen Meinzer", "Lessons from self-help books."));
+        bookList.add(new Book(R.drawable.book_5, "url_to_pdf_5", "Out of the Box", "Suzanne Dudley", "A journey of emotional resilience."));
+    }
+
+    /**
+     * Removes duplicate books from the list, prioritizing collaborative books.
+     * @param books The list of books to process.
+     * @return A list with duplicates removed.
+     */
+    private List<Book> removeDuplicateBooks(List<Book> books) {
+        Set<String> seenIds = new HashSet<>();
+        List<Book> uniqueBooks = new ArrayList<>();
+
+        for (Book book : books) {
+            String id = book.getId();
+
+            // Skip books with null IDs
+            if (id == null) {
+                Log.w(TAG, "Skipping book with null ID: " + book.getTitle());
+                continue;
+            }
+
+            // If the book is not already added, add it to the unique list
+            if (!seenIds.contains(id)) {
+                uniqueBooks.add(book);
+                seenIds.add(id);
+            } else {
+                // If the book is already added, prioritize collaborative version
+                for (int i = 0; i < uniqueBooks.size(); i++) {
+                    if (uniqueBooks.get(i).getId() != null && uniqueBooks.get(i).getId().equals(id) && book.getCollaborators() != null) {
+                        uniqueBooks.set(i, book); // Replace with collaborative version
+                        break;
+                    }
+                }
+            }
+        }
+
+        return uniqueBooks;
     }
 
     /**
