@@ -57,17 +57,15 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
         return view;
     }
 
-    /**
-     * Load books from Firestore and ensure collaborative books are properly fetched.
-     */
     private void loadBooksFromFirestore() {
+        Log.d(TAG, "Fetching books from Firestore...");
         CollectionReference booksCollection = firestore.collection("books");
         String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
 
         if (userId != null) {
             booksCollection.whereEqualTo("userId", userId).get().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    bookList.clear();
+                if (task.isSuccessful() && task.getResult() != null) {
+                    bookList.clear(); // Clear the book list
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         String pdfUrl = document.getString("pdfUrl");
                         String title = document.getString("title");
@@ -77,21 +75,21 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
                         String id = document.getId();
                         Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
                         bookList.add(book);
+                        Log.d(TAG, "Book loaded: " + book.getTitle());
                     }
                     loadCollaborativeBooks(userId);
                 } else {
                     Log.e(TAG, "Error getting documents: ", task.getException());
+                    // If Firestore fails, ensure preloaded books are still added
+                    addPreloadedBooks();
                 }
             });
         } else {
-            addPreloadedBooks(); // Add predefined books if the user is not logged in
-            adapter.notifyDataSetChanged();
+            // If no user is logged in, add preloaded books directly
+            addPreloadedBooks();
         }
     }
 
-    /**
-     * Load collaborative books from Firestore and add them to the list.
-     */
     private void loadCollaborativeBooks(String userId) {
         firestore.collection("users")
                 .document(userId)
@@ -102,33 +100,38 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
                         Book collaborativeBook = document.toObject(Book.class);
                         if (!bookList.contains(collaborativeBook)) {
                             bookList.add(collaborativeBook);
+                            Log.d(TAG, "Collaborative book added: " + collaborativeBook.getTitle());
                         }
                     }
-                    addPreloadedBooks(); // Add predefined books after fetching collaborative ones
-                    adapter.notifyDataSetChanged();
+                    addPreloadedBooks(); // Add preloaded books after collaborative books
                 })
-                .addOnFailureListener(e -> Log.e(TAG, "Error fetching collaborative books: ", e));
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching collaborative books: ", e);
+                    addPreloadedBooks(); // Ensure preloaded books are added even on failure
+                })
+                .addOnCompleteListener(task -> adapter.updateBooks(bookList)); // Always update adapter at the end
     }
 
-    /**
-     * Add predefined books to the list.
-     */
     private void addPreloadedBooks() {
-        Log.d(TAG, "Adding preloaded books.");
+        Log.d(TAG, "Adding preloaded books...");
+        if (!bookList.isEmpty()) {
+            Log.d(TAG, "Preloaded books already exist in the list. Skipping...");
+            return; // Prevent duplicate additions
+        }
+
         bookList.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "Robert T. Kiyosaki", "Financial wisdom from the rich."));
         bookList.add(new Book(R.drawable.book_2, "url_to_pdf_2", "Atomic Habits", "James Clear", "Build good habits, break bad ones."));
         bookList.add(new Book(R.drawable.book_3, "url_to_pdf_3", "Best Self", "Mike Bayer", "Be you, only better."));
         bookList.add(new Book(R.drawable.book_4, "url_to_pdf_4", "How to Be Fine", "Kristen Meinzer", "Lessons from self-help books."));
         bookList.add(new Book(R.drawable.book_5, "url_to_pdf_5", "Out of the Box", "Suzanne Dudley", "A journey of emotional resilience."));
-        bookList.add(new Book(R.drawable.book_6, "url_to_pdf_6", "Stripped", "Brenda M. Gonzalez", "Living and loving after trauma."));
-        bookList.add(new Book(R.drawable.book_7, "url_to_pdf_7", "12 Rules for Life", "Jordan B. Peterson", "An antidote to chaos."));
-        bookList.add(new Book(R.drawable.book_8, "url_to_pdf_8", "Readistan", "Shah Rukh Nadeem", "Summaries of the best books."));
-        bookList.add(new Book(R.drawable.book_9, "url_to_pdf_9", "Reclaim Your Heart", "Yasmin Mogahed", "Free yourself from life's shackles."));
-        bookList.add(new Book(R.drawable.book_10, "url_to_pdf_10", "Lost Islamic History", "Firas Alkhateeb", "Muslim civilization through the ages."));
+
+        adapter.updateBooks(bookList); // Refresh adapter with the updated list
+        Log.d(TAG, "Preloaded books added. Total: " + bookList.size());
     }
 
     @Override
     public void onPdfClick(Book book) {
+        Log.d(TAG, "Book selected: " + book.getTitle());
         // Handle book selection
         if (getActivity() instanceof CollaborativeChatActivity) {
             ((CollaborativeChatActivity) getActivity()).addCollaborativeBook(book);
@@ -138,12 +141,10 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
 
     @Override
     public void onPdfClick(String pdfUrl) {
+        Log.d(TAG, "PDF URL selected: " + pdfUrl);
         // Handle PDF URL click if necessary
     }
 
-    /**
-     * Adds spacing between items in the RecyclerView.
-     */
     private static class SpaceItemDecoration extends RecyclerView.ItemDecoration {
         private final int space;
 
