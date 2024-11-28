@@ -249,31 +249,37 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     }
 
     private void showFriendSelectionDialog(Book book) {
-        new FriendSelectionDialog(context).show((friendId, friendName) -> {
+        new FriendSelectionDialog(context).show((selectedFriends) -> {
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
             String currentUserId = FirebaseAuth.getInstance().getUid();
 
-            if (currentUserId == null || friendId == null || book == null) {
+            if (currentUserId == null || selectedFriends == null || selectedFriends.isEmpty() || book == null) {
                 Toast.makeText(context, "Invalid data for collaboration", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            book.setCollaborators(Arrays.asList(currentUserId, friendId));
-            firestore.collection("users")
-                    .document(currentUserId)
-                    .collection("collaborativeBooks")
-                    .document(book.getId())
-                    .set(book)
-                    .addOnSuccessListener(aVoid -> firestore.collection("users")
-                            .document(friendId)
-                            .collection("collaborativeBooks")
-                            .document(book.getId())
-                            .set(book)
-                            .addOnSuccessListener(aVoid1 -> Toast.makeText(context, "Book shared with " + friendName, Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e -> Toast.makeText(context, "Failed to share book with " + friendName, Toast.LENGTH_SHORT).show()))
-                    .addOnFailureListener(e -> Toast.makeText(context, "Failed to collaborate on book", Toast.LENGTH_SHORT).show());
+            // Add the current user to the collaborators list
+            List<String> collaborators = new ArrayList<>(selectedFriends.keySet());
+            collaborators.add(currentUserId);
+
+            // Update the book's collaborators list
+            book.setCollaborators(collaborators);
+
+            // Save the book for each collaborator
+            for (String friendId : collaborators) {
+                firestore.collection("users")
+                        .document(friendId)
+                        .collection("collaborativeBooks")
+                        .document(book.getId())
+                        .set(book)
+                        .addOnSuccessListener(aVoid -> Log.d(TAG, "Book shared with user: " + friendId))
+                        .addOnFailureListener(e -> Log.e(TAG, "Failed to share book with user: " + friendId, e));
+            }
+
+            Toast.makeText(context, "Book shared successfully with selected collaborators!", Toast.LENGTH_SHORT).show();
         });
     }
+
 
     private void markBookAsHidden(Book book) {
         book.setHidden(true);

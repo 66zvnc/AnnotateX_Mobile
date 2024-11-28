@@ -5,8 +5,21 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- RecyclerView to display the list of friends -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/friendsRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Confirm Button to finalize friend selection -->
+    <Button
+        android:id="@+id/confirmButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Confirm Selection"
+        android:background="@drawable/rounded_background"
+        android:textColor="@android:color/white"
+        android:padding="12dp" />
 </LinearLayout>

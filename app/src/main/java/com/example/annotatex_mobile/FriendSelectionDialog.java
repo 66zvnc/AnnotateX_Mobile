@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,12 +15,14 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FriendSelectionDialog {
 
     public interface FriendSelectionListener {
-        void onFriendSelected(String friendId, String friendName);
+        void onFriendsSelected(Map<String, String> selectedFriends); // Map of friendId to friendName
     }
 
     private final Context context;
@@ -43,6 +46,7 @@ public class FriendSelectionDialog {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Friend> friends = new ArrayList<>();
+                    Map<String, String> selectedFriends = new HashMap<>();
 
                     queryDocumentSnapshots.forEach(doc -> {
                         Friend friend = new Friend(
@@ -72,18 +76,37 @@ public class FriendSelectionDialog {
                         public void onBindViewHolder(@NonNull FriendViewHolder holder, int position) {
                             super.onBindViewHolder(holder, position);
 
-                            // Add click listener for each friend to trigger the selection callback
+                            // Add click listener for each friend to toggle selection
                             holder.itemView.setOnClickListener(v -> {
                                 Friend selectedFriend = friends.get(position);
-                                listener.onFriendSelected(selectedFriend.getId(), selectedFriend.getName());
+                                if (selectedFriends.containsKey(selectedFriend.getId())) {
+                                    // Deselect the friend
+                                    selectedFriends.remove(selectedFriend.getId());
+                                    holder.itemView.setAlpha(1.0f); // Reset transparency
+                                } else {
+                                    // Select the friend
+                                    selectedFriends.put(selectedFriend.getId(), selectedFriend.getName());
+                                    holder.itemView.setAlpha(0.5f); // Indicate selection
+                                }
                             });
                         }
                     };
                     recyclerView.setAdapter(adapter);
 
+                    // Add a confirm button to complete the selection
+                    Button confirmButton = dialogView.findViewById(R.id.confirmButton);
+                    confirmButton.setOnClickListener(v -> {
+                        if (selectedFriends.isEmpty()) {
+                            Toast.makeText(context, "No friends selected", Toast.LENGTH_SHORT).show();
+                        } else {
+                            listener.onFriendsSelected(selectedFriends);
+                            Toast.makeText(context, "Selected friends: " + selectedFriends.size(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
                     // Build and show the dialog
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setTitle("Select a Friend to Collaborate With");
+                    builder.setTitle("Select Friends to Collaborate With");
                     builder.setView(dialogView);
                     builder.setCancelable(true);
                     builder.create().show();
