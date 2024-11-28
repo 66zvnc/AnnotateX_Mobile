@@ -293,16 +293,20 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful() && !task.getResult().isEmpty()) {
                                 String docId = task.getResult().getDocuments().get(0).getId();
-                                FirebaseFirestore.getInstance().collection("books").document(docId).delete();
-                            }
-                            int position = filteredList.indexOf(book);
-                            if (position != -1) {
-                                filteredList.remove(position);
-                                notifyItemRemoved(position);
+                                FirebaseFirestore.getInstance().collection("books").document(docId).delete()
+                                        .addOnSuccessListener(aVoid1 -> {
+                                            // Remove book from both lists
+                                            bookList.remove(book); // Remove from the original list
+                                            filteredList.remove(book); // Remove from the filtered list
+                                            notifyDataSetChanged(); // Notify adapter of changes
+                                            Log.d(TAG, "Book deleted successfully.");
+                                        })
+                                        .addOnFailureListener(e -> Log.e(TAG, "Failed to delete document from Firestore", e));
                             }
                         }))
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to delete book", e));
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to delete file from Storage", e));
     }
+
 
     @Override
     public int getItemCount() {
