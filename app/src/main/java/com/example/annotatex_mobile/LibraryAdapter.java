@@ -140,17 +140,27 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             holder.imageView.setImageResource(book.getImageResId());
         }
 
-        // Configure collaborator profile picture
+        // Configure collaborator profile pictures
         if (book.getCollaborators() != null && !book.getCollaborators().isEmpty()) {
-            String collaboratorId = getCollaboratorId(book);
-            if (collaboratorId != null) {
-                holder.collaboratorImageView.setVisibility(View.VISIBLE);
-                loadCollaboratorProfilePicture(collaboratorId, holder.collaboratorImageView);
+            List<String> collaborators = book.getCollaborators();
+            String currentUserId = FirebaseAuth.getInstance().getUid();
+
+            // Load first collaborator profile picture
+            if (collaborators.size() > 0) {
+                loadCollaboratorProfilePicture(collaborators.get(0), holder.collaboratorImageView1);
             } else {
-                holder.collaboratorImageView.setVisibility(View.GONE);
+                holder.collaboratorImageView1.setVisibility(View.GONE);
+            }
+
+            // Load second collaborator profile picture if available
+            if (collaborators.size() > 1) {
+                loadCollaboratorProfilePicture(collaborators.get(1), holder.collaboratorImageView2);
+            } else {
+                holder.collaboratorImageView2.setVisibility(View.GONE);
             }
         } else {
-            holder.collaboratorImageView.setVisibility(View.GONE);
+            holder.collaboratorImageView1.setVisibility(View.GONE);
+            holder.collaboratorImageView2.setVisibility(View.GONE);
         }
 
         // Configure selection or menu mode
@@ -174,6 +184,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         // Handle item click
         holder.itemView.setOnClickListener(v -> listener.onPdfClick(book));
     }
+
 
     private void loadCollaboratorProfilePicture(String collaboratorId, ImageView imageView) {
         FirebaseFirestore.getInstance().collection("users").document(collaboratorId)
@@ -200,6 +211,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
                     imageView.setImageResource(R.drawable.ic_default_profile);
                 });
     }
+
 
     private String getCollaboratorId(Book book) {
         String currentUserId = FirebaseAuth.getInstance().getUid();
@@ -320,17 +332,24 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public ImageView collaboratorImageView1;
+        public ImageView collaboratorImageView2;
         ImageView imageView;
         ImageView menuIcon;
         RadioButton radioButton;
-        ImageView collaboratorImageView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+
+            // Initialize views
             imageView = itemView.findViewById(R.id.imageView);
             menuIcon = itemView.findViewById(R.id.menu_icon);
             radioButton = itemView.findViewById(R.id.radioButton);
-            collaboratorImageView = itemView.findViewById(R.id.collaboratorProfilePicture);
+
+            // Initialize collaborator profile pictures
+            collaboratorImageView1 = itemView.findViewById(R.id.collaboratorProfilePicture1);
+            collaboratorImageView2 = itemView.findViewById(R.id.collaboratorProfilePicture2);
         }
     }
+
 }

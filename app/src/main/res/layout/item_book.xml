@@ -51,19 +51,31 @@
             android:layout_marginTop="8dp"
             android:visibility="gone" />
 
-        <!-- Collaborator Profile Picture -->
+        <!-- Collaborator Profile Picture 1 -->
         <ImageView
-            android:id="@+id/collaboratorProfilePicture"
+            android:id="@+id/collaboratorProfilePicture1"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_margin="8dp"
-            android:layout_gravity="bottom|end"
             android:scaleType="centerCrop"
             android:contentDescription="@string/collaborator_profile_picture_desc"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:srcCompat="@drawable/ic_default_profile" />
 
+        <!-- Collaborator Profile Picture 2 -->
+        <ImageView
+            android:id="@+id/collaboratorProfilePicture2"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="8dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/collaborator_profile_picture_desc"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/collaboratorProfilePicture1"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginEnd="8dp"
+            app:srcCompat="@drawable/ic_default_profile" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
