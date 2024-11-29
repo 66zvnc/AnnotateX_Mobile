@@ -19,7 +19,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CollaborativeChatActivity extends AppCompatActivity {
@@ -205,51 +204,35 @@ public class CollaborativeChatActivity extends AppCompatActivity {
     }
 
     public void addCollaborativeBook(Book book) {
-        String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
+        new FriendSelectionDialog(this).show(selectedFriends -> {
+            String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
 
-        if (currentUserId == null || book == null) {
-            Toast.makeText(this, "Invalid user data", Toast.LENGTH_SHORT).show();
-            return;
-        }
+            if (currentUserId == null || book == null) {
+                Toast.makeText(this, "Invalid user data", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-        // Add the current user as a collaborator
-        List<String> collaborators = book.getCollaborators() != null ? new ArrayList<>(book.getCollaborators()) : new ArrayList<>();
-        if (!collaborators.contains(currentUserId)) {
-            collaborators.add(currentUserId);
-        }
+            // Combine current user and selected friends as collaborators
+            List<String> collaborators = new ArrayList<>(selectedFriends.keySet());
+            if (!collaborators.contains(currentUserId)) {
+                collaborators.add(currentUserId);
+            }
 
-        // Add collaborators from the selected friend
-        firestore.collection("users").document(currentUserId).collection("friends")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (QueryDocumentSnapshot friendDoc : queryDocumentSnapshots) {
-                        String friendId = friendDoc.getId();
-                        if (!collaborators.contains(friendId)) {
-                            collaborators.add(friendId);
-                        }
-                    }
+            book.setCollaborators(collaborators);
 
-                    // Update the book's collaborators
-                    book.setCollaborators(collaborators);
+            // Save the collaborative book for all collaborators
+            for (String collaboratorId : collaborators) {
+                firestore.collection("users")
+                        .document(collaboratorId)
+                        .collection("collaborativeBooks")
+                        .document(book.getId())
+                        .set(book)
+                        .addOnSuccessListener(aVoid -> Log.d("Collaboration", "Book added for collaborator: " + collaboratorId))
+                        .addOnFailureListener(e -> Log.e("Collaboration", "Failed to add book for collaborator: " + collaboratorId, e));
+            }
 
-                    // Save the collaborative book for each collaborator
-                    for (String collaboratorId : collaborators) {
-                        firestore.collection("users")
-                                .document(collaboratorId)
-                                .collection("collaborativeBooks")
-                                .document(book.getId())
-                                .set(book)
-                                .addOnSuccessListener(aVoid -> Log.d("Collaboration", "Book added for collaborator: " + collaboratorId))
-                                .addOnFailureListener(e -> Log.e("Collaboration", "Failed to add book for collaborator: " + collaboratorId, e));
-                    }
-
-                    Toast.makeText(this, "Collaborative book added successfully", Toast.LENGTH_SHORT).show();
-                    loadCollaborativeBooks(); // Refresh the local library
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to fetch friends for collaboration", Toast.LENGTH_SHORT).show();
-                    Log.e("Collaboration", "Error fetching friends", e);
-                });
+            Toast.makeText(this, "Collaborative book added successfully", Toast.LENGTH_SHORT).show();
+            loadCollaborativeBooks(); // Refresh the collaborative library
+        });
     }
-
 }

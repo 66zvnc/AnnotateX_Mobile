@@ -93,6 +93,13 @@ public class FriendSelectionDialog {
                     };
                     recyclerView.setAdapter(adapter);
 
+                    // Create the dialog
+                    AlertDialog dialog = new AlertDialog.Builder(context)
+                            .setTitle("Select Friends to Collaborate With")
+                            .setView(dialogView)
+                            .setCancelable(true)
+                            .create();
+
                     // Add a confirm button to complete the selection
                     Button confirmButton = dialogView.findViewById(R.id.confirmButton);
                     confirmButton.setOnClickListener(v -> {
@@ -101,15 +108,12 @@ public class FriendSelectionDialog {
                         } else {
                             listener.onFriendsSelected(selectedFriends);
                             Toast.makeText(context, "Selected friends: " + selectedFriends.size(), Toast.LENGTH_SHORT).show();
+                            dialog.dismiss(); // Close the dialog
                         }
                     });
 
-                    // Build and show the dialog
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setTitle("Select Friends to Collaborate With");
-                    builder.setView(dialogView);
-                    builder.setCancelable(true);
-                    builder.create().show();
+                    // Show the dialog
+                    dialog.show();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(context, "Failed to load friends", Toast.LENGTH_SHORT).show();
