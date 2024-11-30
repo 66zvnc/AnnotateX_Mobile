@@ -30,7 +30,6 @@ public class FriendSelectionDialog {
     private final FirebaseFirestore firestore;
     private final List<String> preselectedFriendIds; // List of friends to preselect
 
-    // Constructor updated to accept preselectedFriendIds
     public FriendSelectionDialog(Context context, List<String> preselectedFriendIds) {
         this.context = context;
         this.auth = FirebaseAuth.getInstance();
@@ -86,23 +85,24 @@ public class FriendSelectionDialog {
 
                             Friend currentFriend = friends.get(position);
 
-                            // Set initial selection state based on the selectedFriends map
-                            holder.itemView.setAlpha(selectedFriends.containsKey(currentFriend.getId()) ? 0.5f : 1.0f);
+                            // Highlight the user if selected, reset to normal if not
+                            if (selectedFriends.containsKey(currentFriend.getId())) {
+                                holder.itemView.setBackgroundColor(context.getResources().getColor(R.color.selected_background));
+                            } else {
+                                holder.itemView.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
+                            }
 
                             // Add click listener for each friend to toggle selection
                             holder.itemView.setOnClickListener(v -> {
                                 if (selectedFriends.containsKey(currentFriend.getId())) {
                                     // Deselect the friend
                                     selectedFriends.remove(currentFriend.getId());
-                                    holder.itemView.setAlpha(1.0f); // Reset transparency
+                                    holder.itemView.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
                                 } else {
                                     // Select the friend
                                     selectedFriends.put(currentFriend.getId(), currentFriend.getName());
-                                    holder.itemView.setAlpha(0.5f); // Indicate selection
+                                    holder.itemView.setBackgroundColor(context.getResources().getColor(R.color.selected_background));
                                 }
-
-                                // Notify adapter about the change for smoother UI updates
-                                notifyItemChanged(position);
                             });
                         }
                     };

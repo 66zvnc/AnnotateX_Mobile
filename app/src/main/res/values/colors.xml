@@ -61,4 +61,7 @@
     <color name="dark_blue">#047B90</color> <!-- Text color -->
     <color name="green">#4CAF50</color>
 
+    <color name="selected_background">#678C8C8C</color>
+
+
 </resources>
