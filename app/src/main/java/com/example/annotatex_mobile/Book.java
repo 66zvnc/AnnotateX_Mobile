@@ -58,6 +58,13 @@ public class Book implements Serializable {
         this.hidden = false;
     }
 
+    public Book(Book other) {
+        this.id = other.id;
+        this.title = other.title;
+        this.author = other.author;
+        this.collaborators = other.collaborators != null ? new ArrayList<>(other.collaborators) : new ArrayList<>();
+    }
+
     // Getters
     public String getId() {
         return id;

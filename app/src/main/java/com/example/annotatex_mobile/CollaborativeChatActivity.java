@@ -16,10 +16,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CollaborativeChatActivity extends AppCompatActivity {
 
@@ -146,8 +146,9 @@ public class CollaborativeChatActivity extends AppCompatActivity {
             return;
         }
 
-        // Fetch collaborative books shared by the current user and the selected friend
-        firestore.collection("users").document(currentUserId)
+        // Fetch collaborative books where both the current user and friend are collaborators
+        firestore.collection("users")
+                .document(currentUserId)
                 .collection("collaborativeBooks")
                 .whereArrayContains("collaborators", friendId)
                 .get()
@@ -204,35 +205,47 @@ public class CollaborativeChatActivity extends AppCompatActivity {
     }
 
     public void addCollaborativeBook(Book book) {
-        new FriendSelectionDialog(this).show(selectedFriends -> {
-            String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
+        String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
 
-            if (currentUserId == null || book == null) {
-                Toast.makeText(this, "Invalid user data", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        if (currentUserId == null || friendId == null || book == null) {
+            Toast.makeText(this, "Invalid data for collaboration", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-            // Combine current user and selected friends as collaborators
-            List<String> collaborators = new ArrayList<>(selectedFriends.keySet());
-            if (!collaborators.contains(currentUserId)) {
-                collaborators.add(currentUserId);
-            }
+        // Ensure collaborators list includes the current user and the selected friend
+        List<String> collaborators = book.getCollaborators();
+        if (collaborators == null) {
+            collaborators = new ArrayList<>();
+        }
+        if (!collaborators.contains(currentUserId)) {
+            collaborators.add(currentUserId);
+        }
+        if (!collaborators.contains(friendId)) {
+            collaborators.add(friendId);
+        }
 
-            book.setCollaborators(collaborators);
+        // Update the book's collaborators
+        book.setCollaborators(collaborators);
 
-            // Save the collaborative book for all collaborators
-            for (String collaboratorId : collaborators) {
-                firestore.collection("users")
-                        .document(collaboratorId)
-                        .collection("collaborativeBooks")
-                        .document(book.getId())
-                        .set(book)
-                        .addOnSuccessListener(aVoid -> Log.d("Collaboration", "Book added for collaborator: " + collaboratorId))
-                        .addOnFailureListener(e -> Log.e("Collaboration", "Failed to add book for collaborator: " + collaboratorId, e));
-            }
+        // Save the collaborative book for both users
+        firestore.collection("users")
+                .document(currentUserId)
+                .collection("collaborativeBooks")
+                .document(book.getId())
+                .set(book)
+                .addOnSuccessListener(aVoid -> Log.d("Collaboration", "Book added for current user"))
+                .addOnFailureListener(e -> Log.e("Collaboration", "Failed to add book for current user", e));
 
-            Toast.makeText(this, "Collaborative book added successfully", Toast.LENGTH_SHORT).show();
-            loadCollaborativeBooks(); // Refresh the collaborative library
-        });
+        firestore.collection("users")
+                .document(friendId)
+                .collection("collaborativeBooks")
+                .document(book.getId())
+                .set(book)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("Collaboration", "Book added for collaborator: " + friendId);
+                    Toast.makeText(this, "Book successfully added to collaboration!", Toast.LENGTH_SHORT).show();
+                    loadCollaborativeBooks(); // Refresh the collaborative books list
+                })
+                .addOnFailureListener(e -> Log.e("Collaboration", "Failed to add book for collaborator: " + friendId, e));
     }
 }

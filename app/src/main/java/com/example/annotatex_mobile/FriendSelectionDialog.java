@@ -28,11 +28,14 @@ public class FriendSelectionDialog {
     private final Context context;
     private final FirebaseAuth auth;
     private final FirebaseFirestore firestore;
+    private final List<String> preselectedFriendIds; // List of friends to preselect
 
-    public FriendSelectionDialog(Context context) {
+    // Constructor updated to accept preselectedFriendIds
+    public FriendSelectionDialog(Context context, List<String> preselectedFriendIds) {
         this.context = context;
         this.auth = FirebaseAuth.getInstance();
         this.firestore = FirebaseFirestore.getInstance();
+        this.preselectedFriendIds = preselectedFriendIds != null ? preselectedFriendIds : new ArrayList<>();
     }
 
     public void show(FriendSelectionListener listener) {
@@ -57,6 +60,11 @@ public class FriendSelectionDialog {
                                 doc.getBoolean("removed") != null && doc.getBoolean("removed")
                         );
                         friends.add(friend);
+
+                        // Automatically select preselected friends
+                        if (preselectedFriendIds.contains(friend.getId())) {
+                            selectedFriends.put(friend.getId(), friend.getName());
+                        }
                     });
 
                     if (friends.isEmpty()) {
@@ -76,18 +84,25 @@ public class FriendSelectionDialog {
                         public void onBindViewHolder(@NonNull FriendViewHolder holder, int position) {
                             super.onBindViewHolder(holder, position);
 
+                            Friend currentFriend = friends.get(position);
+
+                            // Set initial selection state based on the selectedFriends map
+                            holder.itemView.setAlpha(selectedFriends.containsKey(currentFriend.getId()) ? 0.5f : 1.0f);
+
                             // Add click listener for each friend to toggle selection
                             holder.itemView.setOnClickListener(v -> {
-                                Friend selectedFriend = friends.get(position);
-                                if (selectedFriends.containsKey(selectedFriend.getId())) {
+                                if (selectedFriends.containsKey(currentFriend.getId())) {
                                     // Deselect the friend
-                                    selectedFriends.remove(selectedFriend.getId());
+                                    selectedFriends.remove(currentFriend.getId());
                                     holder.itemView.setAlpha(1.0f); // Reset transparency
                                 } else {
                                     // Select the friend
-                                    selectedFriends.put(selectedFriend.getId(), selectedFriend.getName());
+                                    selectedFriends.put(currentFriend.getId(), currentFriend.getName());
                                     holder.itemView.setAlpha(0.5f); // Indicate selection
                                 }
+
+                                // Notify adapter about the change for smoother UI updates
+                                notifyItemChanged(position);
                             });
                         }
                     };

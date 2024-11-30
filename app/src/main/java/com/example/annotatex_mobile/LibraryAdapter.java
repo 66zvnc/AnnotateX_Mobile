@@ -22,7 +22,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -95,18 +94,12 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         return uniqueBooks;
     }
 
-    /**
-     * Resets the adapter to the original list of books.
-     */
     public void resetBooks() {
         Log.d(TAG, "Resetting to original book list. Size: " + bookList.size());
         filteredList = new ArrayList<>(bookList); // Reset to the full book list
         notifyDataSetChanged();
     }
 
-    /**
-     * Listener interface for handling PDF clicks.
-     */
     public interface OnPdfClickListener {
         void onPdfClick(Book book);
         void onPdfClick(String pdfUrl);
@@ -142,12 +135,16 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
         // Configure collaborator profile pictures
         if (book.getCollaborators() != null && !book.getCollaborators().isEmpty()) {
-            List<String> collaborators = book.getCollaborators();
+            List<String> collaborators = new ArrayList<>(book.getCollaborators());
             String currentUserId = FirebaseAuth.getInstance().getUid();
 
+            // Exclude the current user's ID from collaborators
+            collaborators.remove(currentUserId);
+
             // Load first collaborator profile picture
-            if (collaborators.size() > 0) {
+            if (!collaborators.isEmpty()) {
                 loadCollaboratorProfilePicture(collaborators.get(0), holder.collaboratorImageView1);
+                holder.collaboratorImageView1.setVisibility(View.VISIBLE);
             } else {
                 holder.collaboratorImageView1.setVisibility(View.GONE);
             }
@@ -155,6 +152,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             // Load second collaborator profile picture if available
             if (collaborators.size() > 1) {
                 loadCollaboratorProfilePicture(collaborators.get(1), holder.collaboratorImageView2);
+                holder.collaboratorImageView2.setVisibility(View.VISIBLE);
             } else {
                 holder.collaboratorImageView2.setVisibility(View.GONE);
             }
@@ -185,7 +183,6 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         holder.itemView.setOnClickListener(v -> listener.onPdfClick(book));
     }
 
-
     private void loadCollaboratorProfilePicture(String collaboratorId, ImageView imageView) {
         FirebaseFirestore.getInstance().collection("users").document(collaboratorId)
                 .get()
@@ -212,28 +209,13 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
                 });
     }
 
-
-    private String getCollaboratorId(Book book) {
-        String currentUserId = FirebaseAuth.getInstance().getUid();
-        for (String collaborator : book.getCollaborators()) {
-            if (!collaborator.equals(currentUserId)) {
-                return collaborator;
-            }
-        }
-        return null;
-    }
-
     private void showPopupMenu(View view, Book book) {
         PopupMenu popupMenu = new PopupMenu(context, view);
         MenuInflater inflater = popupMenu.getMenuInflater();
         inflater.inflate(R.menu.item_book_menu, popupMenu.getMenu());
 
         MenuItem deleteItem = popupMenu.getMenu().findItem(R.id.menu_delete);
-        if (book.isPreloaded()) {
-            deleteItem.setTitle("Don't Suggest");
-        } else {
-            deleteItem.setTitle("Delete");
-        }
+        deleteItem.setTitle(book.isPreloaded() ? "Don't Suggest" : "Delete");
 
         popupMenu.setOnMenuItemClickListener(item -> onMenuItemClick(item, book));
         popupMenu.show();
@@ -255,13 +237,13 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
                 deleteBook(book);
             }
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     private void showFriendSelectionDialog(Book book) {
-        new FriendSelectionDialog(context).show((selectedFriends) -> {
+        // Pass an empty list for preselected friends since this method does not use them
+        new FriendSelectionDialog(context, new ArrayList<>()).show(selectedFriends -> {
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
             String currentUserId = FirebaseAuth.getInstance().getUid();
 
@@ -272,9 +254,11 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
             // Add the current user to the collaborators list
             List<String> collaborators = new ArrayList<>(selectedFriends.keySet());
-            collaborators.add(currentUserId);
+            if (!collaborators.contains(currentUserId)) {
+                collaborators.add(currentUserId); // Ensure the current user is included
+            }
 
-            // Update the book's collaborators list
+            // Update the book's collaborators list for this instance
             book.setCollaborators(collaborators);
 
             // Save the book for each collaborator
@@ -284,14 +268,13 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
                         .collection("collaborativeBooks")
                         .document(book.getId())
                         .set(book)
-                        .addOnSuccessListener(aVoid -> Log.d(TAG, "Book shared with user: " + friendId))
-                        .addOnFailureListener(e -> Log.e(TAG, "Failed to share book with user: " + friendId, e));
+                        .addOnSuccessListener(aVoid -> Log.d("Collaboration", "Book shared with user: " + friendId))
+                        .addOnFailureListener(e -> Log.e("Collaboration", "Failed to share book with user: " + friendId, e));
             }
 
             Toast.makeText(context, "Book shared successfully with selected collaborators!", Toast.LENGTH_SHORT).show();
         });
     }
-
 
     private void markBookAsHidden(Book book) {
         book.setHidden(true);
