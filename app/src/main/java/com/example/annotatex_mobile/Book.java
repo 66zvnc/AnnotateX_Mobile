@@ -27,6 +27,8 @@ public class Book implements Serializable {
     private boolean hidden;
     private String ownerId; // Owner ID field for collaborative books
     private List<String> collaborators = new ArrayList<>(); // Collaborators field
+    private List<String> annotations = new ArrayList<>(); // Annotations field
+    private String groupId; // New field for group association
 
     // Constructor for user-uploaded books
     public Book(String id, String coverImageUrl, String pdfUrl, String title, String author, String description, String userId) {
@@ -39,6 +41,8 @@ public class Book implements Serializable {
         this.userId = userId;
         this.isPreloaded = false;
         this.hidden = false;
+        this.collaborators = new ArrayList<>();
+        this.annotations = new ArrayList<>();
     }
 
     // Constructor for preloaded books
@@ -50,12 +54,16 @@ public class Book implements Serializable {
         this.description = description;
         this.isPreloaded = true;
         this.hidden = false;
+        this.collaborators = new ArrayList<>();
+        this.annotations = new ArrayList<>();
     }
 
     // Default constructor
     public Book() {
         this.isPreloaded = false;
         this.hidden = false;
+        this.collaborators = new ArrayList<>();
+        this.annotations = new ArrayList<>();
     }
 
     public Book(Book other) {
@@ -63,6 +71,7 @@ public class Book implements Serializable {
         this.title = other.title;
         this.author = other.author;
         this.collaborators = other.collaborators != null ? new ArrayList<>(other.collaborators) : new ArrayList<>();
+        this.annotations = other.annotations != null ? new ArrayList<>(other.annotations) : new ArrayList<>();
     }
 
     // Getters
@@ -122,6 +131,14 @@ public class Book implements Serializable {
         return collaborators;
     }
 
+    public List<String> getAnnotations() {
+        return annotations;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
     // Setters
     public void setId(String id) {
         this.id = id;
@@ -160,6 +177,18 @@ public class Book implements Serializable {
         }
     }
 
+    public void setAnnotations(List<String> annotations) {
+        if (annotations != null) {
+            this.annotations = annotations;
+        } else {
+            this.annotations = new ArrayList<>();
+        }
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
     public void addCollaborator(String collaboratorId) {
         if (!collaborators.contains(collaboratorId)) {
             collaborators.add(collaboratorId);
@@ -167,6 +196,16 @@ public class Book implements Serializable {
         } else {
             Log.d(TAG, "Collaborator already exists: " + collaboratorId);
         }
+    }
+
+    public void addAnnotation(String annotationId) {
+        if (!annotations.contains(annotationId)) {
+            annotations.add(annotationId);
+        }
+    }
+
+    public void removeAnnotation(String annotationId) {
+        annotations.remove(annotationId);
     }
 
     // Utility methods
@@ -214,5 +253,18 @@ public class Book implements Serializable {
             Log.d(TAG, "No local cover image found for book: " + title);
             return false;
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Book book = (Book) obj;
+        return id != null && id.equals(book.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
     }
 }

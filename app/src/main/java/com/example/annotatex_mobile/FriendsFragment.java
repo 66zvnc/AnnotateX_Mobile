@@ -1,7 +1,5 @@
 package com.example.annotatex_mobile;
 
-import static android.content.ContentValues.TAG;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,11 +7,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -25,6 +25,8 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.content.ContentValues.TAG;
+
 public class FriendsFragment extends Fragment {
 
     private RecyclerView friendsRecyclerView;
@@ -33,6 +35,10 @@ public class FriendsFragment extends Fragment {
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
     private ListenerRegistration listenerRegistration;
+    private RecyclerView groupsRecyclerView;
+    private GroupAdapter groupAdapter;
+    private List<Group> groupsList;
+    private ListenerRegistration groupsListenerRegistration;
 
     @Nullable
     @Override
@@ -49,13 +55,35 @@ public class FriendsFragment extends Fragment {
         friendsAdapter = new FriendsAdapter(requireContext(), friendsList);
         friendsRecyclerView.setAdapter(friendsAdapter);
 
+        // Initialize groups RecyclerView
+        groupsRecyclerView = view.findViewById(R.id.groupsRecyclerView);
+        groupsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        groupsList = new ArrayList<>();
+        groupAdapter = new GroupAdapter(requireContext(), groupsList, group -> {
+            // Handle group click - navigate to group chat
+            Intent intent = new Intent(getContext(), GroupChatActivity.class);
+            intent.putExtra("groupId", group.getId());
+            intent.putExtra("groupName", group.getName());
+            startActivity(intent);
+        });
+        groupsRecyclerView.setAdapter(groupAdapter);
+
         // Start listening for real-time updates
         listenForFriendUpdates();
+        listenForGroupUpdates();
 
         // Set up the "Add Friend" icon
         ImageView addFriendIcon = view.findViewById(R.id.addFriendIcon);
         addFriendIcon.setOnClickListener(v -> {
             startActivity(new Intent(getContext(), SearchUsersActivity.class));
+        });
+
+        // Set up the "Create Group" icon
+        ImageView createGroupIcon = view.findViewById(R.id.addGroupIcon);
+        createGroupIcon.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), GroupCreationActivity.class);
+            startActivity(intent);
         });
 
         return view;
@@ -94,6 +122,28 @@ public class FriendsFragment extends Fragment {
                 });
     }
 
+    private void listenForGroupUpdates() {
+        String currentUserId = auth.getCurrentUser().getUid();
+
+        groupsListenerRegistration = firestore.collection("groups")
+                .whereArrayContains("members", currentUserId)
+                .addSnapshotListener((querySnapshot, e) -> {
+                    if (e != null || querySnapshot == null) {
+                        Log.e(TAG, "Error listening for group updates", e);
+                        return;
+                    }
+
+                    groupsList.clear();
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        Group group = document.toObject(Group.class);
+                        group.setId(document.getId());
+                        groupsList.add(group);
+                        Log.d(TAG, "Found group: " + group.getName() + " with ID: " + group.getId());
+                    }
+                    groupAdapter.notifyDataSetChanged();
+                });
+    }
+
     private void handleFriendUpdates(QuerySnapshot querySnapshot) {
         for (DocumentChange change : querySnapshot.getDocumentChanges()) {
             DocumentSnapshot document = change.getDocument();
@@ -119,9 +169,6 @@ public class FriendsFragment extends Fragment {
         friendsAdapter.notifyDataSetChanged();
     }
 
-    /**
-     * Add or update a friend in the list.
-     */
     private void addOrUpdateFriend(Friend updatedFriend) {
         boolean friendExists = false;
         for (Friend friend : friendsList) {
@@ -136,9 +183,6 @@ public class FriendsFragment extends Fragment {
         }
     }
 
-    /**
-     * Update existing friend's information.
-     */
     private void updateFriend(Friend updatedFriend) {
         for (int i = 0; i < friendsList.size(); i++) {
             if (friendsList.get(i).getId().equals(updatedFriend.getId())) {
@@ -162,6 +206,9 @@ public class FriendsFragment extends Fragment {
         super.onDestroy();
         if (listenerRegistration != null) {
             listenerRegistration.remove();
+        }
+        if (groupsListenerRegistration != null) {
+            groupsListenerRegistration.remove();
         }
     }
 }

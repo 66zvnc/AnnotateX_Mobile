@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,6 +31,23 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
     private List<Book> bookList;
     private FirebaseFirestore firestore;
     private FirebaseAuth auth;
+    private OnBookSelectedListener bookSelectedListener;
+
+    public static BookSelectionFragment newInstance(OnBookSelectedListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException("BookSelectedListener cannot be null");
+        }
+        BookSelectionFragment fragment = new BookSelectionFragment();
+        fragment.bookSelectedListener = listener;
+        return fragment;
+    }
+
+    public void setBookSelectedListener(OnBookSelectedListener listener) {
+        this.bookSelectedListener = listener;
+        if (listener == null) {
+            Log.w(TAG, "BookSelectedListener is being set to null");
+        }
+    }
 
     @Nullable
     @Override
@@ -59,90 +77,52 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
 
     private void loadBooksFromFirestore() {
         Log.d(TAG, "Fetching books from Firestore...");
-        CollectionReference booksCollection = firestore.collection("books");
         String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
 
-        if (userId != null) {
-            booksCollection.whereEqualTo("userId", userId).get().addOnCompleteListener(task -> {
-                if (task.isSuccessful() && task.getResult() != null) {
-                    bookList.clear(); // Clear the book list
-                    for (QueryDocumentSnapshot document : task.getResult()) {
+        if (userId == null) {
+            Log.e(TAG, "No user logged in");
+            return;
+        }
+
+        firestore.collection("books")
+                .whereEqualTo("userId", userId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    bookList.clear();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        String id = document.getId();
+                        String coverUrl = document.getString("coverUrl");
                         String pdfUrl = document.getString("pdfUrl");
                         String title = document.getString("title");
                         String author = document.getString("author");
-                        String coverUrl = document.getString("coverUrl");
                         String description = document.getString("description");
-                        String id = document.getId();
+
                         Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
                         bookList.add(book);
-                        Log.d(TAG, "Book loaded: " + book.getTitle());
+                        Log.d(TAG, "Added book: " + book.getTitle());
                     }
-                    loadCollaborativeBooks(userId);
-                } else {
-                    Log.e(TAG, "Error getting documents: ", task.getException());
-                    // If Firestore fails, ensure preloaded books are still added
-                    addPreloadedBooks();
-                }
-            });
-        } else {
-            // If no user is logged in, add preloaded books directly
-            addPreloadedBooks();
-        }
-    }
-
-    private void loadCollaborativeBooks(String userId) {
-        firestore.collection("users")
-                .document(userId)
-                .collection("collaborativeBooks")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        Book collaborativeBook = document.toObject(Book.class);
-                        if (!bookList.contains(collaborativeBook)) {
-                            bookList.add(collaborativeBook);
-                            Log.d(TAG, "Collaborative book added: " + collaborativeBook.getTitle());
-                        }
-                    }
-                    addPreloadedBooks(); // Add preloaded books after collaborative books
+                    adapter.updateBooks(bookList);
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error fetching collaborative books: ", e);
-                    addPreloadedBooks(); // Ensure preloaded books are added even on failure
-                })
-                .addOnCompleteListener(task -> adapter.updateBooks(bookList)); // Always update adapter at the end
-    }
-
-    private void addPreloadedBooks() {
-        Log.d(TAG, "Adding preloaded books...");
-        if (!bookList.isEmpty()) {
-            Log.d(TAG, "Preloaded books already exist in the list. Skipping...");
-            return; // Prevent duplicate additions
-        }
-
-        bookList.add(new Book(R.drawable.book_1, "url_to_pdf_1", "Rich Dad Poor Dad", "Robert T. Kiyosaki", "Financial wisdom from the rich."));
-        bookList.add(new Book(R.drawable.book_2, "url_to_pdf_2", "Atomic Habits", "James Clear", "Build good habits, break bad ones."));
-        bookList.add(new Book(R.drawable.book_3, "url_to_pdf_3", "Best Self", "Mike Bayer", "Be you, only better."));
-        bookList.add(new Book(R.drawable.book_4, "url_to_pdf_4", "How to Be Fine", "Kristen Meinzer", "Lessons from self-help books."));
-        bookList.add(new Book(R.drawable.book_5, "url_to_pdf_5", "Out of the Box", "Suzanne Dudley", "A journey of emotional resilience."));
-
-        adapter.updateBooks(bookList); // Refresh adapter with the updated list
-        Log.d(TAG, "Preloaded books added. Total: " + bookList.size());
+                    Log.e(TAG, "Error loading books", e);
+                    Toast.makeText(getContext(), "Failed to load books", Toast.LENGTH_SHORT).show();
+                });
     }
 
     @Override
     public void onPdfClick(Book book) {
         Log.d(TAG, "Book selected: " + book.getTitle());
-        // Handle book selection
-        if (getActivity() instanceof CollaborativeChatActivity) {
-            ((CollaborativeChatActivity) getActivity()).addCollaborativeBook(book);
+        if (bookSelectedListener != null) {
+            bookSelectedListener.onBookSelected(book);
+        } else {
+            Log.e(TAG, "BookSelectedListener is null");
+            Toast.makeText(getContext(), "Unable to select book at this time", Toast.LENGTH_SHORT).show();
         }
-        getParentFragmentManager().popBackStack(); // Close the fragment after selection
     }
 
     @Override
     public void onPdfClick(String pdfUrl) {
-        Log.d(TAG, "PDF URL selected: " + pdfUrl);
-        // Handle PDF URL click if necessary
+
     }
 
     private static class SpaceItemDecoration extends RecyclerView.ItemDecoration {
@@ -161,5 +141,9 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
                 outRect.top = space;
             }
         }
+    }
+
+    public interface OnBookSelectedListener {
+        void onBookSelected(Book book);
     }
 }

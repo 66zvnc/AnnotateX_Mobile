@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -167,12 +168,28 @@ public class CollaborativeChatActivity extends AppCompatActivity {
         collaborativeBooksRecyclerView.setVisibility(View.GONE);
         findViewById(R.id.fragment_container).setVisibility(View.VISIBLE);
 
-        BookSelectionFragment fragment = new BookSelectionFragment();
+        BookSelectionFragment fragment = BookSelectionFragment.newInstance(book -> {
+            // Show confirmation dialog
+            new AlertDialog.Builder(CollaborativeChatActivity.this)
+                .setTitle("Add Book")
+                .setMessage("Do you want to collaborate on \"" + book.getTitle() + "\" with this friend?")
+                .setPositiveButton("Add", (dialog, which) -> {
+                    addCollaborativeBook(book);
+                    dialog.dismiss();
+                    // Return to the books list view
+                    getSupportFragmentManager().popBackStack();
+                    collaborativeBooksRecyclerView.setVisibility(View.VISIBLE);
+                    findViewById(R.id.fragment_container).setVisibility(View.GONE);
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
+        });
+
         getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit();
     }
 
     private void openBookDetails(Book book) {

@@ -161,26 +161,21 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             holder.collaboratorImageView2.setVisibility(View.GONE);
         }
 
-        // Configure selection or menu mode
+        // Configure view based on mode
         if (isInSelectionMode) {
+            // In selection mode (BookSelectionFragment)
             holder.menuIcon.setVisibility(View.GONE);
-            holder.radioButton.setVisibility(View.VISIBLE);
-            holder.radioButton.setChecked(position == selectedPosition);
-            holder.radioButton.setOnClickListener(v -> {
-                selectedPosition = holder.getAdapterPosition();
-                notifyDataSetChanged();
+            holder.itemView.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onPdfClick(book);
                 }
             });
         } else {
+            // In normal mode (Library)
             holder.menuIcon.setVisibility(View.VISIBLE);
-            holder.radioButton.setVisibility(View.GONE);
             holder.menuIcon.setOnClickListener(v -> showPopupMenu(v, book));
+            holder.itemView.setOnClickListener(v -> listener.onPdfClick(book));
         }
-
-        // Handle item click
-        holder.itemView.setOnClickListener(v -> listener.onPdfClick(book));
     }
 
     private void loadCollaboratorProfilePicture(String collaboratorId, ImageView imageView) {
@@ -319,17 +314,11 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         public ImageView collaboratorImageView2;
         ImageView imageView;
         ImageView menuIcon;
-        RadioButton radioButton;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            // Initialize views
             imageView = itemView.findViewById(R.id.imageView);
             menuIcon = itemView.findViewById(R.id.menu_icon);
-            radioButton = itemView.findViewById(R.id.radioButton);
-
-            // Initialize collaborator profile pictures
             collaboratorImageView1 = itemView.findViewById(R.id.collaboratorProfilePicture1);
             collaboratorImageView2 = itemView.findViewById(R.id.collaboratorProfilePicture2);
         }
