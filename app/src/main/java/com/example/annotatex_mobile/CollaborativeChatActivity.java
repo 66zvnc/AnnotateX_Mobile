@@ -19,7 +19,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -230,83 +229,40 @@ public class CollaborativeChatActivity extends AppCompatActivity {
             return;
         }
 
-        // First, fetch the existing book data to preserve existing collaborations
-        firestore.collection("users")
-                .document(currentUserId)
-                .collection("collaborativeBooks")
-                .document(book.getId())
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    Book existingBook = documentSnapshot.exists() ? 
-                        documentSnapshot.toObject(Book.class) : new Book(book);
+        // Ensure collaborators list includes the current user and the selected friend
+        List<String> collaborators = book.getCollaborators();
+        if (collaborators == null) {
+            collaborators = new ArrayList<>();
+        }
+        if (!collaborators.contains(currentUserId)) {
+            collaborators.add(currentUserId);
+        }
+        if (!collaborators.contains(friendId)) {
+            collaborators.add(friendId);
+        }
 
-                    // If book exists, use its collaborators, otherwise use new book's collaborators
-                    List<String> updatedCollaborators = existingBook.getCollaborators() != null ? 
-                        new ArrayList<>(existingBook.getCollaborators()) : new ArrayList<>();
-                    Map<String, Book.CollaborationType> updatedCollaborations = 
-                        existingBook.getCollaborations() != null ? 
-                        new HashMap<>(existingBook.getCollaborations()) : new HashMap<>();
+        // Update the book's collaborators
+        book.setCollaborators(collaborators);
 
-                    // Add new collaborators if they don't exist
-                    if (!updatedCollaborators.contains(currentUserId)) {
-                        updatedCollaborators.add(currentUserId);
-                    }
-                    if (!updatedCollaborators.contains(friendId)) {
-                        updatedCollaborators.add(friendId);
-                    }
-
-                    // Update collaboration types
-                    updatedCollaborations.put(currentUserId, Book.CollaborationType.INDIVIDUAL);
-                    updatedCollaborations.put(friendId, Book.CollaborationType.INDIVIDUAL);
-
-                    // Update the book with all collaborators
-                    existingBook.setCollaborators(updatedCollaborators);
-                    existingBook.setCollaborations(updatedCollaborations);
-
-                    // Save the updated book for both users
-                    saveBookForBothUsers(existingBook, currentUserId, friendId);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Collaboration", "Error checking existing book", e);
-                    Toast.makeText(this, "Failed to set up collaboration", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void saveBookForBothUsers(Book book, String currentUserId, String friendId) {
-        // Save for current user
+        // Save the collaborative book for both users
         firestore.collection("users")
                 .document(currentUserId)
                 .collection("collaborativeBooks")
                 .document(book.getId())
                 .set(book)
+                .addOnSuccessListener(aVoid -> Log.d("Collaboration", "Book added for current user"))
+                .addOnFailureListener(e -> Log.e("Collaboration", "Failed to add book for current user", e));
+
+        firestore.collection("users")
+                .document(friendId)
+                .collection("collaborativeBooks")
+                .document(book.getId())
+                .set(book)
                 .addOnSuccessListener(aVoid -> {
-                    Log.d("Collaboration", "Book added for current user");
-                    
-                    // Save for friend after successful save for current user
-                    firestore.collection("users")
-                            .document(friendId)
-                            .collection("collaborativeBooks")
-                            .document(book.getId())
-                            .set(book)
-                            .addOnSuccessListener(aVoid2 -> {
-                                Log.d("Collaboration", "Book added for collaborator: " + friendId);
-                                Toast.makeText(CollaborativeChatActivity.this, 
-                                    "Book successfully added to collaboration!", 
-                                    Toast.LENGTH_SHORT).show();
-                                loadCollaborativeBooks();
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e("Collaboration", "Failed to add book for collaborator: " + friendId, e);
-                                Toast.makeText(CollaborativeChatActivity.this, 
-                                    "Failed to share with collaborator", 
-                                    Toast.LENGTH_SHORT).show();
-                            });
+                    Log.d("Collaboration", "Book added for collaborator: " + friendId);
+                    Toast.makeText(this, "Book successfully added to collaboration!", Toast.LENGTH_SHORT).show();
+                    loadCollaborativeBooks(); // Refresh the collaborative books list
                 })
-                .addOnFailureListener(e -> {
-                    Log.e("Collaboration", "Failed to add book for current user", e);
-                    Toast.makeText(CollaborativeChatActivity.this, 
-                        "Failed to set up collaboration", 
-                        Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e -> Log.e("Collaboration", "Failed to add book for collaborator: " + friendId, e));
     }
 }

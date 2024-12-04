@@ -135,23 +135,25 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
         // Configure collaborator profile pictures
         if (book.getCollaborators() != null && !book.getCollaborators().isEmpty()) {
-            String currentUserId = FirebaseAuth.getInstance().getUid();
             List<String> collaborators = new ArrayList<>(book.getCollaborators());
+            String currentUserId = FirebaseAuth.getInstance().getUid();
+
+            // Exclude the current user's ID from collaborators
             collaborators.remove(currentUserId);
 
-            holder.collaboratorImageView1.setVisibility(View.VISIBLE);
-            holder.collaboratorImageView2.setVisibility(View.VISIBLE);
-
+            // Load first collaborator profile picture
             if (!collaborators.isEmpty()) {
                 loadCollaboratorProfilePicture(collaborators.get(0), holder.collaboratorImageView1);
-                
-                if (collaborators.size() > 1) {
-                    loadCollaboratorProfilePicture(collaborators.get(1), holder.collaboratorImageView2);
-                } else {
-                    holder.collaboratorImageView2.setVisibility(View.GONE);
-                }
+                holder.collaboratorImageView1.setVisibility(View.VISIBLE);
             } else {
                 holder.collaboratorImageView1.setVisibility(View.GONE);
+            }
+
+            // Load second collaborator profile picture if available
+            if (collaborators.size() > 1) {
+                loadCollaboratorProfilePicture(collaborators.get(1), holder.collaboratorImageView2);
+                holder.collaboratorImageView2.setVisibility(View.VISIBLE);
+            } else {
                 holder.collaboratorImageView2.setVisibility(View.GONE);
             }
         } else {
@@ -178,26 +180,28 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
     private void loadCollaboratorProfilePicture(String collaboratorId, ImageView imageView) {
         FirebaseFirestore.getInstance().collection("users").document(collaboratorId)
-            .get()
-            .addOnSuccessListener(documentSnapshot -> {
-                if (documentSnapshot.exists()) {
-                    String profileImageUrl = documentSnapshot.getString("profileImageUrl");
-                    if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-                        Glide.with(context)
-                            .load(profileImageUrl)
-                            .placeholder(R.drawable.ic_default_profile)
-                            .error(R.drawable.ic_default_profile)
-                            .circleCrop()
-                            .into(imageView);
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String profilePictureUrl = documentSnapshot.getString("profileImageUrl");
+                        if (profilePictureUrl != null && !profilePictureUrl.isEmpty()) {
+                            Glide.with(context)
+                                    .load(profilePictureUrl)
+                                    .placeholder(R.drawable.ic_default_profile)
+                                    .error(R.drawable.ic_default_profile)
+                                    .circleCrop()
+                                    .into(imageView);
+                        } else {
+                            imageView.setImageResource(R.drawable.ic_default_profile);
+                        }
                     } else {
                         imageView.setImageResource(R.drawable.ic_default_profile);
                     }
-                }
-            })
-            .addOnFailureListener(e -> {
-                Log.e("LibraryAdapter", "Error loading collaborator profile", e);
-                imageView.setImageResource(R.drawable.ic_default_profile);
-            });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to load collaborator profile picture", e);
+                    imageView.setImageResource(R.drawable.ic_default_profile);
+                });
     }
 
     private void showPopupMenu(View view, Book book) {
