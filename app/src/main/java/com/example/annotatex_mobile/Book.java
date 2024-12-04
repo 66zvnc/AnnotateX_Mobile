@@ -8,7 +8,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Book implements Serializable {
     private static final String TAG = "Book";
@@ -29,6 +31,12 @@ public class Book implements Serializable {
     private List<String> collaborators = new ArrayList<>(); // Collaborators field
     private List<String> annotations = new ArrayList<>(); // Annotations field
     private String groupId; // New field for group association
+    private Map<String, CollaborationType> collaborations;
+
+    public enum CollaborationType {
+        INDIVIDUAL,
+        GROUP
+    }
 
     // Constructor for user-uploaded books
     public Book(String id, String coverImageUrl, String pdfUrl, String title, String author, String description, String userId) {
@@ -43,6 +51,7 @@ public class Book implements Serializable {
         this.hidden = false;
         this.collaborators = new ArrayList<>();
         this.annotations = new ArrayList<>();
+        this.collaborations = new HashMap<>();
     }
 
     // Constructor for preloaded books
@@ -56,6 +65,7 @@ public class Book implements Serializable {
         this.hidden = false;
         this.collaborators = new ArrayList<>();
         this.annotations = new ArrayList<>();
+        this.collaborations = new HashMap<>();
     }
 
     // Default constructor
@@ -64,6 +74,7 @@ public class Book implements Serializable {
         this.hidden = false;
         this.collaborators = new ArrayList<>();
         this.annotations = new ArrayList<>();
+        this.collaborations = new HashMap<>();
     }
 
     public Book(Book other) {
@@ -72,6 +83,7 @@ public class Book implements Serializable {
         this.author = other.author;
         this.collaborators = other.collaborators != null ? new ArrayList<>(other.collaborators) : new ArrayList<>();
         this.annotations = other.annotations != null ? new ArrayList<>(other.annotations) : new ArrayList<>();
+        this.collaborations = other.collaborations != null ? new HashMap<>(other.collaborations) : new HashMap<>();
     }
 
     // Getters
@@ -139,6 +151,10 @@ public class Book implements Serializable {
         return groupId;
     }
 
+    public Map<String, CollaborationType> getCollaborations() {
+        return collaborations;
+    }
+
     // Setters
     public void setId(String id) {
         this.id = id;
@@ -187,6 +203,10 @@ public class Book implements Serializable {
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
+    }
+
+    public void setCollaborations(Map<String, CollaborationType> collaborations) {
+        this.collaborations = collaborations;
     }
 
     public void addCollaborator(String collaboratorId) {
@@ -266,5 +286,25 @@ public class Book implements Serializable {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
+    }
+
+    public void addCollaboration(String userId, CollaborationType type) {
+        if (collaborations == null) {
+            collaborations = new HashMap<>();
+        }
+        collaborations.put(userId, type);
+        
+        // Also add to collaborators list if not present
+        if (!collaborators.contains(userId)) {
+            collaborators.add(userId);
+        }
+    }
+
+    public boolean hasCollaborationWith(String userId) {
+        return collaborations != null && collaborations.containsKey(userId);
+    }
+
+    public CollaborationType getCollaborationType(String userId) {
+        return collaborations != null ? collaborations.get(userId) : null;
     }
 }

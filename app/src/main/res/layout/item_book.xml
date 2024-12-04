@@ -43,20 +43,22 @@
         <!-- Collaborator Profile Pictures -->
         <ImageView
             android:id="@+id/collaboratorProfilePicture1"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_margin="8dp"
             android:scaleType="centerCrop"
+            android:src="@drawable/ic_default_profile"
             android:contentDescription="@string/collaborator_profile_picture_desc"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <ImageView
             android:id="@+id/collaboratorProfilePicture2"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_margin="8dp"
             android:scaleType="centerCrop"
+            android:src="@drawable/ic_default_profile"
             android:contentDescription="@string/collaborator_profile_picture_desc"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/collaboratorProfilePicture1" />
