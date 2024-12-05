@@ -44,6 +44,7 @@ public class GroupChatActivity extends AppCompatActivity {
     private ImageView goBackButton;
     private ImageView addBookButton;
     private ImageView profileImageView;
+    private ImageView groupInfoButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +60,7 @@ public class GroupChatActivity extends AppCompatActivity {
         groupNameTextView = findViewById(R.id.nameTextView);
         goBackButton = findViewById(R.id.goBackButton);
         addBookButton = findViewById(R.id.addBookButton);
+        groupInfoButton = findViewById(R.id.groupInfoButton);
 
         // Get group ID from intent
         groupId = getIntent().getStringExtra("groupId");
@@ -67,6 +69,13 @@ public class GroupChatActivity extends AppCompatActivity {
             finish();
             return;
         }
+
+        // Set up group info button click listener
+        groupInfoButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, GroupDetailsActivity.class);
+            intent.putExtra("groupId", groupId);
+            startActivity(intent);
+        });
 
         // Rest of your initialization code...
     }
