@@ -3,6 +3,7 @@ package com.example.annotatex_mobile;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -67,29 +68,34 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
                 }
             });
 
-            // Add long click listener for the menu
+            // Add long click listener
             itemView.setOnLongClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
-                    showPopupMenu(v, groups.get(position));
+                    Group group = groups.get(position);
+                    showGroupOptionsDialog(group, v);
                 }
                 return true;
             });
         }
 
-        private void showPopupMenu(View view, Group group) {
-            PopupMenu popup = new PopupMenu(context, view);
-            popup.inflate(R.menu.group_options_menu);
+        private void showGroupOptionsDialog(Group group, View anchor) {
+            // Create popup menu
+            PopupMenu popup = new PopupMenu(context, anchor);
+            popup.getMenuInflater().inflate(R.menu.group_long_press_menu, popup.getMenu());
 
-            // Only show delete option if user is the group creator
+            // Check if current user is admin
             String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            popup.getMenu().findItem(R.id.action_delete_group).setVisible(
-                group.getCreatedBy() != null && group.getCreatedBy().equals(currentUserId)
-            );
+            boolean isAdmin = group.getCreatedBy() != null && 
+                            group.getCreatedBy().equals(currentUserId);
+
+            // Show/hide delete option based on admin status
+            MenuItem deleteItem = popup.getMenu().findItem(R.id.action_delete_group);
+            deleteItem.setVisible(isAdmin);
 
             popup.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == R.id.action_delete_group) {
-                    deleteGroup(group);
+                    showDeleteGroupConfirmation(group);
                     return true;
                 }
                 return false;
@@ -98,20 +104,26 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
             popup.show();
         }
 
-        private void deleteGroup(Group group) {
+        private void showDeleteGroupConfirmation(Group group) {
             new AlertDialog.Builder(context)
                 .setTitle("Delete Group")
-                .setMessage("Are you sure you want to delete this group?")
+                .setMessage("Are you sure you want to delete this group? This action cannot be undone.")
                 .setPositiveButton("Delete", (dialog, which) -> {
                     FirebaseFirestore.getInstance()
                         .collection("groups")
                         .document(group.getId())
                         .delete()
                         .addOnSuccessListener(aVoid -> {
+                            int position = groups.indexOf(group);
+                            if (position != -1) {
+                                groups.remove(position);
+                                notifyItemRemoved(position);
+                            }
                             Toast.makeText(context, "Group deleted successfully", Toast.LENGTH_SHORT).show();
                         })
                         .addOnFailureListener(e -> {
-                            Toast.makeText(context, "Failed to delete group", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "Failed to delete group: " + e.getMessage(), 
+                                         Toast.LENGTH_SHORT).show();
                         });
                 })
                 .setNegativeButton("Cancel", null)
