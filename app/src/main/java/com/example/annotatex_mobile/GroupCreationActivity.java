@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -56,6 +58,9 @@ public class GroupCreationActivity extends AppCompatActivity {
 
                 holder.nameTextView.setText(friend.getName());
                 holder.statusTextView.setText(friend.getStatus());
+
+                // Load friend's profile picture
+                loadFriendProfilePicture(friend.getId(), holder.profileImageView);
 
                 // Set up selection logic
                 holder.itemView.setOnClickListener(v -> {
@@ -128,5 +133,27 @@ public class GroupCreationActivity extends AppCompatActivity {
                     Log.e("GroupCreation", "Error creating group", e);
                     Toast.makeText(this, "Failed to create group", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void loadFriendProfilePicture(String friendId, ImageView imageView) {
+        firestore.collection("users").document(friendId)
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                    if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                        Glide.with(this)
+                            .load(profileImageUrl)
+                            .placeholder(R.drawable.ic_default_profile)
+                            .error(R.drawable.ic_default_profile)
+                            .circleCrop()
+                            .into(imageView);
+                    }
+                }
+            })
+            .addOnFailureListener(e -> {
+                Log.e("GroupCreation", "Error loading friend profile picture", e);
+                imageView.setImageResource(R.drawable.ic_default_profile);
+            });
     }
 }

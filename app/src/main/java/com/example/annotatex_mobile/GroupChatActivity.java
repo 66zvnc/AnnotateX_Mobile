@@ -1,5 +1,7 @@
 package com.example.annotatex_mobile;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -41,6 +43,7 @@ public class GroupChatActivity extends AppCompatActivity {
     private TextView groupNameTextView;
     private ImageView goBackButton;
     private ImageView addBookButton;
+    private ImageView profileImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,72 +54,21 @@ public class GroupChatActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
-        // Get group ID and name from intent
-        groupId = getIntent().getStringExtra("groupId");
-        groupName = getIntent().getStringExtra("groupName");
-
-        if (groupId == null || groupName == null) {
-            Toast.makeText(this, "Invalid group data", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        // Initialize UI components
-        groupImageView = findViewById(R.id.profileImageView);
+        // Initialize views
+        profileImageView = findViewById(R.id.profileImageView);
         groupNameTextView = findViewById(R.id.nameTextView);
         goBackButton = findViewById(R.id.goBackButton);
         addBookButton = findViewById(R.id.addBookButton);
 
-        groupNameTextView.setText(groupName);
+        // Get group ID from intent
+        groupId = getIntent().getStringExtra("groupId");
+        if (groupId == null) {
+            Toast.makeText(this, "Error: Group ID not found", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
-        // RecyclerView for collaborative books
-        collaborativeBooksRecyclerView = findViewById(R.id.collaborativeBooksRecyclerView);
-
-        // Set up "Go Back" button functionality
-        goBackButton.setOnClickListener(v -> finish());
-
-        // Set up RecyclerView
-        collaborativeBooksList = new ArrayList<>();
-        adapter = new CollaborativeBooksAdapter(this, collaborativeBooksList, new CollaborativeBooksAdapter.OnBookInteractionListener() {
-            @Override
-            public void onViewDetails(Book book) {
-                openBookDetails(book);
-            }
-
-            @Override
-            public void onStopCollab(Book book) {
-                stopCollaboration(book);
-            }
-        });
-
-        int columns = getResources().getConfiguration().screenWidthDp >= 600 ? 3 : 2;
-        collaborativeBooksRecyclerView.setLayoutManager(new GridLayoutManager(this, columns));
-        collaborativeBooksRecyclerView.setAdapter(adapter);
-
-        // Load collaborative books
-        loadCollaborativeBooks();
-
-        // Add book functionality
-        addBookButton.setOnClickListener(v -> openBookSelectionFragment());
-
-        // Add search functionality
-        SearchView searchView = findViewById(R.id.searchView);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                filterBooks(query);
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                filterBooks(newText);
-                return false;
-            }
-        });
-
-        // Load group details (like group icon)
-        loadGroupDetails();
+        // Rest of your initialization code...
     }
 
     private void filterBooks(String query) {
@@ -130,20 +82,50 @@ public class GroupChatActivity extends AppCompatActivity {
     }
 
     private void loadGroupDetails() {
-        firestore.collection("groups").document(groupId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        List<String> memberImages = (List<String>) documentSnapshot.get("memberImages");
-                        if (memberImages != null && !memberImages.isEmpty()) {
-                            // Load group image based on member profile images
-                            Glide.with(this)
-                                    .load(memberImages.get(0)) // Placeholder: First member's image
-                                    .placeholder(R.drawable.ic_default_profile)
-                                    .into(groupImageView);
+        firestore.collection("groups").document(groupId)
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    Group group = documentSnapshot.toObject(Group.class);
+                    if (group != null) {
+                        // Set group name
+                        groupNameTextView.setText(group.getName());
+                        
+                        // Load first member's profile picture as group picture
+                        if (group.getMembers() != null && !group.getMembers().isEmpty()) {
+                            String firstMemberId = group.getMembers().get(0);
+                            loadMemberProfilePicture(firstMemberId);
                         }
                     }
-                })
-                .addOnFailureListener(e -> Log.e("GroupActivity", "Failed to load group details", e));
+                }
+            })
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "Error loading group details", e);
+                Toast.makeText(this, "Failed to load group details", Toast.LENGTH_SHORT).show();
+            });
+    }
+
+    private void loadMemberProfilePicture(String memberId) {
+        firestore.collection("users").document(memberId)
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                    if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                        // Load profile image with Glide
+                        Glide.with(this)
+                            .load(profileImageUrl)
+                            .placeholder(R.drawable.ic_default_profile)
+                            .error(R.drawable.ic_default_profile)
+                            .circleCrop()
+                            .into(profileImageView);
+                    }
+                }
+            })
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "Error loading member profile picture", e);
+                profileImageView.setImageResource(R.drawable.ic_default_profile);
+            });
     }
 
     private void loadCollaborativeBooks() {

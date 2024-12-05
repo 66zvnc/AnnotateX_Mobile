@@ -25,28 +25,44 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="start|top"
-                android:src="@drawable/ic_default_profile" />
+                android:src="@drawable/ic_default_profile"
+                android:background="@drawable/circle_background"
+                android:clipToOutline="true"
+                android:padding="1dp"
+                android:scaleType="centerCrop" />
 
             <ImageView
                 android:id="@+id/memberImage2"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="end|top"
-                android:src="@drawable/ic_default_profile" />
+                android:src="@drawable/ic_default_profile"
+                android:background="@drawable/circle_background"
+                android:clipToOutline="true"
+                android:padding="1dp"
+                android:scaleType="centerCrop" />
 
             <ImageView
                 android:id="@+id/memberImage3"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="start|bottom"
-                android:src="@drawable/ic_default_profile" />
+                android:src="@drawable/ic_default_profile"
+                android:background="@drawable/circle_background"
+                android:clipToOutline="true"
+                android:padding="1dp"
+                android:scaleType="centerCrop" />
 
             <ImageView
                 android:id="@+id/memberImage4"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="end|bottom"
-                android:src="@drawable/ic_default_profile" />
+                android:src="@drawable/ic_default_profile"
+                android:background="@drawable/circle_background"
+                android:clipToOutline="true"
+                android:padding="1dp"
+                android:scaleType="centerCrop" />
         </FrameLayout>
 
         <!-- Group Info -->
