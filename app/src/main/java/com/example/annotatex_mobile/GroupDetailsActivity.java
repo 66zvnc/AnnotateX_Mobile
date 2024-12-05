@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,12 +21,17 @@ import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GroupDetailsActivity extends AppCompatActivity {
     private static final String TAG = "GroupDetailsActivity";
@@ -33,6 +39,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
     private String groupId;
+    private boolean isAdmin = false;
 
     private TextView groupNameText;
     private TextView memberCountText;
@@ -51,12 +58,12 @@ public class GroupDetailsActivity extends AppCompatActivity {
         // Initialize Firebase
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
-
-        // Initialize Firebase Storage
         storage = FirebaseStorage.getInstance();
 
-        // Get groupId from intent
+        // Get groupId and admin status from intent
         groupId = getIntent().getStringExtra("groupId");
+        isAdmin = getIntent().getBooleanExtra("isAdmin", false);
+
         if (groupId == null) {
             Toast.makeText(this, "Error: Group not found", Toast.LENGTH_SHORT).show();
             finish();
@@ -70,7 +77,12 @@ public class GroupDetailsActivity extends AppCompatActivity {
         leaveGroupButton = findViewById(R.id.leaveGroupButton);
         groupPhotoImage = findViewById(R.id.groupPhotoImage);
         editGroupPhotoButton = findViewById(R.id.editGroupPhotoButton);
-        
+
+        // Show/hide edit photo button based on admin status
+        if (editGroupPhotoButton != null) {
+            editGroupPhotoButton.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+        }
+
         // Set up back button
         findViewById(R.id.backButton).setOnClickListener(v -> finish());
 
@@ -125,77 +137,96 @@ public class GroupDetailsActivity extends AppCompatActivity {
 
     private void loadMembers(List<String> memberIds) {
         membersContainer.removeAllViews();
-        int membersPerRow = 3;
+        String currentUserId = auth.getCurrentUser().getUid();
         
-        // Calculate how many rows we need
-        int totalRows = (int) Math.ceil(memberIds.size() / (float) membersPerRow);
+        // Pre-inflate all views to avoid multiple inflations
+        List<View> memberViews = new ArrayList<>();
+        Map<String, View> memberViewMap = new HashMap<>();
         
-        for (int row = 0; row < totalRows; row++) {
-            // Create a new row
-            LinearLayout currentRow = new LinearLayout(this);
-            currentRow.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
-            currentRow.setOrientation(LinearLayout.HORIZONTAL);
-            currentRow.setGravity(Gravity.CENTER);
-            currentRow.setPadding(0, 0, 0, 16); // Add some vertical spacing between rows
+        for (String memberId : memberIds) {
+            View memberView = getLayoutInflater().inflate(R.layout.item_group_member, membersContainer, false);
+            memberViews.add(memberView);
+            memberViewMap.put(memberId, memberView);
             
-            // Calculate start and end indices for this row
-            int startIndex = row * membersPerRow;
-            int endIndex = Math.min((row + 1) * membersPerRow, memberIds.size());
-            
-            // Add member views to this row
-            for (int i = startIndex; i < endIndex; i++) {
-                String memberId = memberIds.get(i);
-                View memberView = getLayoutInflater().inflate(R.layout.item_group_member, currentRow, false);
-                
-                // Set equal width for each member in the row
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    0,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    1.0f
-                );
-                memberView.setLayoutParams(params);
-                
-                ImageView profileImage = memberView.findViewById(R.id.memberProfileImage);
-                TextView nameText = memberView.findViewById(R.id.memberNameText);
+            ImageView profileImage = memberView.findViewById(R.id.memberProfileImage);
+            TextView nameText = memberView.findViewById(R.id.memberNameText);
+            ImageView removeButton = memberView.findViewById(R.id.removeMemberButton);
 
-                // Load member details
-                firestore.collection("users").document(memberId)
-                    .get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            String username = documentSnapshot.getString("username");
-                            String profileImageUrl = documentSnapshot.getString("profileImageUrl");
-
-                            nameText.setText(username != null ? username : "User");
-
-                            if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-                                Glide.with(this)
-                                    .load(profileImageUrl)
-                                    .placeholder(R.drawable.ic_default_profile)
-                                    .error(R.drawable.ic_default_profile)
-                                    .circleCrop()
-                                    .into(profileImage);
-                            } else {
-                                profileImage.setImageResource(R.drawable.ic_default_profile);
-                            }
-                        } else {
-                            nameText.setText("Unknown User");
-                            profileImage.setImageResource(R.drawable.ic_default_profile);
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e(TAG, "Error loading member details", e);
-                        nameText.setText("Unknown User");
-                        profileImage.setImageResource(R.drawable.ic_default_profile);
-                    });
-
-                currentRow.addView(memberView);
+            // Show remove button only for admin and not for themselves
+            if (isAdmin && !memberId.equals(currentUserId)) {
+                removeButton.setVisibility(View.VISIBLE);
+                removeButton.setOnClickListener(v -> showRemoveMemberDialog(memberId));
             }
             
-            membersContainer.addView(currentRow);
+            membersContainer.addView(memberView);
         }
+
+        // Batch fetch user data
+        firestore.collection("users")
+            .whereIn(FieldPath.documentId(), memberIds)
+            .get()
+            .addOnSuccessListener(querySnapshot -> {
+                for (DocumentSnapshot document : querySnapshot) {
+                    String memberId = document.getId();
+                    View memberView = memberViewMap.get(memberId);
+                    if (memberView != null) {
+                        ImageView profileImage = memberView.findViewById(R.id.memberProfileImage);
+                        TextView nameText = memberView.findViewById(R.id.memberNameText);
+                        
+                        String username = document.getString("username");
+                        String profileImageUrl = document.getString("profileImageUrl");
+
+                        nameText.setText(username != null ? username : "User");
+
+                        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                            Glide.with(GroupDetailsActivity.this)
+                                .load(profileImageUrl)
+                                .placeholder(R.drawable.ic_default_profile)
+                                .error(R.drawable.ic_default_profile)
+                                .circleCrop()
+                                .into(profileImage);
+                        } else {
+                            profileImage.setImageResource(R.drawable.ic_default_profile);
+                        }
+                    }
+                }
+            })
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "Error loading member details", e);
+                // Set default values for all views in case of failure
+                for (View memberView : memberViews) {
+                    ((TextView) memberView.findViewById(R.id.memberNameText)).setText("Unknown User");
+                    ((ImageView) memberView.findViewById(R.id.memberProfileImage))
+                        .setImageResource(R.drawable.ic_default_profile);
+                }
+            });
+    }
+
+    private void showRemoveMemberDialog(String memberId) {
+        firestore.collection("users").document(memberId)
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                String username = documentSnapshot.getString("username");
+                new AlertDialog.Builder(this)
+                    .setTitle("Remove Member")
+                    .setMessage("Are you sure you want to remove " + (username != null ? username : "this member") + " from the group?")
+                    .setPositiveButton("Remove", (dialog, which) -> removeMember(memberId))
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            });
+    }
+
+    private void removeMember(String memberId) {
+        firestore.collection("groups").document(groupId)
+            .update("members", FieldValue.arrayRemove(memberId))
+            .addOnSuccessListener(aVoid -> {
+                Toast.makeText(this, "Member removed successfully", Toast.LENGTH_SHORT).show();
+                loadGroupDetails(); // Reload the members list
+            })
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "Error removing member", e);
+                Toast.makeText(this, "Failed to remove member", Toast.LENGTH_SHORT).show();
+            });
     }
 
     private void showLeaveGroupConfirmation() {

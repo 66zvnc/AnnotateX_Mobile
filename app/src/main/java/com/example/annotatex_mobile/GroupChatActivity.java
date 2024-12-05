@@ -22,6 +22,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +38,7 @@ public class GroupChatActivity extends AppCompatActivity {
     private FirebaseFirestore firestore;
     private String groupId;
     private String groupName;
+    private boolean isAdmin;
 
     private RecyclerView collaborativeBooksRecyclerView;
     private CollaborativeBooksAdapter adapter;
@@ -80,6 +84,7 @@ public class GroupChatActivity extends AppCompatActivity {
         groupInfoButton.setOnClickListener(v -> {
             Intent intent = new Intent(this, GroupDetailsActivity.class);
             intent.putExtra("groupId", groupId);
+            intent.putExtra("isAdmin", isAdmin);
             startActivity(intent);
         });
 
@@ -142,40 +147,46 @@ public class GroupChatActivity extends AppCompatActivity {
         memberImage1.setVisibility(View.GONE);
         memberImage2.setVisibility(View.GONE);
 
-        if (!memberIds.isEmpty()) {
-            // Randomly select 2 members
-            List<String> shuffledMembers = new ArrayList<>(memberIds);
-            Collections.shuffle(shuffledMembers);
-            int displayCount = Math.min(2, shuffledMembers.size());
+        if (memberIds.isEmpty()) return;
 
-            ImageView[] memberImages = {memberImage1, memberImage2};
+        // Randomly select 2 members
+        List<String> shuffledMembers = new ArrayList<>(memberIds);
+        Collections.shuffle(shuffledMembers);
+        int displayCount = Math.min(2, shuffledMembers.size());
+        List<String> selectedMembers = shuffledMembers.subList(0, displayCount);
 
-            for (int i = 0; i < displayCount; i++) {
-                String memberId = shuffledMembers.get(i);
-                ImageView imageView = memberImages[i];
-                imageView.setVisibility(View.VISIBLE);
+        // Batch fetch user data
+        firestore.collection("users")
+            .whereIn(FieldPath.documentId(), selectedMembers)
+            .get()
+            .addOnSuccessListener(querySnapshot -> {
+                ImageView[] memberImages = {memberImage1, memberImage2};
+                int index = 0;
+                
+                for (DocumentSnapshot document : querySnapshot) {
+                    if (index >= displayCount) break;
+                    
+                    String profileImageUrl = document.getString("profileImageUrl");
+                    ImageView imageView = memberImages[index++];
+                    imageView.setVisibility(View.VISIBLE);
 
-                firestore.collection("users").document(memberId)
-                    .get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            String profileImageUrl = documentSnapshot.getString("profileImageUrl");
-                            if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-                                Glide.with(this)
-                                    .load(profileImageUrl)
-                                    .placeholder(R.drawable.ic_default_profile)
-                                    .error(R.drawable.ic_default_profile)
-                                    .circleCrop()
-                                    .into(imageView);
-                            }
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e(TAG, "Error loading member profile image", e);
+                    if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                        Glide.with(this)
+                            .load(profileImageUrl)
+                            .placeholder(R.drawable.ic_default_profile)
+                            .error(R.drawable.ic_default_profile)
+                            .circleCrop()
+                            .into(imageView);
+                    } else {
                         imageView.setImageResource(R.drawable.ic_default_profile);
-                    });
-            }
-        }
+                    }
+                }
+            })
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "Error loading member profile images", e);
+                memberImage1.setImageResource(R.drawable.ic_default_profile);
+                memberImage2.setImageResource(R.drawable.ic_default_profile);
+            });
     }
 
     private void loadCollaborativeBooks() {
