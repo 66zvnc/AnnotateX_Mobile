@@ -55,7 +55,8 @@
             android:padding="6dp"
             android:src="@drawable/ic_edit_photo"
             android:background="@drawable/circle_button_background"
-            android:contentDescription="Edit group photo" />
+            android:contentDescription="Edit group photo"
+            android:visibility="visible" />
     </FrameLayout>
 
     <!-- Group Info Section -->

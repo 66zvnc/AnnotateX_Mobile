@@ -81,6 +81,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
         // Show/hide edit photo button based on admin status
         if (editGroupPhotoButton != null) {
             editGroupPhotoButton.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+            Log.d(TAG, "Edit photo button visibility set: " + (isAdmin ? "VISIBLE" : "GONE"));
         }
 
         // Set up back button
@@ -101,6 +102,23 @@ public class GroupDetailsActivity extends AppCompatActivity {
 
         // Set up edit photo button
         editGroupPhotoButton.setOnClickListener(v -> openImagePicker());
+
+        // Load group details to verify admin status
+        firestore.collection("groups").document(groupId)
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String createdBy = documentSnapshot.getString("createdBy");
+                    String currentUserId = auth.getCurrentUser().getUid();
+                    isAdmin = createdBy != null && createdBy.equals(currentUserId);
+                    
+                    // Update edit button visibility after confirming admin status
+                    if (editGroupPhotoButton != null) {
+                        editGroupPhotoButton.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+                        Log.d(TAG, "Edit photo button visibility updated: " + (isAdmin ? "VISIBLE" : "GONE"));
+                    }
+                }
+            });
 
         // Load group details
         loadGroupDetails();
