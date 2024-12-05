@@ -152,53 +152,68 @@ public class GroupDetailsActivity extends AppCompatActivity {
             TextView nameText = memberView.findViewById(R.id.memberNameText);
             ImageView removeButton = memberView.findViewById(R.id.removeMemberButton);
 
-            // Show remove button only for admin and not for themselves
+            // Debug log to check admin status
+            Log.d(TAG, "isAdmin: " + isAdmin + ", currentUserId: " + currentUserId + ", memberId: " + memberId);
+
+            // Show remove button for admin (except for themselves)
             if (isAdmin && !memberId.equals(currentUserId)) {
                 removeButton.setVisibility(View.VISIBLE);
                 removeButton.setOnClickListener(v -> showRemoveMemberDialog(memberId));
+            } else {
+                removeButton.setVisibility(View.GONE);
             }
             
             membersContainer.addView(memberView);
         }
 
-        // Batch fetch user data
-        firestore.collection("users")
-            .whereIn(FieldPath.documentId(), memberIds)
+        // First, verify admin status when loading group details
+        firestore.collection("groups").document(groupId)
             .get()
-            .addOnSuccessListener(querySnapshot -> {
-                for (DocumentSnapshot document : querySnapshot) {
-                    String memberId = document.getId();
-                    View memberView = memberViewMap.get(memberId);
-                    if (memberView != null) {
-                        ImageView profileImage = memberView.findViewById(R.id.memberProfileImage);
-                        TextView nameText = memberView.findViewById(R.id.memberNameText);
-                        
-                        String username = document.getString("username");
-                        String profileImageUrl = document.getString("profileImageUrl");
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String createdBy = documentSnapshot.getString("createdBy");
+                    // Update admin status based on group creator
+                    isAdmin = createdBy != null && createdBy.equals(currentUserId);
+                    Log.d(TAG, "Group creator: " + createdBy + ", Current user: " + currentUserId + ", isAdmin: " + isAdmin);
+                }
+                
+                // Then load member details
+                firestore.collection("users")
+                    .whereIn(FieldPath.documentId(), memberIds)
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        for (DocumentSnapshot document : querySnapshot) {
+                            String memberId = document.getId();
+                            View memberView = memberViewMap.get(memberId);
+                            if (memberView != null) {
+                                ImageView profileImage = memberView.findViewById(R.id.memberProfileImage);
+                                TextView nameText = memberView.findViewById(R.id.memberNameText);
+                                ImageView removeButton = memberView.findViewById(R.id.removeMemberButton);
+                                
+                                String username = document.getString("username");
+                                String profileImageUrl = document.getString("profileImageUrl");
 
-                        nameText.setText(username != null ? username : "User");
+                                nameText.setText(username != null ? username : "User");
 
-                        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-                            Glide.with(GroupDetailsActivity.this)
-                                .load(profileImageUrl)
-                                .placeholder(R.drawable.ic_default_profile)
-                                .error(R.drawable.ic_default_profile)
-                                .circleCrop()
-                                .into(profileImage);
-                        } else {
-                            profileImage.setImageResource(R.drawable.ic_default_profile);
+                                // Update remove button visibility again after confirming admin status
+                                if (isAdmin && !memberId.equals(currentUserId)) {
+                                    removeButton.setVisibility(View.VISIBLE);
+                                    removeButton.setOnClickListener(v -> showRemoveMemberDialog(memberId));
+                                }
+
+                                if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                                    Glide.with(GroupDetailsActivity.this)
+                                        .load(profileImageUrl)
+                                        .placeholder(R.drawable.ic_default_profile)
+                                        .error(R.drawable.ic_default_profile)
+                                        .circleCrop()
+                                        .into(profileImage);
+                                } else {
+                                    profileImage.setImageResource(R.drawable.ic_default_profile);
+                                }
+                            }
                         }
-                    }
-                }
-            })
-            .addOnFailureListener(e -> {
-                Log.e(TAG, "Error loading member details", e);
-                // Set default values for all views in case of failure
-                for (View memberView : memberViews) {
-                    ((TextView) memberView.findViewById(R.id.memberNameText)).setText("Unknown User");
-                    ((ImageView) memberView.findViewById(R.id.memberProfileImage))
-                        .setImageResource(R.drawable.ic_default_profile);
-                }
+                    });
             });
     }
 
