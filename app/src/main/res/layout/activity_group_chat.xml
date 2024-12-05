@@ -28,16 +28,49 @@
             android:focusable="true" />
 
         <!-- Profile Image -->
-        <ImageView
-            android:id="@+id/profileImageView"
+        <FrameLayout
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_marginEnd="12dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_default_profile"
-            android:contentDescription="Profile Image"
-            android:background="@drawable/circle_background"
-            android:clipToOutline="true" />
+            android:layout_marginEnd="12dp">
+
+            <!-- Group Photo -->
+            <ImageView
+                android:id="@+id/groupPhotoImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="@drawable/circle_background"
+                android:clipToOutline="true"
+                android:visibility="gone" />
+
+            <!-- Member Grid Container -->
+            <FrameLayout
+                android:id="@+id/memberImagesContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <!-- First Member Image (Top-Left) -->
+                <ImageView
+                    android:id="@+id/memberImage1"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="start|top"
+                    android:scaleType="centerCrop"
+                    android:background="@drawable/circle_background"
+                    android:clipToOutline="true" />
+
+                <!-- Second Member Image (Bottom-Right) -->
+                <ImageView
+                    android:id="@+id/memberImage2"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="end|bottom"
+                    android:scaleType="centerCrop"
+                    android:background="@drawable/circle_background"
+                    android:clipToOutline="true" />
+
+            </FrameLayout>
+        </FrameLayout>
 
         <!-- Name and Info Container -->
         <LinearLayout

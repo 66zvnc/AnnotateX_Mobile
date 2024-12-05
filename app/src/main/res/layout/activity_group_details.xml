@@ -30,6 +30,34 @@
             android:textStyle="bold" />
     </LinearLayout>
 
+    <!-- After the header section and before the group info section -->
+    <FrameLayout
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="24dp">
+
+        <ImageView
+            android:id="@+id/groupPhotoImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_default_profile"
+            android:background="@drawable/circle_background"
+            android:clipToOutline="true" />
+
+        <ImageView
+            android:id="@+id/editGroupPhotoButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="bottom|end"
+            android:padding="6dp"
+            android:src="@drawable/ic_edit_photo"
+            android:background="@drawable/circle_button_background"
+            android:contentDescription="Edit group photo" />
+    </FrameLayout>
+
     <!-- Group Info Section -->
     <LinearLayout
         android:layout_width="match_parent"

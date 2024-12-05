@@ -9,6 +9,7 @@ public class Group {
     private List<String> members;
     private long createdAt;
     private String createdBy;
+    private String photoUrl;
 
     public Group() {
         // Required empty constructor for Firestore
@@ -53,5 +54,13 @@ public class Group {
 
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
 }

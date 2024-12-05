@@ -24,6 +24,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,11 +40,13 @@ public class GroupChatActivity extends AppCompatActivity {
     private CollaborativeBooksAdapter adapter;
     private List<Book> collaborativeBooksList;
 
-    private ImageView groupImageView;
+    private ImageView groupPhotoImage;
+    private View memberImagesContainer;
+    private ImageView memberImage1;
+    private ImageView memberImage2;
     private TextView groupNameTextView;
     private ImageView goBackButton;
     private ImageView addBookButton;
-    private ImageView profileImageView;
     private ImageView groupInfoButton;
 
     @Override
@@ -56,7 +59,10 @@ public class GroupChatActivity extends AppCompatActivity {
         firestore = FirebaseFirestore.getInstance();
 
         // Initialize views
-        profileImageView = findViewById(R.id.profileImageView);
+        groupPhotoImage = findViewById(R.id.groupPhotoImage);
+        memberImagesContainer = findViewById(R.id.memberImagesContainer);
+        memberImage1 = findViewById(R.id.memberImage1);
+        memberImage2 = findViewById(R.id.memberImage2);
         groupNameTextView = findViewById(R.id.nameTextView);
         goBackButton = findViewById(R.id.goBackButton);
         addBookButton = findViewById(R.id.addBookButton);
@@ -77,7 +83,10 @@ public class GroupChatActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Rest of your initialization code...
+        // Load group details including photo
+        if (groupId != null) {
+            loadGroupDetails();
+        }
     }
 
     private void filterBooks(String query) {
@@ -97,13 +106,27 @@ public class GroupChatActivity extends AppCompatActivity {
                 if (documentSnapshot.exists()) {
                     Group group = documentSnapshot.toObject(Group.class);
                     if (group != null) {
-                        // Set group name
                         groupNameTextView.setText(group.getName());
                         
-                        // Load first member's profile picture as group picture
-                        if (group.getMembers() != null && !group.getMembers().isEmpty()) {
-                            String firstMemberId = group.getMembers().get(0);
-                            loadMemberProfilePicture(firstMemberId);
+                        // Check if group has a photo
+                        String photoUrl = group.getPhotoUrl();
+                        if (photoUrl != null && !photoUrl.isEmpty()) {
+                            // Show group photo and hide member grid
+                            groupPhotoImage.setVisibility(View.VISIBLE);
+                            memberImagesContainer.setVisibility(View.GONE);
+                            
+                            // Load group photo
+                            Glide.with(this)
+                                .load(photoUrl)
+                                .placeholder(R.drawable.ic_default_profile)
+                                .error(R.drawable.ic_default_profile)
+                                .circleCrop()
+                                .into(groupPhotoImage);
+                        } else {
+                            // Show member grid and hide group photo
+                            groupPhotoImage.setVisibility(View.GONE);
+                            memberImagesContainer.setVisibility(View.VISIBLE);
+                            loadRandomMemberImages(group.getMembers());
                         }
                     }
                 }
@@ -114,27 +137,45 @@ public class GroupChatActivity extends AppCompatActivity {
             });
     }
 
-    private void loadMemberProfilePicture(String memberId) {
-        firestore.collection("users").document(memberId)
-            .get()
-            .addOnSuccessListener(documentSnapshot -> {
-                if (documentSnapshot.exists()) {
-                    String profileImageUrl = documentSnapshot.getString("profileImageUrl");
-                    if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-                        // Load profile image with Glide
-                        Glide.with(this)
-                            .load(profileImageUrl)
-                            .placeholder(R.drawable.ic_default_profile)
-                            .error(R.drawable.ic_default_profile)
-                            .circleCrop()
-                            .into(profileImageView);
-                    }
-                }
-            })
-            .addOnFailureListener(e -> {
-                Log.e(TAG, "Error loading member profile picture", e);
-                profileImageView.setImageResource(R.drawable.ic_default_profile);
-            });
+    private void loadRandomMemberImages(List<String> memberIds) {
+        // Reset images
+        memberImage1.setVisibility(View.GONE);
+        memberImage2.setVisibility(View.GONE);
+
+        if (!memberIds.isEmpty()) {
+            // Randomly select 2 members
+            List<String> shuffledMembers = new ArrayList<>(memberIds);
+            Collections.shuffle(shuffledMembers);
+            int displayCount = Math.min(2, shuffledMembers.size());
+
+            ImageView[] memberImages = {memberImage1, memberImage2};
+
+            for (int i = 0; i < displayCount; i++) {
+                String memberId = shuffledMembers.get(i);
+                ImageView imageView = memberImages[i];
+                imageView.setVisibility(View.VISIBLE);
+
+                firestore.collection("users").document(memberId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                            if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                                Glide.with(this)
+                                    .load(profileImageUrl)
+                                    .placeholder(R.drawable.ic_default_profile)
+                                    .error(R.drawable.ic_default_profile)
+                                    .circleCrop()
+                                    .into(imageView);
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Error loading member profile image", e);
+                        imageView.setImageResource(R.drawable.ic_default_profile);
+                    });
+            }
+        }
     }
 
     private void loadCollaborativeBooks() {

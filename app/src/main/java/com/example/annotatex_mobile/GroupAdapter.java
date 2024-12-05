@@ -18,7 +18,9 @@ import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHolder> {
@@ -39,10 +41,11 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
         TextView memberCountTextView;
         ImageView memberImage1;
         ImageView memberImage2;
-        ImageView memberImage3;
-        ImageView memberImage4;
         List<ImageView> memberImages;
         View itemView;
+        View groupPhotoContainer;
+        View memberImagesContainer;
+        ImageView groupPhotoImage;
 
         GroupViewHolder(View itemView) {
             super(itemView);
@@ -51,10 +54,11 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
             memberCountTextView = itemView.findViewById(R.id.memberCountTextView);
             memberImage1 = itemView.findViewById(R.id.memberImage1);
             memberImage2 = itemView.findViewById(R.id.memberImage2);
-            memberImage3 = itemView.findViewById(R.id.memberImage3);
-            memberImage4 = itemView.findViewById(R.id.memberImage4);
+            groupPhotoContainer = itemView.findViewById(R.id.groupPhotoContainer);
+            memberImagesContainer = itemView.findViewById(R.id.memberImagesContainer);
+            groupPhotoImage = itemView.findViewById(R.id.groupPhotoImage);
             
-            memberImages = Arrays.asList(memberImage1, memberImage2, memberImage3, memberImage4);
+            memberImages = Arrays.asList(memberImage1, memberImage2);
             
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
@@ -120,30 +124,37 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
                 imageView.setVisibility(View.GONE);
             }
 
-            // Load up to 4 member profile pictures
-            for (int i = 0; i < Math.min(memberIds.size(), 4); i++) {
-                String memberId = memberIds.get(i);
-                ImageView imageView = memberImages.get(i);
-                imageView.setVisibility(View.VISIBLE);
+            // If there are members, randomly select 2 to display
+            if (!memberIds.isEmpty()) {
+                List<String> shuffledMembers = new ArrayList<>(memberIds);
+                Collections.shuffle(shuffledMembers);
+                int displayCount = Math.min(2, shuffledMembers.size());
 
-                firestore.collection("users").document(memberId).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            String profileImageUrl = documentSnapshot.getString("profileImageUrl");
-                            if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-                                Glide.with(context)
-                                    .load(profileImageUrl)
-                                    .placeholder(R.drawable.ic_default_profile)
-                                    .error(R.drawable.ic_default_profile)
-                                    .circleCrop()
-                                    .into(imageView);
+                for (int i = 0; i < displayCount; i++) {
+                    String memberId = shuffledMembers.get(i);
+                    ImageView imageView = memberImages.get(i);
+                    imageView.setVisibility(View.VISIBLE);
+
+                    firestore.collection("users").document(memberId)
+                        .get()
+                        .addOnSuccessListener(documentSnapshot -> {
+                            if (documentSnapshot.exists()) {
+                                String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                                if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                                    Glide.with(context)
+                                        .load(profileImageUrl)
+                                        .placeholder(R.drawable.ic_default_profile)
+                                        .error(R.drawable.ic_default_profile)
+                                        .circleCrop()
+                                        .into(imageView);
+                                }
                             }
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("GroupAdapter", "Error loading member profile image", e);
-                        imageView.setImageResource(R.drawable.ic_default_profile);
-                    });
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("GroupAdapter", "Error loading member profile image", e);
+                            imageView.setImageResource(R.drawable.ic_default_profile);
+                        });
+                }
             }
         }
     }
@@ -160,7 +171,26 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
         Group group = groups.get(position);
         holder.groupNameTextView.setText(group.getName());
         holder.memberCountTextView.setText(group.getMembers().size() + " Members");
-        holder.loadMemberImages(group.getMembers());
+
+        // Check if group has a photo
+        if (group.getPhotoUrl() != null && !group.getPhotoUrl().isEmpty()) {
+            // Show group photo and hide member grid
+            holder.groupPhotoContainer.setVisibility(View.VISIBLE);
+            holder.memberImagesContainer.setVisibility(View.GONE);
+            
+            // Load group photo
+            Glide.with(context)
+                .load(group.getPhotoUrl())
+                .placeholder(R.drawable.ic_default_profile)
+                .error(R.drawable.ic_default_profile)
+                .circleCrop()
+                .into(holder.groupPhotoImage);
+        } else {
+            // Show member grid and hide group photo
+            holder.groupPhotoContainer.setVisibility(View.GONE);
+            holder.memberImagesContainer.setVisibility(View.VISIBLE);
+            holder.loadMemberImages(group.getMembers());
+        }
     }
 
     @Override
