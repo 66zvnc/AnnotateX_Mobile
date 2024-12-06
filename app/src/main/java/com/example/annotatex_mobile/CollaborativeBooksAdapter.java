@@ -2,6 +2,8 @@ package com.example.annotatex_mobile;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
@@ -10,9 +12,15 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,11 +49,31 @@ public class CollaborativeBooksAdapter extends RecyclerView.Adapter<Collaborativ
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Book book = books.get(position);
+        String coverUrl = book.getCoverImageUrl();
+        
+        Log.d("CollaborativeBooksAdapter", "Binding book: " + book.getTitle());
+        Log.d("CollaborativeBooksAdapter", "Cover URL from book: " + coverUrl);
 
-        // Load the book cover image using Glide or set a default image
-        if (book.hasUrlCover()) {
-            Glide.with(context).load(book.getCoverImageUrl()).into(holder.coverImageView);
+        if (coverUrl != null && !coverUrl.isEmpty()) {
+            // Check if it's a Firebase Storage URL
+            if (coverUrl.startsWith("gs://")) {
+                Log.d("CollaborativeBooksAdapter", "Converting Firebase Storage URL: " + coverUrl);
+                FirebaseStorage.getInstance().getReferenceFromUrl(coverUrl)
+                    .getDownloadUrl()
+                    .addOnSuccessListener(uri -> {
+                        Log.d("CollaborativeBooksAdapter", "Converted URL: " + uri.toString());
+                        loadImageWithGlide(uri.toString(), holder.coverImageView, book);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("CollaborativeBooksAdapter", "Failed to get download URL for " + book.getTitle(), e);
+                        holder.coverImageView.setImageResource(R.drawable.book_handle);
+                    });
+            } else {
+                Log.d("CollaborativeBooksAdapter", "Using direct URL: " + coverUrl);
+                loadImageWithGlide(coverUrl, holder.coverImageView, book);
+            }
         } else {
+            Log.e("CollaborativeBooksAdapter", "No cover URL for book: " + book.getTitle());
             holder.coverImageView.setImageResource(R.drawable.book_handle);
         }
 
@@ -61,6 +89,30 @@ public class CollaborativeBooksAdapter extends RecyclerView.Adapter<Collaborativ
             showPopupMenu(v, book);
             return true;
         });
+    }
+
+    private void loadImageWithGlide(String imageUrl, ImageView imageView, Book book) {
+        Glide.with(context)
+            .load(imageUrl)
+            .placeholder(R.drawable.book_handle)
+            .error(R.drawable.book_handle)
+            .centerCrop()
+            .listener(new RequestListener<Drawable>() {
+                @Override
+                public boolean onLoadFailed(@Nullable GlideException e, Object model, 
+                        Target<Drawable> target, boolean isFirstResource) {
+                    Log.e("CollaborativeBooksAdapter", "Glide failed to load image for " + book.getTitle(), e);
+                    return false;
+                }
+
+                @Override
+                public boolean onResourceReady(Drawable resource, Object model, 
+                        Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                    Log.d("CollaborativeBooksAdapter", "Successfully loaded image for " + book.getTitle());
+                    return false;
+                }
+            })
+            .into(imageView);
     }
 
     @Override

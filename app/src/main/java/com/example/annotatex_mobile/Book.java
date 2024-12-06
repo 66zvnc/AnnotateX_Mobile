@@ -39,9 +39,9 @@ public class Book implements Serializable {
     }
 
     // Constructor for user-uploaded books
-    public Book(String id, String coverImageUrl, String pdfUrl, String title, String author, String description, String userId) {
+    public Book(String id, String coverUrl, String pdfUrl, String title, String author, String description, String userId) {
         this.id = id;
-        this.coverImageUrl = coverImageUrl != null && !coverImageUrl.trim().isEmpty() ? coverImageUrl : null;
+        this.coverImageUrl = coverUrl;
         this.pdfUrl = pdfUrl;
         this.title = title;
         this.author = author;
@@ -52,6 +52,8 @@ public class Book implements Serializable {
         this.collaborators = new ArrayList<>();
         this.annotations = new ArrayList<>();
         this.collaborations = new HashMap<>();
+        
+        Log.d(TAG, "Creating book with coverUrl: " + coverUrl);
     }
 
     // Constructor for preloaded books
@@ -100,7 +102,12 @@ public class Book implements Serializable {
     }
 
     public String getCoverImageUrl() {
-        return coverImageUrl;
+        if (coverImageUrl != null && !coverImageUrl.isEmpty()) {
+            Log.d(TAG, "Returning coverImageUrl: " + coverImageUrl);
+            return coverImageUrl;
+        }
+        Log.d(TAG, "No cover URL available for book: " + title);
+        return null;
     }
 
     public String getCoverImageLocalPath() {

@@ -16,7 +16,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -141,27 +144,45 @@ public class CollaborativeChatActivity extends AppCompatActivity {
     }
 
     private void loadCollaborativeBooks() {
-        String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
-
-        if (currentUserId == null || friendId == null) {
-            Toast.makeText(this, "Invalid user data", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Fetch collaborative books where both the current user and friend are collaborators
+        String currentUserId = auth.getCurrentUser().getUid();
+        
+        Log.d("CollaborativeChatActivity", "Loading books for user: " + currentUserId);
+        
         firestore.collection("users")
                 .document(currentUserId)
                 .collection("collaborativeBooks")
-                .whereArrayContains("collaborators", friendId)
+                .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
+                .addOnSuccessListener(querySnapshot -> {
                     collaborativeBooksList.clear();
-                    collaborativeBooksList.addAll(queryDocumentSnapshots.toObjects(Book.class));
+                    Log.d("CollaborativeChatActivity", "Found " + querySnapshot.size() + " books");
+                    
+                    for (DocumentSnapshot document : querySnapshot) {
+                        Map<String, Object> data = document.getData();
+                        Log.d("CollaborativeChatActivity", "Raw document data: " + data);
+
+                        String id = document.getId();
+                        String coverUrl = document.getString("coverUrl");
+                        String pdfUrl = document.getString("pdfUrl");
+                        String title = document.getString("title");
+                        String author = document.getString("author");
+                        String description = document.getString("description");
+                        String userId = document.getString("userId");
+
+                        Log.d("CollaborativeChatActivity", String.format(
+                            "Processing book: %s\nCover URL: %s\nID: %s", 
+                            title, coverUrl, id
+                        ));
+
+                        Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
+                        collaborativeBooksList.add(book);
+                    }
+                    
                     adapter.updateBooks(collaborativeBooksList);
                 })
                 .addOnFailureListener(e -> {
+                    Log.e("CollaborativeChatActivity", "Error loading books", e);
                     Toast.makeText(this, "Failed to load collaborative books", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
                 });
     }
 
@@ -223,14 +244,14 @@ public class CollaborativeChatActivity extends AppCompatActivity {
     }
 
     public void addCollaborativeBook(Book book) {
-        String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
+        String currentUserId = auth.getCurrentUser().getUid();
 
         if (currentUserId == null || friendId == null || book == null) {
             Toast.makeText(this, "Invalid data for collaboration", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // First, check if the book already exists in collaborative books
+        // First check if the book already exists
         firestore.collection("users")
                 .document(currentUserId)
                 .collection("collaborativeBooks")
@@ -239,81 +260,78 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentSnapshot -> {
                     Book bookToSave;
                     if (documentSnapshot.exists()) {
-                        // If book exists, use existing data
                         bookToSave = documentSnapshot.toObject(Book.class);
                         if (bookToSave == null) {
-                            bookToSave = new Book(book); // Fallback to new copy if conversion fails
+                            bookToSave = new Book(book);
                         }
                     } else {
-                        bookToSave = new Book(book); // Create new copy if book doesn't exist
+                        bookToSave = new Book(book);
                     }
 
-                    // Ensure collaborators list exists
-                    if (bookToSave.getCollaborators() == null) {
-                        bookToSave.setCollaborators(new ArrayList<>());
-                    }
+                    // Log original book data
+                    Log.d("CollaborativeChatActivity", "Original book data:");
+                    Log.d("CollaborativeChatActivity", "Title: " + book.getTitle());
+                    Log.d("CollaborativeChatActivity", "Cover URL: " + book.getCoverImageUrl());
+                    Log.d("CollaborativeChatActivity", "ID: " + book.getId());
 
-                    // Add both users to collaborators if not already present
-                    List<String> collaborators = new ArrayList<>(bookToSave.getCollaborators());
-                    if (!collaborators.contains(currentUserId)) {
-                        collaborators.add(currentUserId);
-                    }
-                    if (!collaborators.contains(friendId)) {
-                        collaborators.add(friendId);
-                    }
-                    bookToSave.setCollaborators(collaborators);
+                    // Prepare book data for saving
+                    Map<String, Object> bookData = new HashMap<>();
+                    bookData.put("id", bookToSave.getId());
+                    bookData.put("coverUrl", book.getCoverImageUrl()); // Use original book's cover URL
+                    bookData.put("pdfUrl", bookToSave.getPdfUrl());
+                    bookData.put("title", bookToSave.getTitle());
+                    bookData.put("author", bookToSave.getAuthor());
+                    bookData.put("description", bookToSave.getDescription());
+                    bookData.put("userId", currentUserId);
+                    
+                    // Set up collaborators
+                    List<String> collaborators = new ArrayList<>();
+                    collaborators.add(currentUserId);
+                    collaborators.add(friendId);
+                    bookData.put("collaborators", collaborators);
 
-                    // Ensure collaborations map exists
-                    if (bookToSave.getCollaborations() == null) {
-                        bookToSave.setCollaborations(new HashMap<>());
-                    }
+                    // Set up collaborations
+                    Map<String, String> collaborations = new HashMap<>();
+                    collaborations.put(currentUserId, "INDIVIDUAL");
+                    collaborations.put(friendId, "INDIVIDUAL");
+                    bookData.put("collaborations", collaborations);
+                    
+                    bookData.put("timestamp", System.currentTimeMillis());
 
-                    // Update collaboration types for both users
-                    Map<String, Book.CollaborationType> collaborations = new HashMap<>(bookToSave.getCollaborations());
-                    collaborations.put(currentUserId, Book.CollaborationType.INDIVIDUAL);
-                    collaborations.put(friendId, Book.CollaborationType.INDIVIDUAL);
-                    bookToSave.setCollaborations(collaborations);
+                    Log.d("CollaborativeChatActivity", "Saving collaborative book data: " + bookData);
 
-                    // Save the updated book for both users
-                    saveBookForBothUsers(bookToSave, currentUserId, friendId);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Collaboration", "Error checking existing book", e);
-                    Toast.makeText(this, "Failed to set up collaboration", Toast.LENGTH_SHORT).show();
+                    // Save for both users
+                    saveBookForBothUsers(book, bookData, currentUserId, friendId);
                 });
     }
 
-    private void saveBookForBothUsers(Book book, String currentUserId, String friendId) {
+    private void saveBookForBothUsers(Book originalBook, Map<String, Object> bookData, String currentUserId, String friendId) {
         // Save for current user
         firestore.collection("users")
                 .document(currentUserId)
                 .collection("collaborativeBooks")
-                .document(book.getId())
-                .set(book)
+                .document(originalBook.getId())
+                .set(bookData)
                 .addOnSuccessListener(aVoid -> {
-                    Log.d("Collaboration", "Book added for current user");
+                    Log.d("CollaborativeChatActivity", "Book saved for current user");
                     
                     // Save for friend
                     firestore.collection("users")
                             .document(friendId)
                             .collection("collaborativeBooks")
-                            .document(book.getId())
-                            .set(book)
+                            .document(originalBook.getId())
+                            .set(bookData)
                             .addOnSuccessListener(aVoid2 -> {
-                                Log.d("Collaboration", "Book added for collaborator: " + friendId);
+                                Log.d("CollaborativeChatActivity", "Book saved for collaborator");
                                 Toast.makeText(this, "Book successfully added to collaboration!", 
                                     Toast.LENGTH_SHORT).show();
                                 loadCollaborativeBooks();
                             })
                             .addOnFailureListener(e -> {
-                                Log.e("Collaboration", "Failed to add book for collaborator: " + friendId, e);
+                                Log.e("CollaborativeChatActivity", "Failed to save book for collaborator", e);
                                 Toast.makeText(this, "Failed to share with collaborator", 
                                     Toast.LENGTH_SHORT).show();
                             });
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Collaboration", "Failed to add book for current user", e);
-                    Toast.makeText(this, "Failed to set up collaboration", Toast.LENGTH_SHORT).show();
                 });
     }
 }

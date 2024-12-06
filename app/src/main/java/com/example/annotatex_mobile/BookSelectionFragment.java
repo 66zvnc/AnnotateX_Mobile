@@ -21,6 +21,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BookSelectionFragment extends Fragment implements LibraryAdapter.OnPdfClickListener {
 
@@ -76,20 +77,17 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
     }
 
     private void loadBooksFromFirestore() {
-        Log.d(TAG, "Fetching books from Firestore...");
-        String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
-
-        if (userId == null) {
-            Log.e(TAG, "No user logged in");
-            return;
-        }
-
+        String userId = auth.getCurrentUser().getUid();
+        
+        Log.d(TAG, "Loading books from Firestore for user: " + userId);
+        
         firestore.collection("books")
                 .whereEqualTo("userId", userId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     bookList.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Map<String, Object> data = document.getData();
                         String id = document.getId();
                         String coverUrl = document.getString("coverUrl");
                         String pdfUrl = document.getString("pdfUrl");
@@ -97,9 +95,16 @@ public class BookSelectionFragment extends Fragment implements LibraryAdapter.On
                         String author = document.getString("author");
                         String description = document.getString("description");
 
+                        Log.d(TAG, "Found book: " + title);
+                        Log.d(TAG, "Cover URL: " + coverUrl);
+                        Log.d(TAG, "Full document data: " + data);
+
+                        if (coverUrl == null || coverUrl.isEmpty()) {
+                            Log.w(TAG, "No cover URL found for book: " + title);
+                        }
+
                         Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
                         bookList.add(book);
-                        Log.d(TAG, "Added book: " + book.getTitle());
                     }
                     adapter.updateBooks(bookList);
                 })
