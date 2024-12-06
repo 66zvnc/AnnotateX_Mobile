@@ -138,7 +138,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
                 if (documentSnapshot.exists()) {
                     Group group = documentSnapshot.toObject(Group.class);
                     if (group != null) {
-                        // Set admin status
+                        // Set admin status (still needed for other admin functions)
                         String currentUserId = auth.getCurrentUser().getUid();
                         isAdmin = group.getCreatedBy() != null && group.getCreatedBy().equals(currentUserId);
                         
@@ -146,11 +146,11 @@ public class GroupDetailsActivity extends AppCompatActivity {
                         groupNameText.setText(group.getName());
                         memberCountText.setText(group.getMembers().size() + " Members");
                         
-                        // Show add member button for all members
-                        addMemberButton.setVisibility(View.VISIBLE);
+                        // Show edit photo button for all members
+                        editGroupPhotoButton.setVisibility(View.VISIBLE);
                         
-                        // Show edit photo button only for admin
-                        editGroupPhotoButton.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+                        // Show add member button only for admin
+                        addMemberButton.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
                         
                         // Load group photo if available
                         String photoUrl = documentSnapshot.getString("photoUrl");
