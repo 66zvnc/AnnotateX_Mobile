@@ -136,7 +136,6 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         // Configure view based on mode
         if (isInSelectionMode) {
             // In selection mode (BookSelectionFragment)
-            holder.menuIcon.setVisibility(View.GONE);
             holder.itemView.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onPdfClick(book);
@@ -144,8 +143,12 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             });
         } else {
             // In normal mode (Library)
-            holder.menuIcon.setVisibility(View.VISIBLE);
-            holder.menuIcon.setOnClickListener(v -> showPopupMenu(v, book));
+            // Set up long click listener for menu
+            holder.itemView.setOnLongClickListener(v -> {
+                showPopupMenu(v, book);
+                return true;
+            });
+            // Set up normal click for viewing details
             holder.itemView.setOnClickListener(v -> listener.onPdfClick(book));
         }
     }
@@ -257,12 +260,10 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
-        ImageView menuIcon;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imageView);
-            menuIcon = itemView.findViewById(R.id.menu_icon);
         }
     }
 
