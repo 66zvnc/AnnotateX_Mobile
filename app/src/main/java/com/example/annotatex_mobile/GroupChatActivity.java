@@ -92,6 +92,11 @@ public class GroupChatActivity extends AppCompatActivity {
         if (groupId != null) {
             loadGroupDetails();
         }
+
+        // Set up go back button click listener
+        goBackButton.setOnClickListener(v -> {
+            finish(); // This will close the current activity and return to the previous one
+        });
     }
 
     private void filterBooks(String query) {
