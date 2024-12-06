@@ -27,7 +27,7 @@
             android:focusable="true" />
 
         <!-- Profile Image -->
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/profileImageView"
             android:layout_width="48dp"
             android:layout_height="48dp"
@@ -35,8 +35,8 @@
             android:scaleType="centerCrop"
             android:src="@drawable/ic_default_profile"
             android:contentDescription="Profile Image"
-            android:background="@drawable/circle_background"
-            android:clipToOutline="true" />
+            app:shapeAppearanceOverlay="@style/CircleImageView"
+            android:elevation="1dp" />
 
         <!-- Name Text -->
         <TextView
