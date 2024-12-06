@@ -116,6 +116,10 @@ public class GroupChatActivity extends AppCompatActivity {
                 if (documentSnapshot.exists()) {
                     Group group = documentSnapshot.toObject(Group.class);
                     if (group != null) {
+                        // Set admin status (still needed for other admin functions)
+                        String currentUserId = auth.getCurrentUser().getUid();
+                        isAdmin = group.getCreatedBy() != null && group.getCreatedBy().equals(currentUserId);
+                        
                         groupNameTextView.setText(group.getName());
                         
                         // Check if group has a photo
@@ -315,3 +319,4 @@ public class GroupChatActivity extends AppCompatActivity {
                 });
     }
 }
+

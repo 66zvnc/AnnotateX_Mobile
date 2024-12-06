@@ -49,6 +49,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
     private ImageView editGroupPhotoButton;
     private FirebaseStorage storage;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private ImageView addMemberButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,60 +72,63 @@ public class GroupDetailsActivity extends AppCompatActivity {
         }
 
         // Initialize views
+        initializeViews();
+        
+        // Verify admin status and update UI
+        verifyAdminStatus();
+    }
+
+    private void initializeViews() {
         groupNameText = findViewById(R.id.groupNameText);
         memberCountText = findViewById(R.id.memberCountText);
         membersContainer = findViewById(R.id.membersContainer);
         leaveGroupButton = findViewById(R.id.leaveGroupButton);
         groupPhotoImage = findViewById(R.id.groupPhotoImage);
         editGroupPhotoButton = findViewById(R.id.editGroupPhotoButton);
+        addMemberButton = findViewById(R.id.addMemberButton);
 
-        // Show/hide edit photo button based on admin status
-        if (editGroupPhotoButton != null) {
-            editGroupPhotoButton.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
-            Log.d(TAG, "Edit photo button visibility set: " + (isAdmin ? "VISIBLE" : "GONE"));
-        }
-
-        // Set up back button
+        // Set up click listeners
         findViewById(R.id.backButton).setOnClickListener(v -> finish());
-
-        // Set up image picker
-        imagePickerLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    Uri imageUri = result.getData().getData();
-                    if (imageUri != null) {
-                        uploadGroupPhoto(imageUri);
-                    }
-                }
-            }
-        );
-
-        // Set up edit photo button
         editGroupPhotoButton.setOnClickListener(v -> openImagePicker());
+        addMemberButton.setOnClickListener(v -> openAddMemberActivity());
+        leaveGroupButton.setOnClickListener(v -> showLeaveGroupConfirmation());
+    }
 
-        // Load group details to verify admin status
+    private void verifyAdminStatus() {
+        String currentUserId = auth.getCurrentUser().getUid();
+        
         firestore.collection("groups").document(groupId)
             .get()
             .addOnSuccessListener(documentSnapshot -> {
                 if (documentSnapshot.exists()) {
                     String createdBy = documentSnapshot.getString("createdBy");
-                    String currentUserId = auth.getCurrentUser().getUid();
                     isAdmin = createdBy != null && createdBy.equals(currentUserId);
                     
-                    // Update edit button visibility after confirming admin status
-                    if (editGroupPhotoButton != null) {
-                        editGroupPhotoButton.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
-                        Log.d(TAG, "Edit photo button visibility updated: " + (isAdmin ? "VISIBLE" : "GONE"));
-                    }
+                    // Update UI based on admin status
+                    updateUIForAdminStatus();
+                    
+                    // Load the rest of the group details
+                    loadGroupDetails();
                 }
+            })
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "Error verifying admin status", e);
+                Toast.makeText(this, "Error loading group details", Toast.LENGTH_SHORT).show();
             });
+    }
 
-        // Load group details
-        loadGroupDetails();
+    private void updateUIForAdminStatus() {
+        // Update visibility of admin-only controls
+        editGroupPhotoButton.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+        addMemberButton.setVisibility(View.VISIBLE);
+        
+        Log.d(TAG, "Admin status updated - isAdmin: " + isAdmin);
+    }
 
-        // Set up leave group button
-        leaveGroupButton.setOnClickListener(v -> showLeaveGroupConfirmation());
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadGroupDetails(); // Refresh the members list
     }
 
     private void loadGroupDetails() {
@@ -134,8 +138,19 @@ public class GroupDetailsActivity extends AppCompatActivity {
                 if (documentSnapshot.exists()) {
                     Group group = documentSnapshot.toObject(Group.class);
                     if (group != null) {
+                        // Set admin status
+                        String currentUserId = auth.getCurrentUser().getUid();
+                        isAdmin = group.getCreatedBy() != null && group.getCreatedBy().equals(currentUserId);
+                        
+                        // Update UI elements
                         groupNameText.setText(group.getName());
                         memberCountText.setText(group.getMembers().size() + " Members");
+                        
+                        // Show add member button for all members
+                        addMemberButton.setVisibility(View.VISIBLE);
+                        
+                        // Show edit photo button only for admin
+                        editGroupPhotoButton.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
                         
                         // Load group photo if available
                         String photoUrl = documentSnapshot.getString("photoUrl");
@@ -233,6 +248,9 @@ public class GroupDetailsActivity extends AppCompatActivity {
                         }
                     });
             });
+
+        // Show/hide add member button based on admin status
+        addMemberButton.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
     }
 
     private void showRemoveMemberDialog(String memberId) {
@@ -336,5 +354,36 @@ public class GroupDetailsActivity extends AppCompatActivity {
             .error(R.drawable.ic_default_profile)
             .circleCrop()
             .into(groupPhotoImage);
+    }
+
+    private void openAddMemberActivity() {
+        Intent intent = new Intent(this, AddGroupMemberActivity.class);
+        intent.putExtra("groupId", groupId);
+        startActivity(intent);
+    }
+
+    private void displayMember(String memberId, String username) {
+        View memberView = getLayoutInflater().inflate(R.layout.item_group_member, membersContainer, false);
+        TextView nameText = memberView.findViewById(R.id.memberNameText);
+        ImageView removeButton = memberView.findViewById(R.id.removeMemberButton);
+
+        nameText.setText(username != null ? username : "Loading...");
+        
+        // Only show remove button if user is admin
+        removeButton.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+        
+        // Set up remove button click listener (only for admin)
+        if (isAdmin) {
+            removeButton.setOnClickListener(v -> {
+                new AlertDialog.Builder(this)
+                    .setTitle("Remove Member")
+                    .setMessage("Are you sure you want to remove " + (username != null ? username : "this member") + " from the group?")
+                    .setPositiveButton("Remove", (dialog, which) -> removeMember(memberId))
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            });
+        }
+
+        membersContainer.addView(memberView);
     }
 } 

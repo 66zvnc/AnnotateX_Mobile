@@ -51,17 +51,10 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
                     .load(friend.getProfileImageUrl())
                     .placeholder(R.drawable.ic_default_profile)
                     .error(R.drawable.ic_default_profile)
+                    .circleCrop()
                     .into(holder.profileImageView);
         } else {
             holder.profileImageView.setImageResource(R.drawable.ic_default_profile);
-        }
-
-        // Show "Add Friend" button if the friend was removed
-        if (friend.isRemoved()) {
-            holder.addFriendButton.setVisibility(View.VISIBLE);
-            holder.addFriendButton.setOnClickListener(v -> addFriend(friend, position));
-        } else {
-            holder.addFriendButton.setVisibility(View.GONE);
         }
 
         // Handle long press to show the popup menu
@@ -190,62 +183,26 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
         Toast.makeText(context, "Friend blocked (feature coming soon)", Toast.LENGTH_SHORT).show();
     }
 
-    private void addFriend(Friend friend, int position) {
-        String currentUserId = auth.getCurrentUser().getUid();
-        String currentUserName = auth.getCurrentUser().getDisplayName();
-
-        if (currentUserId == null || currentUserName == null) {
-            firestore.collection("users")
-                    .document(currentUserId)
-                    .get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            String fetchedUserName = documentSnapshot.getString("fullName");
-                            sendFriendRequest(friend, currentUserId, fetchedUserName, position);
-                        }
-                    })
-                    .addOnFailureListener(e -> Toast.makeText(context, "Failed to fetch user info", Toast.LENGTH_SHORT).show());
-        } else {
-            sendFriendRequest(friend, currentUserId, currentUserName, position);
-        }
-    }
-
-    private void sendFriendRequest(Friend friend, String senderId, String senderName, int position) {
-        FriendRequest newRequest = new FriendRequest(
-                senderId,
-                senderName,
-                friend.getId(),
-                System.currentTimeMillis()
-        );
-
-        firestore.collection("users")
-                .document(friend.getId())
-                .collection("friendRequests")
-                .document(senderId)
-                .set(newRequest)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(context, "Friend request sent", Toast.LENGTH_SHORT).show();
-                    friendsList.get(position).setRemoved(false);
-                    notifyItemChanged(position);
-                })
-                .addOnFailureListener(e -> Toast.makeText(context, "Failed to send friend request", Toast.LENGTH_SHORT).show());
-    }
-
     @Override
     public int getItemCount() {
         return friendsList.size();
     }
 
+    public void updateFriendsList(List<Friend> newList) {
+        this.friendsList.clear();
+        this.friendsList.addAll(newList);
+        notifyDataSetChanged();
+    }
+
     public static class FriendViewHolder extends RecyclerView.ViewHolder {
         ImageView profileImageView;
-        TextView nameTextView, statusTextView, addFriendButton;
+        TextView nameTextView, statusTextView;
 
         public FriendViewHolder(@NonNull View itemView) {
             super(itemView);
             profileImageView = itemView.findViewById(R.id.profileImageView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
             statusTextView = itemView.findViewById(R.id.statusTextView);
-            addFriendButton = itemView.findViewById(R.id.addFriendButton);
         }
     }
 }
