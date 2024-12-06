@@ -232,15 +232,19 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
         requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenWidth = displayMetrics.widthPixels;
         
-        // Desired minimum width for each item (in dp)
-        int desiredMinWidth = 160; // adjust this value as needed
+        // Different minimum widths for phones and tablets
+        int desiredMinWidth;
+        if (getResources().getConfiguration().screenWidthDp >= 600) {
+            desiredMinWidth = 280; // Much bigger minimum width for tablets (increased from 200)
+        } else {
+            desiredMinWidth = 160; // Original minimum width for phones
+        }
         
         // Convert dp to px
         float density = getResources().getDisplayMetrics().density;
         int minWidthPx = (int) (desiredMinWidth * density);
         
         // Calculate span count
-        int spanCount = Math.max(2, screenWidth / minWidthPx);
-        return spanCount;
+        return Math.max(2, screenWidth / minWidthPx);
     }
 }
