@@ -3,6 +3,7 @@ package com.example.annotatex_mobile;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,8 +54,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
 
         // Configure RecyclerView
         pdfGalleryRecyclerView = view.findViewById(R.id.pdfGalleryRecyclerView);
-        int columns = getResources().getConfiguration().screenWidthDp >= 600 ? 3 : 2; // Adjust for tablets/phones
-        pdfGalleryRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), columns));
+        setupRecyclerView();
         pdfGalleryRecyclerView.addItemDecoration(new SpaceItemDecoration(getResources().getDimensionPixelSize(R.dimen.recycler_view_item_spacing)));
         pdfGalleryRecyclerView.setAdapter(adapter);
 
@@ -218,5 +218,29 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
                 outRect.top = space;
             }
         }
+    }
+
+    private void setupRecyclerView() {
+        int spanCount = calculateSpanCount();
+        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), spanCount);
+        pdfGalleryRecyclerView.setLayoutManager(layoutManager);
+    }
+
+    private int calculateSpanCount() {
+        // Get the screen width
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenWidth = displayMetrics.widthPixels;
+        
+        // Desired minimum width for each item (in dp)
+        int desiredMinWidth = 160; // adjust this value as needed
+        
+        // Convert dp to px
+        float density = getResources().getDisplayMetrics().density;
+        int minWidthPx = (int) (desiredMinWidth * density);
+        
+        // Calculate span count
+        int spanCount = Math.max(2, screenWidth / minWidthPx);
+        return spanCount;
     }
 }
