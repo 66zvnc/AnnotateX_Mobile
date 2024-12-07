@@ -13,6 +13,7 @@ import android.widget.RadioButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -261,26 +262,55 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     }
 
     private void deleteBook(Book book) {
-        StorageReference pdfRef = FirebaseStorage.getInstance().getReferenceFromUrl(book.getPdfUrl());
-        pdfRef.delete()
-                .addOnSuccessListener(aVoid -> FirebaseFirestore.getInstance().collection("books")
-                        .whereEqualTo("pdfUrl", book.getPdfUrl())
+        new AlertDialog.Builder(context)
+            .setTitle("Delete Book")
+            .setMessage("Are you sure you want to delete this book? This action cannot be undone.")
+            .setPositiveButton("Delete", (dialog, which) -> {
+                StorageReference pdfRef = FirebaseStorage.getInstance().getReferenceFromUrl(book.getPdfUrl());
+                pdfRef.delete()
+                    .addOnSuccessListener(aVoid -> FirebaseFirestore.getInstance()
+                        .collection("books")
+                        .whereEqualTo("id", book.getId())
                         .get()
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful() && !task.getResult().isEmpty()) {
                                 String docId = task.getResult().getDocuments().get(0).getId();
                                 FirebaseFirestore.getInstance().collection("books").document(docId).delete()
-                                        .addOnSuccessListener(aVoid1 -> {
-                                            // Remove book from both lists
-                                            bookList.remove(book); // Remove from the original list
-                                            filteredList.remove(book); // Remove from the filtered list
-                                            notifyDataSetChanged(); // Notify adapter of changes
-                                            Log.d(TAG, "Book deleted successfully.");
-                                        })
-                                        .addOnFailureListener(e -> Log.e(TAG, "Failed to delete document from Firestore", e));
+                                    .addOnSuccessListener(aVoid1 -> {
+                                        // Find positions in both lists before removing
+                                        int filteredPosition = filteredList.indexOf(book);
+                                        int originalPosition = bookList.indexOf(book);
+                                        
+                                        // Remove from both lists
+                                        if (filteredPosition != -1) {
+                                            filteredList.remove(filteredPosition);
+                                            notifyItemRemoved(filteredPosition);
+                                            // Notify adapter of changes in item positions after removal
+                                            if (filteredPosition < filteredList.size()) {
+                                                notifyItemRangeChanged(filteredPosition, filteredList.size() - filteredPosition);
+                                            }
+                                        }
+                                        
+                                        if (originalPosition != -1) {
+                                            bookList.remove(originalPosition);
+                                        }
+                                        
+                                        Toast.makeText(context, "Book deleted successfully", Toast.LENGTH_SHORT).show();
+                                        Log.d(TAG, "Book deleted successfully.");
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(context, "Failed to delete book", Toast.LENGTH_SHORT).show();
+                                        Log.e(TAG, "Failed to delete document from Firestore", e);
+                                    });
                             }
                         }))
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to delete file from Storage", e));
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(context, "Failed to delete book file", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Failed to delete file from Storage", e);
+                    });
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
     }
 
 
