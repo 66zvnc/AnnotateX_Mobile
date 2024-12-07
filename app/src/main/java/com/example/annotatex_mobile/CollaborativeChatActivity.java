@@ -378,18 +378,18 @@ public class CollaborativeChatActivity extends AppCompatActivity {
 
         Message message = new Message(currentUserId, currentUserName, content);
         
-        // Create a chat ID that's consistent for both users
         String chatId = currentUserId.compareTo(friendId) < 0 
             ? currentUserId + "_" + friendId 
             : friendId + "_" + currentUserId;
 
         firestore.collection("chats")
-                .document(chatId)  // Use consistent chat ID
+                .document(chatId)
                 .collection("messages")
                 .add(message)
                 .addOnSuccessListener(documentReference -> {
+                    message.setId(documentReference.getId());  // Set the message ID
                     messageInput.setText("");
-                    Log.d(TAG, "Message sent successfully");
+                    Log.d(TAG, "Message sent successfully with ID: " + documentReference.getId());
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error sending message", e);
@@ -400,12 +400,11 @@ public class CollaborativeChatActivity extends AppCompatActivity {
     private void listenForMessages() {
         if (friendId == null) return;
 
-        // Use the same chat ID format as in sendMessage
         String chatId = auth.getCurrentUser().getUid().compareTo(friendId) < 0 
             ? auth.getCurrentUser().getUid() + "_" + friendId 
             : friendId + "_" + auth.getCurrentUser().getUid();
 
-        // First, load existing messages
+        // First load existing messages
         firestore.collection("chats")
                 .document(chatId)
                 .collection("messages")
@@ -415,14 +414,18 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
                         Message message = doc.toObject(Message.class);
                         if (message != null) {
+                            message.setId(doc.getId());  // Set the message ID
                             chatAdapter.addMessage(message);
+                            // Mark received messages as seen
+                            if (!message.getSenderId().equals(auth.getCurrentUser().getUid())) {
+                                markMessageAsSeen(chatId, doc.getId());
+                            }
                         }
                     }
                     chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Error loading messages", e));
+                });
 
-        // Then, listen for new messages
+        // Then listen for new messages
         firestore.collection("chats")
                 .document(chatId)
                 .collection("messages")
@@ -437,11 +440,50 @@ public class CollaborativeChatActivity extends AppCompatActivity {
                         for (DocumentChange dc : value.getDocumentChanges()) {
                             if (dc.getType() == DocumentChange.Type.ADDED) {
                                 Message message = dc.getDocument().toObject(Message.class);
-                                chatAdapter.addMessage(message);
-                                chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+                                if (message != null) {
+                                    message.setId(dc.getDocument().getId());  // Set the message ID
+                                    chatAdapter.addMessage(message);
+                                    // Mark new received messages as seen
+                                    if (!message.getSenderId().equals(auth.getCurrentUser().getUid())) {
+                                        markMessageAsSeen(chatId, dc.getDocument().getId());
+                                    }
+                                    chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+                                }
+                            } else if (dc.getType() == DocumentChange.Type.MODIFIED) {
+                                Message updatedMessage = dc.getDocument().toObject(Message.class);
+                                if (updatedMessage != null) {
+                                    updatedMessage.setId(dc.getDocument().getId());  // Set the message ID
+                                    updateMessageInAdapter(updatedMessage);
+                                }
                             }
                         }
                     }
                 });
+    }
+
+    private void markMessageAsSeen(String chatId, String messageId) {
+        firestore.collection("chats")
+                .document(chatId)
+                .collection("messages")
+                .document(messageId)
+                .update("seen", true)
+                .addOnFailureListener(e -> Log.e(TAG, "Error marking message as seen", e));
+    }
+
+    private void updateMessageInAdapter(Message updatedMessage) {
+        if (updatedMessage == null || updatedMessage.getId() == null) {
+            Log.e(TAG, "Updated message or message ID is null");
+            return;
+        }
+
+        for (int i = 0; i < chatAdapter.getItemCount(); i++) {
+            Message message = chatAdapter.getMessage(i);
+            if (message != null && message.getId() != null && 
+                message.getId().equals(updatedMessage.getId())) {
+                message.setSeen(updatedMessage.isSeen());
+                chatAdapter.notifyItemChanged(i);
+                break;
+            }
+        }
     }
 }

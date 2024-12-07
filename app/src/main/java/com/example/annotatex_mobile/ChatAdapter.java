@@ -3,6 +3,7 @@ package com.example.annotatex_mobile;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -47,6 +48,11 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
         Message message = messages.get(position);
         holder.messageText.setText(message.getContent());
         holder.timeText.setText(timeFormat.format(new Date(message.getTimestamp())));
+        
+        if (getItemViewType(position) == VIEW_TYPE_SENT) {
+            holder.seenIndicator.setVisibility(message.isSeen() ? View.VISIBLE : View.GONE);
+        }
+        
         if (getItemViewType(position) == VIEW_TYPE_RECEIVED) {
             holder.senderName.setText(message.getSenderName());
         }
@@ -77,16 +83,22 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
         notifyDataSetChanged();
     }
 
+    public Message getMessage(int position) {
+        return messages.get(position);
+    }
+
     static class MessageViewHolder extends RecyclerView.ViewHolder {
         TextView messageText;
         TextView timeText;
         TextView senderName;
+        ImageView seenIndicator;
 
         MessageViewHolder(View itemView) {
             super(itemView);
             messageText = itemView.findViewById(R.id.messageText);
             timeText = itemView.findViewById(R.id.timeText);
             senderName = itemView.findViewById(R.id.senderName);
+            seenIndicator = itemView.findViewById(R.id.seenIndicator);
         }
     }
 } 

@@ -15,11 +15,25 @@
         android:textColor="@android:color/white"
         android:maxWidth="240dp" />
 
-    <TextView
-        android:id="@+id/timeText"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:layout_marginTop="4dp" />
+        android:orientation="horizontal"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:id="@+id/timeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp" />
+
+        <ImageView
+            android:id="@+id/seenIndicator"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="4dp"
+            android:src="@drawable/ic_check_double"
+            android:visibility="gone" />
+    </LinearLayout>
 
 </LinearLayout> 

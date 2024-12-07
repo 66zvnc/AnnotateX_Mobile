@@ -6,9 +6,11 @@ public class Message {
     private String senderName;
     private String content;
     private long timestamp;
+    private boolean seen;
 
     public Message() {
         // Required empty constructor for Firestore
+        this.seen = false;
     }
 
     public Message(String senderId, String senderName, String content) {
@@ -16,6 +18,7 @@ public class Message {
         this.senderName = senderName;
         this.content = content;
         this.timestamp = System.currentTimeMillis();
+        this.seen = false;
     }
 
     // Getters and setters
@@ -29,4 +32,6 @@ public class Message {
     public void setContent(String content) { this.content = content; }
     public long getTimestamp() { return timestamp; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    public boolean isSeen() { return seen; }
+    public void setSeen(boolean seen) { this.seen = seen; }
 } 
