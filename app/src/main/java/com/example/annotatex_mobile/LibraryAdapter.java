@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -123,32 +124,62 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Book book = filteredList.get(position);
-
-        // Load book cover
-        if (book.hasBitmapCover()) {
-            holder.imageView.setImageBitmap(book.getCoverImageBitmap());
-        } else if (book.hasUrlCover()) {
-            Glide.with(context).load(book.getCoverImageUrl()).into(holder.imageView);
+        
+        // Improved cover image loading logic with better logging
+        if (book.getCoverImageUrl() != null && !book.getCoverImageUrl().isEmpty()) {
+            Log.d(TAG, "Loading cover URL for " + book.getTitle() + ": " + book.getCoverImageUrl());
+            
+            if (book.getCoverImageUrl().startsWith("gs://") || book.getCoverImageUrl().startsWith("https://firebasestorage.googleapis.com")) {
+                // Handle Firebase Storage URLs
+                StorageReference storageRef = FirebaseStorage.getInstance()
+                    .getReferenceFromUrl(book.getCoverImageUrl());
+                    
+                storageRef.getDownloadUrl()
+                    .addOnSuccessListener(uri -> {
+                        Log.d(TAG, "Resolved download URL: " + uri.toString());
+                        Glide.with(context)
+                            .load(uri)
+                            .placeholder(R.drawable.book_handle)
+                            .error(R.drawable.book_handle)
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(holder.imageView);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to get download URL for " + book.getTitle(), e);
+                        holder.imageView.setImageResource(R.drawable.book_handle);
+                    });
+            } else {
+                // Direct HTTP URL
+                Log.d(TAG, "Loading direct URL: " + book.getCoverImageUrl());
+                Glide.with(context)
+                    .load(book.getCoverImageUrl())
+                    .placeholder(R.drawable.book_handle)
+                    .error(R.drawable.book_handle)
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .into(holder.imageView);
+            }
         } else if (book.hasResIdCover()) {
+            // Load resource ID cover
+            Log.d(TAG, "Loading resource cover for " + book.getTitle());
             holder.imageView.setImageResource(book.getImageResId());
+        } else {
+            // Fallback to default cover
+            Log.d(TAG, "Using default cover for " + book.getTitle());
+            holder.imageView.setImageResource(R.drawable.book_handle);
         }
 
         // Configure view based on mode
         if (isInSelectionMode) {
-            // In selection mode (BookSelectionFragment)
             holder.itemView.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onPdfClick(book);
                 }
             });
         } else {
-            // In normal mode (Library)
-            // Set up long click listener for menu
             holder.itemView.setOnLongClickListener(v -> {
                 showPopupMenu(v, book);
                 return true;
             });
-            // Set up normal click for viewing details
             holder.itemView.setOnClickListener(v -> listener.onPdfClick(book));
         }
     }

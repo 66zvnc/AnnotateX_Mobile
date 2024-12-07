@@ -153,7 +153,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
                         Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
                         bookList.add(book);
                     }
-                    loadCollaborativeBooks(userId);
+                    loadCollaborativeBooks(userId); // Load collaborative books after personal books
                 } else {
                     Log.e(TAG, "Error getting documents: ", task.getException());
                 }
@@ -171,15 +171,44 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        Book collaborativeBook = document.toObject(Book.class);
-                        if (!bookList.contains(collaborativeBook)) {
-                            bookList.add(collaborativeBook);
+                        // Explicitly get all fields instead of using toObject
+                        String id = document.getId();
+                        String title = document.getString("title");
+                        String author = document.getString("author");
+                        String description = document.getString("description");
+                        String pdfUrl = document.getString("pdfUrl");
+                        String coverUrl = document.getString("coverUrl");
+                        
+                        Log.d(TAG, "Loading collaborative book: " + title);
+                        Log.d(TAG, "Cover URL from Firestore: " + coverUrl);
+                        
+                        if (coverUrl != null && !coverUrl.isEmpty()) {
+                            // Create book with all fields explicitly
+                            Book collaborativeBook = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
+                            
+                            // Set any additional collaborative-specific properties
+                            List<String> collaborators = (List<String>) document.get("collaborators");
+                            if (collaborators != null) {
+                                collaborativeBook.setCollaborators(collaborators);
+                            }
+                            
+                            if (!bookList.contains(collaborativeBook)) {
+                                Log.d(TAG, "Adding collaborative book: " + title + " with cover: " + coverUrl);
+                                bookList.add(collaborativeBook);
+                            }
+                        } else {
+                            Log.w(TAG, "No cover URL found for collaborative book: " + title);
                         }
                     }
                     addPreloadedBooks(); // Add predefined books after fetching collaborative ones
                     adapter.updateBooks(bookList); // Update adapter with the full book list
                 })
-                .addOnFailureListener(e -> Log.e(TAG, "Error fetching collaborative books: ", e));
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching collaborative books: ", e);
+                    // Still add preloaded books and update adapter even if collaborative books fail to load
+                    addPreloadedBooks();
+                    adapter.updateBooks(bookList);
+                });
     }
 
     private void addPreloadedBooks() {
