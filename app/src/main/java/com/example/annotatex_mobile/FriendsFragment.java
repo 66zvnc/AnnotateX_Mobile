@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,14 +30,12 @@ import static android.content.ContentValues.TAG;
 
 public class FriendsFragment extends Fragment {
 
-    private RecyclerView friendsRecyclerView;
-    private FriendsAdapter friendsAdapter;
+    private RecyclerView combinedRecyclerView;
+    private CombinedAdapter combinedAdapter;
     private List<Friend> friendsList;
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
     private ListenerRegistration listenerRegistration;
-    private RecyclerView groupsRecyclerView;
-    private GroupAdapter groupAdapter;
     private List<Group> groupsList;
     private ListenerRegistration groupsListenerRegistration;
 
@@ -48,26 +47,10 @@ public class FriendsFragment extends Fragment {
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
-        friendsRecyclerView = view.findViewById(R.id.friendsRecyclerView);
-        friendsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        friendsList = new ArrayList<>();
-        friendsAdapter = new FriendsAdapter(requireContext(), friendsList);
-        friendsRecyclerView.setAdapter(friendsAdapter);
-
-        // Initialize groups RecyclerView
-        groupsRecyclerView = view.findViewById(R.id.groupsRecyclerView);
-        groupsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        groupsList = new ArrayList<>();
-        groupAdapter = new GroupAdapter(requireContext(), groupsList, group -> {
-            // Handle group click - navigate to group chat
-            Intent intent = new Intent(getContext(), GroupChatActivity.class);
-            intent.putExtra("groupId", group.getId());
-            intent.putExtra("groupName", group.getName());
-            startActivity(intent);
-        });
-        groupsRecyclerView.setAdapter(groupAdapter);
+        combinedRecyclerView = view.findViewById(R.id.combinedRecyclerView);
+        combinedRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        combinedAdapter = new CombinedAdapter(requireContext());
+        combinedRecyclerView.setAdapter(combinedAdapter);
 
         // Start listening for real-time updates
         listenForFriendUpdates();
@@ -86,7 +69,35 @@ public class FriendsFragment extends Fragment {
             startActivity(intent);
         });
 
+        // Set up SearchView
+        androidx.appcompat.widget.SearchView searchView = view.findViewById(R.id.searchView);
+        searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterItems(newText);
+                return true;
+            }
+        });
+
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        
+        // Initialize lists if they haven't been initialized
+        if (friendsList == null) {
+            friendsList = new ArrayList<>();
+        }
+        if (groupsList == null) {
+            groupsList = new ArrayList<>();
+        }
     }
 
     private void listenForFriendUpdates() {
@@ -118,7 +129,7 @@ public class FriendsFragment extends Fragment {
                             friendsList.add(updatedFriend);
                         }
                     }
-                    friendsAdapter.notifyDataSetChanged();
+                    updateLists();
                 });
     }
 
@@ -140,7 +151,7 @@ public class FriendsFragment extends Fragment {
                         groupsList.add(group);
                         Log.d(TAG, "Found group: " + group.getName() + " with ID: " + group.getId());
                     }
-                    groupAdapter.notifyDataSetChanged();
+                    updateLists();
                 });
     }
 
@@ -166,7 +177,7 @@ public class FriendsFragment extends Fragment {
         }
 
         // Notify the adapter of data changes
-        friendsAdapter.notifyDataSetChanged();
+        combinedAdapter.notifyDataSetChanged();
     }
 
     private void addOrUpdateFriend(Friend updatedFriend) {
@@ -210,5 +221,42 @@ public class FriendsFragment extends Fragment {
         if (groupsListenerRegistration != null) {
             groupsListenerRegistration.remove();
         }
+    }
+
+    private void updateLists() {
+        combinedAdapter.updateItems(groupsList, friendsList);
+    }
+
+    private void filterItems(String query) {
+        if (query == null || query.isEmpty()) {
+            // If query is empty, show all items
+            combinedAdapter.updateItems(groupsList, friendsList);
+            return;
+        }
+
+        query = query.toLowerCase().trim();
+
+        // Filter groups
+        List<Group> filteredGroups = new ArrayList<>();
+        if (groupsList != null) {
+            for (Group group : groupsList) {
+                if (group.getName().toLowerCase().contains(query)) {
+                    filteredGroups.add(group);
+                }
+            }
+        }
+
+        // Filter friends
+        List<Friend> filteredFriends = new ArrayList<>();
+        if (friendsList != null) {
+            for (Friend friend : friendsList) {
+                if (friend.getName().toLowerCase().contains(query)) {
+                    filteredFriends.add(friend);
+                }
+            }
+        }
+
+        // Update adapter with filtered lists
+        combinedAdapter.updateItems(filteredGroups, filteredFriends);
     }
 }
