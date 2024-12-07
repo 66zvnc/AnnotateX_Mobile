@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +17,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -25,6 +28,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.DocumentChange;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +57,11 @@ public class GroupChatActivity extends AppCompatActivity {
     private ImageView addBookButton;
     private ImageView groupInfoButton;
 
+    private RecyclerView chatRecyclerView;
+    private ChatAdapter chatAdapter;
+    private EditText messageInput;
+    private ImageButton sendButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,6 +80,11 @@ public class GroupChatActivity extends AppCompatActivity {
         goBackButton = findViewById(R.id.goBackButton);
         addBookButton = findViewById(R.id.addBookButton);
         groupInfoButton = findViewById(R.id.groupInfoButton);
+
+        // Initialize chat views
+        chatRecyclerView = findViewById(R.id.chatRecyclerView);
+        messageInput = findViewById(R.id.messageInput);
+        sendButton = findViewById(R.id.sendButton);
 
         // Get group ID from intent
         groupId = getIntent().getStringExtra("groupId");
@@ -97,6 +111,17 @@ public class GroupChatActivity extends AppCompatActivity {
         goBackButton.setOnClickListener(v -> {
             finish(); // This will close the current activity and return to the previous one
         });
+
+        // Set up chat RecyclerView
+        chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        chatAdapter = new ChatAdapter(auth.getCurrentUser().getUid());
+        chatRecyclerView.setAdapter(chatAdapter);
+
+        // Set up send button
+        sendButton.setOnClickListener(v -> sendMessage());
+
+        // Load and listen for messages
+        listenForMessages();
     }
 
     private void filterBooks(String query) {
@@ -317,6 +342,89 @@ public class GroupChatActivity extends AppCompatActivity {
                     Log.e("GroupChatActivity", "Error adding book to group", e);
                     Toast.makeText(this, "Failed to add book: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void sendMessage() {
+        String content = messageInput.getText().toString().trim();
+        if (content.isEmpty()) return;
+
+        String currentUserId = auth.getCurrentUser().getUid();
+        String currentUserName = auth.getCurrentUser().getDisplayName();
+
+        Message message = new Message(currentUserId, currentUserName, content);
+        
+        firestore.collection("groups")
+                .document(groupId)
+                .collection("messages")
+                .add(message)
+                .addOnSuccessListener(documentReference -> {
+                    messageInput.setText("");
+                    Log.d(TAG, "Message sent successfully");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error sending message", e);
+                    Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void listenForMessages() {
+        // First load existing messages
+        firestore.collection("groups")
+                .document(groupId)
+                .collection("messages")
+                .orderBy("timestamp", Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        Message message = doc.toObject(Message.class);
+                        if (message != null) {
+                            message.setId(doc.getId());
+                            chatAdapter.addMessage(message);
+                            // Mark received messages as seen
+                            if (!message.getSenderId().equals(auth.getCurrentUser().getUid())) {
+                                markMessageAsSeen(message.getId());
+                            }
+                        }
+                    }
+                    chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+                });
+
+        // Then listen for real-time updates
+        firestore.collection("groups")
+                .document(groupId)
+                .collection("messages")
+                .orderBy("timestamp", Query.Direction.ASCENDING)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        Log.e(TAG, "Error listening for messages", error);
+                        return;
+                    }
+
+                    if (value != null) {
+                        for (DocumentChange dc : value.getDocumentChanges()) {
+                            if (dc.getType() == DocumentChange.Type.ADDED) {
+                                Message message = dc.getDocument().toObject(Message.class);
+                                if (message != null) {
+                                    message.setId(dc.getDocument().getId());
+                                    chatAdapter.addMessage(message);
+                                    if (!message.getSenderId().equals(auth.getCurrentUser().getUid())) {
+                                        markMessageAsSeen(message.getId());
+                                    }
+                                    chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+                                }
+                            }
+                        }
+                    }
+                });
+    }
+
+    private void markMessageAsSeen(String messageId) {
+        firestore.collection("groups")
+                .document(groupId)
+                .collection("messages")
+                .document(messageId)
+                .update("seen", true)
+                .addOnFailureListener(e -> Log.e(TAG, "Error marking message as seen", e));
     }
 }
 
