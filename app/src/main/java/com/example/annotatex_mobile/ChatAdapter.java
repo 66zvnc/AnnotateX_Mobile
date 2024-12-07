@@ -1,5 +1,6 @@
 package com.example.annotatex_mobile;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -55,7 +59,39 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
         
         if (getItemViewType(position) == VIEW_TYPE_RECEIVED) {
             holder.senderName.setText(message.getSenderName());
+            holder.senderName.setVisibility(View.VISIBLE);
+            
+            // Load profile picture
+            if (holder.profileImage != null) {
+                loadProfilePicture(message.getSenderId(), holder.profileImage);
+            }
         }
+    }
+
+    private void loadProfilePicture(String userId, ImageView imageView) {
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(userId)
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                    if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                        Glide.with(imageView.getContext())
+                            .load(profileImageUrl)
+                            .placeholder(R.drawable.ic_default_profile)
+                            .error(R.drawable.ic_default_profile)
+                            .circleCrop()
+                            .into(imageView);
+                    } else {
+                        imageView.setImageResource(R.drawable.ic_default_profile);
+                    }
+                }
+            })
+            .addOnFailureListener(e -> {
+                Log.e("ChatAdapter", "Error loading profile picture", e);
+                imageView.setImageResource(R.drawable.ic_default_profile);
+            });
     }
 
     @Override
@@ -92,6 +128,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
         TextView timeText;
         TextView senderName;
         ImageView seenIndicator;
+        ImageView profileImage;
 
         MessageViewHolder(View itemView) {
             super(itemView);
@@ -99,6 +136,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
             timeText = itemView.findViewById(R.id.timeText);
             senderName = itemView.findViewById(R.id.senderName);
             seenIndicator = itemView.findViewById(R.id.seenIndicator);
+            profileImage = itemView.findViewById(R.id.profileImage);
         }
     }
 } 
