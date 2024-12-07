@@ -71,7 +71,28 @@ public class GroupChatActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
+        // Get group ID from intent first
+        groupId = getIntent().getStringExtra("groupId");
+        if (groupId == null) {
+            Toast.makeText(this, "Error: Group ID not found", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
         // Initialize views
+        initializeViews();
+        
+        // Set up RecyclerViews and adapters
+        setupRecyclerViews();
+        
+        // Load data
+        loadGroupDetails();
+        loadCollaborativeBooks();
+        listenForMessages();
+    }
+
+    private void initializeViews() {
+        // Initialize all views
         groupPhotoImage = findViewById(R.id.groupPhotoImage);
         memberImagesContainer = findViewById(R.id.memberImagesContainer);
         memberImage1 = findViewById(R.id.memberImage1);
@@ -80,48 +101,64 @@ public class GroupChatActivity extends AppCompatActivity {
         goBackButton = findViewById(R.id.goBackButton);
         addBookButton = findViewById(R.id.addBookButton);
         groupInfoButton = findViewById(R.id.groupInfoButton);
-
-        // Initialize chat views
         chatRecyclerView = findViewById(R.id.chatRecyclerView);
         messageInput = findViewById(R.id.messageInput);
         sendButton = findViewById(R.id.sendButton);
+        collaborativeBooksRecyclerView = findViewById(R.id.collaborativeBooksRecyclerView);
 
-        // Get group ID from intent
-        groupId = getIntent().getStringExtra("groupId");
-        if (groupId == null) {
-            Toast.makeText(this, "Error: Group ID not found", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        // Set up group info button click listener
+        // Set up click listeners
+        goBackButton.setOnClickListener(v -> finish());
+        addBookButton.setOnClickListener(v -> openBookSelectionFragment());
         groupInfoButton.setOnClickListener(v -> {
             Intent intent = new Intent(this, GroupDetailsActivity.class);
             intent.putExtra("groupId", groupId);
             intent.putExtra("isAdmin", isAdmin);
             startActivity(intent);
         });
+        sendButton.setOnClickListener(v -> sendMessage());
 
-        // Load group details including photo
-        if (groupId != null) {
-            loadGroupDetails();
-        }
+        // Set up SearchView
+        SearchView searchView = findViewById(R.id.searchView);
+        searchView.setQueryHint("Search Books");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                filterBooks(query);
+                return false;
+            }
 
-        // Set up go back button click listener
-        goBackButton.setOnClickListener(v -> {
-            finish(); // This will close the current activity and return to the previous one
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterBooks(newText);
+                return false;
+            }
         });
+    }
+
+    private void setupRecyclerViews() {
+        // Set up books RecyclerView
+        collaborativeBooksList = new ArrayList<>();
+        adapter = new CollaborativeBooksAdapter(this, collaborativeBooksList, 
+            new CollaborativeBooksAdapter.OnBookInteractionListener() {
+                @Override
+                public void onViewDetails(Book book) {
+                    openBookDetails(book);
+                }
+
+                @Override
+                public void onStopCollab(Book book) {
+                    stopCollaboration(book);
+                }
+            });
+
+        int columns = getResources().getConfiguration().screenWidthDp >= 600 ? 3 : 2;
+        collaborativeBooksRecyclerView.setLayoutManager(new GridLayoutManager(this, columns));
+        collaborativeBooksRecyclerView.setAdapter(adapter);
 
         // Set up chat RecyclerView
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         chatAdapter = new ChatAdapter(auth.getCurrentUser().getUid());
         chatRecyclerView.setAdapter(chatAdapter);
-
-        // Set up send button
-        sendButton.setOnClickListener(v -> sendMessage());
-
-        // Load and listen for messages
-        listenForMessages();
     }
 
     private void filterBooks(String query) {
@@ -273,24 +310,22 @@ public class GroupChatActivity extends AppCompatActivity {
     }
 
     private void openBookSelectionFragment() {
+        // Hide the books RecyclerView and show the fragment container
         collaborativeBooksRecyclerView.setVisibility(View.GONE);
         findViewById(R.id.fragment_container).setVisibility(View.VISIBLE);
 
         BookSelectionFragment fragment = new BookSelectionFragment();
-        fragment.setBookSelectedListener(new BookSelectionFragment.OnBookSelectedListener() {
-            @Override
-            public void onBookSelected(Book book) {
-                // Show confirmation dialog
-                new AlertDialog.Builder(GroupChatActivity.this)
-                    .setTitle("Add Book")
-                    .setMessage("Do you want to add \"" + book.getTitle() + "\" to the group?")
-                    .setPositiveButton("Add", (dialog, which) -> {
-                        addBookToGroup(book);
-                        dialog.dismiss();
-                    })
-                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
-                    .show();
-            }
+        fragment.setBookSelectedListener(book -> {
+            // Show confirmation dialog
+            new AlertDialog.Builder(GroupChatActivity.this)
+                .setTitle("Add Book")
+                .setMessage("Do you want to add \"" + book.getTitle() + "\" to the group?")
+                .setPositiveButton("Add", (dialog, which) -> {
+                    addBookToGroup(book);
+                    dialog.dismiss();
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
         });
 
         getSupportFragmentManager()
@@ -425,6 +460,18 @@ public class GroupChatActivity extends AppCompatActivity {
                 .document(messageId)
                 .update("seen", true)
                 .addOnFailureListener(e -> Log.e(TAG, "Error marking message as seen", e));
+    }
+
+    @Override
+    public void onBackPressed() {
+        // If fragment container is visible, handle back press
+        if (findViewById(R.id.fragment_container).getVisibility() == View.VISIBLE) {
+            findViewById(R.id.fragment_container).setVisibility(View.GONE);
+            collaborativeBooksRecyclerView.setVisibility(View.VISIBLE);
+            getSupportFragmentManager().popBackStack();
+        } else {
+            super.onBackPressed();
+        }
     }
 }
 
