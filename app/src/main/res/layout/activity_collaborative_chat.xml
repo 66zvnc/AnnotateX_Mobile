@@ -65,7 +65,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:queryHint="Search Books or Notes"/>
+            android:queryHint="Search Books"/>
 
         <!-- Add Book Button -->
         <ImageView
@@ -80,7 +80,7 @@
             app:tint="?attr/colorOnSurface" />
     </LinearLayout>
 
-    <!-- Collaborative Books RecyclerView -->
+    <!-- Books Section Header -->
     <TextView
         android:id="@+id/booksSectionHeader"
         android:layout_width="match_parent"
@@ -98,26 +98,6 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
-        android:layout_weight="1"
-        android:background="?attr/colorBackground" />
-
-    <!-- Notes Section Header -->
-    <TextView
-        android:id="@+id/notesSectionHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Notes"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="?attr/colorOnSurface"
-        android:paddingTop="16dp"
-        android:paddingBottom="8dp" />
-
-    <!-- Notes RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/notesRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
         android:layout_weight="1"
         android:background="?attr/colorBackground" />
 

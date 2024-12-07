@@ -91,6 +91,7 @@ public class CollaborativeChatActivity extends AppCompatActivity {
 
         // Add SearchView functionality
         SearchView searchView = findViewById(R.id.searchView);
+        searchView.setQueryHint("Search Books");
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
