@@ -47,6 +47,7 @@
         <activity android:name=".GroupChatActivity"/>
         <activity android:name=".GroupDetailsActivity"/>
         <activity android:name=".AddGroupMemberActivity"/>
+        <activity android:name=".CategoryActivity"/>
 
         <service
             android:name=".MyFirebaseMessagingService"

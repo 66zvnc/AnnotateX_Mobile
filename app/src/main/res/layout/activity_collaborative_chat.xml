@@ -35,7 +35,7 @@
             android:scaleType="centerCrop"
             android:src="@drawable/ic_default_profile"
             android:contentDescription="Profile Image"
-            app:shapeAppearanceOverlay="@style/CircleImageView"
+            app:shapeAppearanceOverlay="@style/CircularImageView"
             android:elevation="1dp" />
 
         <!-- Name Text -->

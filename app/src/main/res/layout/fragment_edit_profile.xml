@@ -19,7 +19,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="Profile Image"
-        app:shapeAppearanceOverlay="@style/CircleImageView" />
+        app:shapeAppearanceOverlay="@style/CircularImageView" />
 
     <Button
         android:id="@+id/changeProfilePictureButton"
