@@ -240,26 +240,43 @@ public class PdfViewerFragment extends Fragment {
     }
 
     private void uploadPdfToFirebase(Uri pdfUri, String title, String description, Uri coverImageUri) {
-        // Show the progress dialog when upload starts
-        showUploadProgressDialog();
+        // Check file size before proceeding with upload
+        try {
+            long fileSize = getContext().getContentResolver()
+                    .openFileDescriptor(pdfUri, "r")
+                    .getStatSize();
+            
+            // Check if file size exceeds 1MB (1024 * 1024 bytes)
+            if (fileSize > 1024 * 1024) {
+                Toast.makeText(requireContext(), "File size must be less than 1MB", Toast.LENGTH_LONG).show();
+                return;
+            }
 
-        // Get a reference to Firebase Storage
-        StorageReference pdfRef = storage.getReference().child("uploads/" + System.currentTimeMillis() + ".pdf");
+            // Show the progress dialog when upload starts
+            showUploadProgressDialog();
 
-        // Upload the PDF file
-        pdfRef.putFile(pdfUri).addOnSuccessListener(taskSnapshot -> {
-            // Get the download URL of the uploaded PDF
-            pdfRef.getDownloadUrl().addOnSuccessListener(pdfDownloadUrl -> {
-                // Upload the cover image after the PDF is successfully uploaded
-                uploadCoverImageToFirebase(pdfDownloadUrl.toString(), title, description, coverImageUri);
+            // Get a reference to Firebase Storage
+            StorageReference pdfRef = storage.getReference().child("uploads/" + System.currentTimeMillis() + ".pdf");
+
+            // Upload the PDF file
+            pdfRef.putFile(pdfUri).addOnSuccessListener(taskSnapshot -> {
+                // Get the download URL of the uploaded PDF
+                pdfRef.getDownloadUrl().addOnSuccessListener(pdfDownloadUrl -> {
+                    // Upload the cover image after the PDF is successfully uploaded
+                    uploadCoverImageToFirebase(pdfDownloadUrl.toString(), title, description, coverImageUri);
+                }).addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to get PDF download URL", e);
+                    Toast.makeText(requireContext(), "Failed to upload PDF", Toast.LENGTH_SHORT).show();
+                });
             }).addOnFailureListener(e -> {
-                Log.e(TAG, "Failed to get PDF download URL", e);
+                Log.e(TAG, "Failed to upload PDF", e);
                 Toast.makeText(requireContext(), "Failed to upload PDF", Toast.LENGTH_SHORT).show();
             });
-        }).addOnFailureListener(e -> {
-            Log.e(TAG, "Failed to upload PDF", e);
-            Toast.makeText(requireContext(), "Failed to upload PDF", Toast.LENGTH_SHORT).show();
-        });
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking file size", e);
+            Toast.makeText(requireContext(), "Error checking file size", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showUploadProgressDialog() {
