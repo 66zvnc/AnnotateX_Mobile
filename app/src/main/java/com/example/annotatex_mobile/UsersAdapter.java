@@ -1,7 +1,9 @@
 package com.example.annotatex_mobile;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +48,11 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         if (user.getStatus().matches(".*\\d+.*")) { // Check if status contains numbers (phone number)
             holder.nameTextView.setText(user.getName());
             holder.fullNameTextView.setText(user.getStatus()); // Show phone number
-            holder.addFriendButton.setVisibility(View.GONE); // Hide add friend button for contacts
+            holder.addFriendButton.setVisibility(View.VISIBLE);
+            holder.addFriendButton.setText("Invite"); // Change button text to "Invite"
+            
+            // Set up invite button click listener for contacts
+            holder.addFriendButton.setOnClickListener(v -> sendInviteSMS(user.getStatus(), user.getName()));
             
             // Load contact photo if available
             String photoUrl = user.getProfileImageUrl();
@@ -64,7 +70,10 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             // Regular app user display logic
             loadUsername(user, holder.nameTextView);
             loadFullName(user, holder.fullNameTextView);
+            
+            // Show "Add Friend" button for app users
             holder.addFriendButton.setVisibility(View.VISIBLE);
+            holder.addFriendButton.setText("Add Friend"); // Reset text for app users
 
             Glide.with(context)
                 .load(user.getProfileImageUrl())
@@ -73,8 +82,14 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
                 .circleCrop()
                 .into(holder.profileImageView);
 
-            checkFriendRequestStatus(user, holder);
-            holder.addFriendButton.setOnClickListener(v -> sendFriendRequest(user, holder));
+            // Check if it's the current user
+            String currentUserId = auth.getCurrentUser().getUid();
+            if (user.getId().equals(currentUserId)) {
+                holder.addFriendButton.setVisibility(View.GONE); // Hide button for current user
+            } else {
+                checkFriendRequestStatus(user, holder);
+                holder.addFriendButton.setOnClickListener(v -> sendFriendRequest(user, holder));
+            }
         }
     }
 
@@ -161,6 +176,26 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
                 .addOnFailureListener(e -> {
                     Toast.makeText(context, "Failed to fetch user information", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    // Add this new method to handle SMS invitation
+    private void sendInviteSMS(String phoneNumber, String contactName) {
+        try {
+            String message = "Hey! Join me on AnnotateX - a great app for collaborative reading and annotation. Download it here: [Your App Store Link]";
+            
+            Intent intent = new Intent(Intent.ACTION_SENDTO);
+            intent.setData(Uri.parse("smsto:" + phoneNumber));  // This ensures only SMS apps respond
+            intent.putExtra("sms_body", message);
+            
+            if (intent.resolveActivity(context.getPackageManager()) != null) {
+                context.startActivity(intent);
+            } else {
+                Toast.makeText(context, "No SMS app found", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(context, "Error sending invitation", Toast.LENGTH_SHORT).show();
+            Log.e("UsersAdapter", "Error sending SMS invitation", e);
+        }
     }
 
     @Override
