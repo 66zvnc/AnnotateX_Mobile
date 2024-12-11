@@ -1,6 +1,7 @@
 package com.example.annotatex_mobile;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,23 +42,40 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         Friend user = usersList.get(position);
 
-        // Fetch and set the username
-        loadUsername(user, holder.nameTextView);
+        // For contacts, display name and phone number directly
+        if (user.getStatus().matches(".*\\d+.*")) { // Check if status contains numbers (phone number)
+            holder.nameTextView.setText(user.getName());
+            holder.fullNameTextView.setText(user.getStatus()); // Show phone number
+            holder.addFriendButton.setVisibility(View.GONE); // Hide add friend button for contacts
+            
+            // Load contact photo if available
+            String photoUrl = user.getProfileImageUrl();
+            if (photoUrl != null && !photoUrl.isEmpty()) {
+                Glide.with(context)
+                    .load(Uri.parse(photoUrl))
+                    .placeholder(R.drawable.ic_default_profile)
+                    .error(R.drawable.ic_default_profile)
+                    .circleCrop()
+                    .into(holder.profileImageView);
+            } else {
+                holder.profileImageView.setImageResource(R.drawable.ic_default_profile);
+            }
+        } else {
+            // Regular app user display logic
+            loadUsername(user, holder.nameTextView);
+            loadFullName(user, holder.fullNameTextView);
+            holder.addFriendButton.setVisibility(View.VISIBLE);
 
-        // Fetch and set the full name
-        loadFullName(user, holder.fullNameTextView);
-
-        // Load profile image using Glide
-        Glide.with(context)
+            Glide.with(context)
                 .load(user.getProfileImageUrl())
                 .placeholder(R.drawable.ic_default_profile)
+                .error(R.drawable.ic_default_profile)
+                .circleCrop()
                 .into(holder.profileImageView);
 
-        // Check if a friend request has already been sent
-        checkFriendRequestStatus(user, holder);
-
-        // Set up click listener for the "Add Friend" button
-        holder.addFriendButton.setOnClickListener(v -> sendFriendRequest(user, holder));
+            checkFriendRequestStatus(user, holder);
+            holder.addFriendButton.setOnClickListener(v -> sendFriendRequest(user, holder));
+        }
     }
 
     private void loadUsername(Friend user, TextView nameTextView) {

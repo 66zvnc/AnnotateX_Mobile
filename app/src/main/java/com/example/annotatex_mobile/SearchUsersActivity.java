@@ -1,8 +1,16 @@
 package com.example.annotatex_mobile;
 
+import android.Manifest;
+import android.content.ContentResolver;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -40,35 +48,76 @@ public class SearchUsersActivity extends AppCompatActivity {
         usersAdapter = new UsersAdapter(this, usersList);
         usersRecyclerView.setAdapter(usersAdapter);
 
-        // Initialize SearchView
+        // Load contacts by default
+        loadContacts();
+
+        // Set up search functionality
         searchView = findViewById(R.id.searchView);
-        if (searchView == null) {
-            Log.e(TAG, "SearchView is null");
-            return;
-        }
-
-        setupSearchView();
-    }
-
-    private void setupSearchView() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                searchUsers(query);
-                return true;
+                return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (newText.length() >= 2) {
-                    searchUsers(newText);
+                if (newText.isEmpty()) {
+                    loadContacts(); // Show contacts when search is empty
                 } else {
-                    usersList.clear();
-                    usersAdapter.updateList(usersList);
+                    searchUsers(newText); // Show search results when typing
                 }
                 return true;
             }
         });
+    }
+
+    private void loadContacts() {
+        ContentResolver contentResolver = getContentResolver();
+        List<Friend> contactsList = new ArrayList<>();
+
+        if (checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, 100);
+            return;
+        }
+
+        try (Cursor cursor = contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                null,
+                null,
+                null,
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC")) {
+
+            if (cursor != null) {
+                int nameColumnIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                int numberColumnIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                int photoUriColumnIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.PHOTO_URI);
+
+                while (cursor.moveToNext()) {
+                    String name = cursor.getString(nameColumnIndex);
+                    String phoneNumber = cursor.getString(numberColumnIndex);
+                    String photoUri = cursor.getString(photoUriColumnIndex);
+                    
+                    if (name != null && !name.trim().isEmpty() && 
+                        phoneNumber != null && !phoneNumber.trim().isEmpty()) {
+                        Friend contact = new Friend(
+                            phoneNumber,  // Using phone number as ID
+                            name,         // Contact name
+                            photoUri,     // Contact photo URI
+                            phoneNumber,  // Using phone number as status/secondary text
+                            false
+                        );
+                        contactsList.add(contact);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error reading contacts", e);
+            Toast.makeText(this, "Error loading contacts: " + e.getMessage(),
+                         Toast.LENGTH_LONG).show();
+        }
+
+        // Update the adapter with contacts
+        usersAdapter.updateList(contactsList);
     }
 
     private void searchUsers(String query) {
