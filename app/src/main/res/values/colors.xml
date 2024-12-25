@@ -63,5 +63,7 @@
 
     <color name="selected_background">#678C8C8C</color>
 
+    <color name="yellow">#FFD700</color>
+    <color name="gray">#757575</color>
 
 </resources>

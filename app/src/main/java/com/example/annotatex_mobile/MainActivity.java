@@ -22,6 +22,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.appcheck.FirebaseAppCheck;
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory;
 
+import android.widget.PopupMenu;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String CHANNEL_ID = "friend_requests_channel";
@@ -69,8 +71,9 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragment = new PdfViewerFragment();
             } else if (itemId == R.id.nav_friends && !(activeFragment instanceof FriendsFragment)) {
                 selectedFragment = new FriendsFragment();
-            } else if (itemId == R.id.nav_profile && !(activeFragment instanceof ProfileFragment)) {
-                selectedFragment = new ProfileFragment();
+            } else if (itemId == R.id.nav_more) {
+                showMoreOptions();
+                return false; // Don't select the more tab
             }
 
             if (selectedFragment != null) {
@@ -202,5 +205,28 @@ public class MainActivity extends AppCompatActivity {
         if (friendRequestListener != null) {
             friendRequestListener.remove();
         }
+    }
+
+    private void showMoreOptions() {
+        PopupMenu popup = new PopupMenu(this, findViewById(R.id.nav_more));
+        popup.getMenuInflater().inflate(R.menu.more_options_menu, popup.getMenu());
+        
+        popup.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_reading_goal) {
+                startActivity(new Intent(MainActivity.this, LeaderboardActivity.class));
+                return true;
+            } else if (itemId == R.id.nav_profile && !(activeFragment instanceof ProfileFragment)) {
+                Fragment selectedFragment = new ProfileFragment();
+                getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, selectedFragment)
+                    .commit();
+                activeFragment = selectedFragment;
+                return true;
+            }
+            return false;
+        });
+        
+        popup.show();
     }
 }
