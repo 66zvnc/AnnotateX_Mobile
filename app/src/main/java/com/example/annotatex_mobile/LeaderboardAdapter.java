@@ -33,52 +33,34 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         LeaderboardItem item = items.get(position);
         
-        // Set rank with special styling for top 3
+        // Always show the actual position (1-based indexing)
         holder.rankTextView.setText(String.valueOf(position + 1));
-        
-        if (position < 3) {
-            holder.medalBackground.setVisibility(View.VISIBLE);
-            int medalResource;
-            switch (position) {
-                case 0:
-                    medalResource = R.drawable.gold_medal_bg;
-                    holder.rankTextView.setTextColor(context.getColor(R.color.white));
-                    break;
-                case 1:
-                    medalResource = R.drawable.silver_medal_bg;
-                    holder.rankTextView.setTextColor(context.getColor(R.color.white));
-                    break;
-                case 2:
-                    medalResource = R.drawable.bronze_medal_bg;
-                    holder.rankTextView.setTextColor(context.getColor(R.color.white));
-                    break;
-                default:
-                    medalResource = 0;
-                    break;
-            }
-            holder.medalBackground.setBackgroundResource(medalResource);
-            
-            // Show XP badge for top 3
-            holder.xpBadge.setVisibility(View.VISIBLE);
-            holder.xpBadge.setText(item.getBooksRead() + " XP");
-            holder.xpTextView.setVisibility(View.GONE);
-        } else {
-            holder.medalBackground.setVisibility(View.GONE);
-            holder.xpBadge.setVisibility(View.GONE);
-            holder.xpTextView.setVisibility(View.VISIBLE);
-            holder.xpTextView.setText(item.getBooksRead() + " XP");
-        }
-
         holder.userNameTextView.setText(item.getUserName());
-        
-        // Load user image with Glide
+        holder.xpTextView.setText(String.valueOf(item.getBooksRead()) + " books");
+
+        // Load profile image using Glide
         if (item.getProfileImageUrl() != null && !item.getProfileImageUrl().isEmpty()) {
             Glide.with(context)
-                .load(item.getProfileImageUrl())
-                .placeholder(R.drawable.ic_default_profile)
-                .error(R.drawable.ic_default_profile)
-                .circleCrop()
-                .into(holder.userImageView);
+                    .load(item.getProfileImageUrl())
+                    .placeholder(R.drawable.ic_default_profile)
+                    .error(R.drawable.ic_default_profile)
+                    .circleCrop()
+                    .into(holder.userImageView);
+        } else {
+            holder.userImageView.setImageResource(R.drawable.ic_default_profile);
+        }
+
+        // Highlight current user
+        if (item.isCurrentUser()) {
+            holder.itemView.setBackgroundColor(context.getResources().getColor(R.color.highlight_color));
+            holder.userNameTextView.setTextColor(context.getResources().getColor(R.color.white));
+            holder.xpTextView.setTextColor(context.getResources().getColor(R.color.white));
+            holder.rankTextView.setTextColor(context.getResources().getColor(R.color.white));
+        } else {
+            holder.itemView.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
+            holder.userNameTextView.setTextColor(context.getResources().getColor(R.color.black));
+            holder.xpTextView.setTextColor(context.getResources().getColor(R.color.black));
+            holder.rankTextView.setTextColor(context.getResources().getColor(R.color.black));
         }
     }
 
@@ -92,8 +74,6 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
         ImageView userImageView;
         TextView userNameTextView;
         TextView xpTextView;
-        ImageView medalBackground;
-        TextView xpBadge;
 
         ViewHolder(View view) {
             super(view);
@@ -101,8 +81,6 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
             userImageView = view.findViewById(R.id.userImageView);
             userNameTextView = view.findViewById(R.id.userNameTextView);
             xpTextView = view.findViewById(R.id.xpTextView);
-            medalBackground = view.findViewById(R.id.medalBackground);
-            xpBadge = view.findViewById(R.id.xpBadge);
         }
     }
 } 

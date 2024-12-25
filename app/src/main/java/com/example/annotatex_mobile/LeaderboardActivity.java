@@ -26,6 +26,7 @@ public class LeaderboardActivity extends AppCompatActivity {
     private TextView booksCompleted, currentRank;
     private RecyclerView leaderboardRecyclerView;
     private LeaderboardAdapter leaderboardAdapter;
+    private String actualUserRank = "0";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,43 +51,30 @@ public class LeaderboardActivity extends AppCompatActivity {
     }
 
     private void loadUserStats() {
-        // First, ensure current user exists in Firestore
-        String currentUserEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-        String currentUserName = currentUserEmail != null ? currentUserEmail.split("@")[0] : "Anonymous";
-
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("name", currentUserName);
-        userData.put("booksCompleted", 0); // Default value
-        userData.put("email", currentUserEmail);
-        
-        // Create or update user document
+        // Get current user's username from Firestore
         firestore.collection("users")
                 .document(userId)
-                .set(userData, SetOptions.merge())
-                .addOnSuccessListener(aVoid -> {
-                    // After ensuring user exists, get their completed books count
-                    firestore.collection("books")
-                            .whereEqualTo("userId", userId)
-                            .whereEqualTo("status", "completed")
-                            .get()
-                            .addOnSuccessListener(querySnapshot -> {
-                                int completed = querySnapshot.size();
-                                
-                                // Update the user's booksCompleted count
-                                firestore.collection("users")
-                                        .document(userId)
-                                        .update("booksCompleted", completed)
-                                        .addOnSuccessListener(updateVoid -> {
-                                            booksCompleted.setText(String.valueOf(completed));
-                                            updateUserRank(completed);
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            Log.e("Leaderboard", "Error updating user's books count", e);
-                                        });
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    String currentUsername = documentSnapshot.getString("username");
+                    String displayName = currentUsername != null ? currentUsername : "Anonymous";
+                    
+                    Map<String, Object> userData = new HashMap<>();
+                    userData.put("name", displayName);
+                    userData.put("booksCompleted", 25); // Set a middle value for example
+                    userData.put("username", currentUsername);
+                    
+                    // Create or update user document
+                    firestore.collection("users")
+                            .document(userId)
+                            .set(userData, SetOptions.merge())
+                            .addOnSuccessListener(aVoid -> {
+                                booksCompleted.setText("25"); // Update UI with example value
+                                updateUserRank(25);
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("Leaderboard", "Error creating/updating user", e);
                             });
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Leaderboard", "Error creating/updating user", e);
                 });
     }
 
@@ -96,14 +84,42 @@ public class LeaderboardActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     int rank = 1;
+                    int totalUsers = querySnapshot.size();
+                    boolean userFound = false;
+                    
                     for (DocumentSnapshot doc : querySnapshot) {
                         if (doc.getId().equals(userId)) {
-                            currentRank.setText("#" + rank);
+                            userFound = true;
+                            actualUserRank = String.valueOf(rank); // Store the actual rank
+                            String rankSuffix = getRankSuffix(rank);
+                            currentRank.setText(rank + rankSuffix + " / " + totalUsers);
                             break;
                         }
                         rank++;
                     }
+                    
+                    if (!userFound) {
+                        actualUserRank = "N/A";
+                        currentRank.setText("N/A");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Leaderboard", "Error getting user rank", e);
+                    actualUserRank = "N/A";
+                    currentRank.setText("N/A");
                 });
+    }
+
+    private String getRankSuffix(int rank) {
+        if (rank >= 11 && rank <= 13) {
+            return "th";
+        }
+        switch (rank % 10) {
+            case 1:  return "st";
+            case 2:  return "nd";
+            case 3:  return "rd";
+            default: return "th";
+        }
     }
 
     private void setupLeaderboard() {
@@ -118,24 +134,28 @@ public class LeaderboardActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // Add random stats to users
+                    // Add random stats to users with a distribution around the current user's score
                     for (DocumentSnapshot doc : allUsersSnapshot) {
                         String docUserId = doc.getId();
-                        if (!docUserId.equals(currentUserId)) {  // Skip current user
-                            // Generate random number between 5 and 50 for books completed
-                            int randomBooks = (int) (Math.random() * 46) + 5;
+                        if (!docUserId.equals(currentUserId)) {
+                            // Generate random numbers to create a distribution
+                            // Some users will have more books, some less than current user
+                            int randomBooks;
+                            if (Math.random() < 0.5) {
+                                // Lower than current user (5-24)
+                                randomBooks = (int) (Math.random() * 20) + 5;
+                            } else {
+                                // Higher than current user (26-45)
+                                randomBooks = (int) (Math.random() * 20) + 26;
+                            }
                             
                             Map<String, Object> userData = new HashMap<>();
-                            // Use email as name if name is not available
-                            String name = doc.getString("name");
-                            if (name == null || name.isEmpty()) {
-                                String email = doc.getString("email");
-                                name = email != null ? email.split("@")[0] : "Anonymous Reader";
-                            }
+                            String username = doc.getString("username");
+                            String name = username != null && !username.isEmpty() ? username : "Anonymous Reader";
                             
                             userData.put("name", name);
                             userData.put("booksCompleted", randomBooks);
-                            userData.put("email", doc.getString("email"));
+                            userData.put("username", username);
                             userData.put("profileImageUrl", doc.getString("profileImageUrl"));
 
                             firestore.collection("users")
@@ -155,24 +175,25 @@ public class LeaderboardActivity extends AppCompatActivity {
                                 List<LeaderboardItem> leaderboardItems = new ArrayList<>();
                                 for (DocumentSnapshot doc : querySnapshot) {
                                     String docUserId = doc.getId();
-                                    if (!docUserId.equals(currentUserId)) {  // Skip current user
-                                        Log.d("Leaderboard", "User found: " + doc.getString("name") + 
-                                                           " Books: " + doc.getLong("booksCompleted"));
-                                        
-                                        String name = doc.getString("name");
-                                        Long booksCompletedLong = doc.getLong("booksCompleted");
-                                        String profileImageUrl = doc.getString("profileImageUrl");
-                                        
-                                        name = (name != null) ? name : "Anonymous Reader";
-                                        int booksCompleted = (booksCompletedLong != null) ? 
-                                                           booksCompletedLong.intValue() : 0;
-                                        
-                                        leaderboardItems.add(new LeaderboardItem(
-                                            name,
-                                            booksCompleted,
-                                            profileImageUrl
-                                        ));
-                                    }
+                                    Log.d("Leaderboard", "User found: " + doc.getString("name") + 
+                                                       " Books: " + doc.getLong("booksCompleted"));
+                                    
+                                    String name = doc.getString("name");
+                                    Long booksCompletedLong = doc.getLong("booksCompleted");
+                                    String profileImageUrl = doc.getString("profileImageUrl");
+                                    
+                                    name = (name != null) ? name : "Anonymous Reader";
+                                    int booksCompleted = (booksCompletedLong != null) ? 
+                                                       booksCompletedLong.intValue() : 0;
+                                    
+                                    // Create LeaderboardItem with isCurrentUser flag
+                                    LeaderboardItem item = new LeaderboardItem(
+                                        name,
+                                        booksCompleted,
+                                        profileImageUrl,
+                                        docUserId.equals(currentUserId) // Set isCurrentUser flag
+                                    );
+                                    leaderboardItems.add(item);
                                 }
 
                                 if (leaderboardItems.isEmpty()) {
@@ -193,5 +214,10 @@ public class LeaderboardActivity extends AppCompatActivity {
                     Log.e("Leaderboard", "Error fetching users", e);
                     Toast.makeText(this, "Failed to load users", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    // Add getter method for the actual rank
+    public String getCurrentRank() {
+        return actualUserRank;
     }
 } 
