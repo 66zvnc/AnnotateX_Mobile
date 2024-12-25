@@ -3,6 +3,7 @@ package com.example.annotatex_mobile;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,6 +13,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +35,6 @@ public class LeaderboardActivity extends AppCompatActivity {
         firestore = FirebaseFirestore.getInstance();
         userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        addExampleUsers();
-
         initializeViews();
         loadUserStats();
         setupLeaderboard();
@@ -50,14 +50,43 @@ public class LeaderboardActivity extends AppCompatActivity {
     }
 
     private void loadUserStats() {
-        firestore.collection("books")
-                .whereEqualTo("userId", userId)
-                .whereEqualTo("status", "completed")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    int completed = querySnapshot.size();
-                    booksCompleted.setText(String.valueOf(completed));
-                    updateUserRank(completed);
+        // First, ensure current user exists in Firestore
+        String currentUserEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        String currentUserName = currentUserEmail != null ? currentUserEmail.split("@")[0] : "Anonymous";
+
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("name", currentUserName);
+        userData.put("booksCompleted", 0); // Default value
+        userData.put("email", currentUserEmail);
+        
+        // Create or update user document
+        firestore.collection("users")
+                .document(userId)
+                .set(userData, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> {
+                    // After ensuring user exists, get their completed books count
+                    firestore.collection("books")
+                            .whereEqualTo("userId", userId)
+                            .whereEqualTo("status", "completed")
+                            .get()
+                            .addOnSuccessListener(querySnapshot -> {
+                                int completed = querySnapshot.size();
+                                
+                                // Update the user's booksCompleted count
+                                firestore.collection("users")
+                                        .document(userId)
+                                        .update("booksCompleted", completed)
+                                        .addOnSuccessListener(updateVoid -> {
+                                            booksCompleted.setText(String.valueOf(completed));
+                                            updateUserRank(completed);
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Log.e("Leaderboard", "Error updating user's books count", e);
+                                        });
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Leaderboard", "Error creating/updating user", e);
                 });
     }
 
@@ -78,75 +107,91 @@ public class LeaderboardActivity extends AppCompatActivity {
     }
 
     private void setupLeaderboard() {
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        
+        // First get all users except current user
         firestore.collection("users")
-                .orderBy("booksCompleted", Query.Direction.DESCENDING)
-                .limit(10)
                 .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    List<LeaderboardItem> leaderboardItems = new ArrayList<>();
-                    for (DocumentSnapshot doc : querySnapshot) {
-                        leaderboardItems.add(new LeaderboardItem(
-                            doc.getString("name"),
-                            doc.getLong("booksCompleted").intValue(),
-                            doc.getString("profileImageUrl")
-                        ));
+                .addOnSuccessListener(allUsersSnapshot -> {
+                    if (allUsersSnapshot.isEmpty()) {
+                        Toast.makeText(this, "No other users found", Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                    leaderboardAdapter = new LeaderboardAdapter(leaderboardItems);
-                    leaderboardRecyclerView.setAdapter(leaderboardAdapter);
+
+                    // Add random stats to users
+                    for (DocumentSnapshot doc : allUsersSnapshot) {
+                        String docUserId = doc.getId();
+                        if (!docUserId.equals(currentUserId)) {  // Skip current user
+                            // Generate random number between 5 and 50 for books completed
+                            int randomBooks = (int) (Math.random() * 46) + 5;
+                            
+                            Map<String, Object> userData = new HashMap<>();
+                            // Use email as name if name is not available
+                            String name = doc.getString("name");
+                            if (name == null || name.isEmpty()) {
+                                String email = doc.getString("email");
+                                name = email != null ? email.split("@")[0] : "Anonymous Reader";
+                            }
+                            
+                            userData.put("name", name);
+                            userData.put("booksCompleted", randomBooks);
+                            userData.put("email", doc.getString("email"));
+                            userData.put("profileImageUrl", doc.getString("profileImageUrl"));
+
+                            firestore.collection("users")
+                                    .document(docUserId)
+                                    .set(userData, SetOptions.merge())
+                                    .addOnSuccessListener(aVoid -> 
+                                        Log.d("Leaderboard", "Updated user stats: " + docUserId));
+                        }
+                    }
+
+                    // Then get top 10 users for leaderboard
+                    firestore.collection("users")
+                            .orderBy("booksCompleted", Query.Direction.DESCENDING)
+                            .limit(10)
+                            .get()
+                            .addOnSuccessListener(querySnapshot -> {
+                                List<LeaderboardItem> leaderboardItems = new ArrayList<>();
+                                for (DocumentSnapshot doc : querySnapshot) {
+                                    String docUserId = doc.getId();
+                                    if (!docUserId.equals(currentUserId)) {  // Skip current user
+                                        Log.d("Leaderboard", "User found: " + doc.getString("name") + 
+                                                           " Books: " + doc.getLong("booksCompleted"));
+                                        
+                                        String name = doc.getString("name");
+                                        Long booksCompletedLong = doc.getLong("booksCompleted");
+                                        String profileImageUrl = doc.getString("profileImageUrl");
+                                        
+                                        name = (name != null) ? name : "Anonymous Reader";
+                                        int booksCompleted = (booksCompletedLong != null) ? 
+                                                           booksCompletedLong.intValue() : 0;
+                                        
+                                        leaderboardItems.add(new LeaderboardItem(
+                                            name,
+                                            booksCompleted,
+                                            profileImageUrl
+                                        ));
+                                    }
+                                }
+
+                                if (leaderboardItems.isEmpty()) {
+                                    Toast.makeText(this, "No users found in leaderboard", 
+                                                 Toast.LENGTH_SHORT).show();
+                                } else {
+                                    leaderboardAdapter = new LeaderboardAdapter(leaderboardItems, this);
+                                    leaderboardRecyclerView.setAdapter(leaderboardAdapter);
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("Leaderboard", "Error fetching leaderboard data", e);
+                                Toast.makeText(this, "Failed to load leaderboard", 
+                                             Toast.LENGTH_SHORT).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Leaderboard", "Error fetching users", e);
+                    Toast.makeText(this, "Failed to load users", Toast.LENGTH_SHORT).show();
                 });
-    }
-
-    private void addExampleUsers() {
-        List<Map<String, Object>> exampleUsers = new ArrayList<>();
-        
-        // Example user data
-        Map<String, Object> user1 = new HashMap<>();
-        user1.put("name", "Sarah Johnson");
-        user1.put("booksCompleted", 45);
-        user1.put("profileImageUrl", "https://example.com/sarah.jpg");
-        user1.put("email", "sarah.j@example.com");
-        
-        Map<String, Object> user2 = new HashMap<>();
-        user2.put("name", "Michael Chen");
-        user2.put("booksCompleted", 38);
-        user2.put("profileImageUrl", "https://example.com/michael.jpg");
-        user2.put("email", "m.chen@example.com");
-        
-        Map<String, Object> user3 = new HashMap<>();
-        user3.put("name", "Emma Davis");
-        user3.put("booksCompleted", 32);
-        user3.put("profileImageUrl", "https://example.com/emma.jpg");
-        user3.put("email", "emma.d@example.com");
-        
-        Map<String, Object> user4 = new HashMap<>();
-        user4.put("name", "James Wilson");
-        user4.put("booksCompleted", 29);
-        user4.put("profileImageUrl", "https://example.com/james.jpg");
-        user4.put("email", "j.wilson@example.com");
-        
-        Map<String, Object> user5 = new HashMap<>();
-        user5.put("name", "Sophia Martinez");
-        user5.put("booksCompleted", 27);
-        user5.put("profileImageUrl", "https://example.com/sophia.jpg");
-        user5.put("email", "s.martinez@example.com");
-
-        exampleUsers.add(user1);
-        exampleUsers.add(user2);
-        exampleUsers.add(user3);
-        exampleUsers.add(user4);
-        exampleUsers.add(user5);
-
-        // Add users to Firestore
-        for (Map<String, Object> user : exampleUsers) {
-            firestore.collection("users")
-                    .document() // Firestore will generate a random ID
-                    .set(user)
-                    .addOnSuccessListener(aVoid -> {
-                        Log.d("Leaderboard", "Example user added successfully");
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("Leaderboard", "Error adding example user", e);
-                    });
-        }
     }
 } 
