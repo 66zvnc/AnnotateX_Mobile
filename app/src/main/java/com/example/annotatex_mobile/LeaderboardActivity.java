@@ -2,7 +2,6 @@ package com.example.annotatex_mobile;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,7 +22,6 @@ import java.util.HashMap;
 public class LeaderboardActivity extends AppCompatActivity {
     private FirebaseFirestore firestore;
     private String userId;
-    private TextView booksCompleted, currentRank;
     private RecyclerView leaderboardRecyclerView;
     private LeaderboardAdapter leaderboardAdapter;
     private String actualUserRank = "0";
@@ -31,7 +29,7 @@ public class LeaderboardActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_reading_goal);
+        setContentView(R.layout.activity_leaderboard);
 
         firestore = FirebaseFirestore.getInstance();
         userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -44,8 +42,6 @@ public class LeaderboardActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
-        booksCompleted = findViewById(R.id.booksCompleted);
-        currentRank = findViewById(R.id.currentRank);
         leaderboardRecyclerView = findViewById(R.id.leaderboardRecyclerView);
         leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
@@ -61,7 +57,6 @@ public class LeaderboardActivity extends AppCompatActivity {
                     
                     Map<String, Object> userData = new HashMap<>();
                     userData.put("name", displayName);
-                    userData.put("booksCompleted", 25); // Set a middle value for example
                     userData.put("username", currentUsername);
                     
                     // Create or update user document
@@ -69,8 +64,7 @@ public class LeaderboardActivity extends AppCompatActivity {
                             .document(userId)
                             .set(userData, SetOptions.merge())
                             .addOnSuccessListener(aVoid -> {
-                                booksCompleted.setText("25"); // Update UI with example value
-                                updateUserRank(25);
+                                setupLeaderboard();
                             })
                             .addOnFailureListener(e -> {
                                 Log.e("Leaderboard", "Error creating/updating user", e);
@@ -92,7 +86,6 @@ public class LeaderboardActivity extends AppCompatActivity {
                             userFound = true;
                             actualUserRank = String.valueOf(rank); // Store the actual rank
                             String rankSuffix = getRankSuffix(rank);
-                            currentRank.setText(rank + rankSuffix + " / " + totalUsers);
                             break;
                         }
                         rank++;
@@ -100,13 +93,11 @@ public class LeaderboardActivity extends AppCompatActivity {
                     
                     if (!userFound) {
                         actualUserRank = "N/A";
-                        currentRank.setText("N/A");
                     }
                 })
                 .addOnFailureListener(e -> {
                     Log.e("Leaderboard", "Error getting user rank", e);
                     actualUserRank = "N/A";
-                    currentRank.setText("N/A");
                 });
     }
 

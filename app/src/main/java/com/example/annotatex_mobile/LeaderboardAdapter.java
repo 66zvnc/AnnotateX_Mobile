@@ -36,7 +36,6 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
         // Always show the actual position (1-based indexing)
         holder.rankTextView.setText(String.valueOf(position + 1));
         holder.userNameTextView.setText(item.getUserName());
-        holder.xpTextView.setText(String.valueOf(item.getBooksRead()) + " books");
 
         // Load profile image using Glide
         if (item.getProfileImageUrl() != null && !item.getProfileImageUrl().isEmpty()) {
@@ -54,12 +53,10 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
         if (item.isCurrentUser()) {
             holder.itemView.setBackgroundColor(context.getResources().getColor(R.color.highlight_color));
             holder.userNameTextView.setTextColor(context.getResources().getColor(R.color.white));
-            holder.xpTextView.setTextColor(context.getResources().getColor(R.color.white));
             holder.rankTextView.setTextColor(context.getResources().getColor(R.color.white));
         } else {
             holder.itemView.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
             holder.userNameTextView.setTextColor(context.getResources().getColor(R.color.black));
-            holder.xpTextView.setTextColor(context.getResources().getColor(R.color.black));
             holder.rankTextView.setTextColor(context.getResources().getColor(R.color.black));
         }
     }
@@ -73,14 +70,12 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
         TextView rankTextView;
         ImageView userImageView;
         TextView userNameTextView;
-        TextView xpTextView;
 
         ViewHolder(View view) {
             super(view);
             rankTextView = view.findViewById(R.id.rankTextView);
             userImageView = view.findViewById(R.id.userImageView);
             userNameTextView = view.findViewById(R.id.userNameTextView);
-            xpTextView = view.findViewById(R.id.xpTextView);
         }
     }
 } 
