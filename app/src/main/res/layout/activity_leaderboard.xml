@@ -45,22 +45,21 @@
                 android:orientation="horizontal"
                 android:layout_marginBottom="8dp">
 
-                <!-- Obsidian League (Locked) -->
+                <!-- Obsidian League (Past) -->
                 <ImageView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:src="@drawable/ic_league_obsidian"
-                    android:layout_margin="4dp"
-                    android:alpha="0.3"/>
+                    android:layout_margin="4dp"/>
 
-                <!-- Bronze League -->
+                <!-- Bronze League (Past) -->
                 <ImageView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:src="@drawable/ic_league_bronze"
                     android:layout_margin="4dp"/>
 
-                <!-- Silver League -->
+                <!-- Silver League (Past) -->
                 <ImageView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
@@ -76,44 +75,89 @@
                     android:background="@drawable/circle_highlight"/>
 
                 <!-- Sapphire League (Locked) -->
-                <ImageView
+                <FrameLayout
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:src="@drawable/ic_league_sapphire"
-                    android:layout_margin="4dp"
-                    android:alpha="0.3"/>
+                    android:layout_margin="4dp">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_league_sapphire"
+                        android:alpha="0.3"/>
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_lock"/>
+                </FrameLayout>
 
                 <!-- Ruby League (Locked) -->
-                <ImageView
+                <FrameLayout
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:src="@drawable/ic_league_ruby"
-                    android:layout_margin="4dp"
-                    android:alpha="0.3"/>
+                    android:layout_margin="4dp">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_league_ruby"
+                        android:alpha="0.3"/>
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_lock"/>
+                </FrameLayout>
 
                 <!-- Emerald League (Locked) -->
-                <ImageView
+                <FrameLayout
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:src="@drawable/ic_league_emerald"
-                    android:layout_margin="4dp"
-                    android:alpha="0.3"/>
+                    android:layout_margin="4dp">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_league_emerald"
+                        android:alpha="0.3"/>
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_lock"/>
+                </FrameLayout>
 
                 <!-- Diamond League (Locked) -->
-                <ImageView
+                <FrameLayout
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:src="@drawable/ic_league_diamond"
-                    android:layout_margin="4dp"
-                    android:alpha="0.3"/>
+                    android:layout_margin="4dp">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_league_diamond"
+                        android:alpha="0.3"/>
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_lock"/>
+                </FrameLayout>
 
                 <!-- Master League (Locked) -->
-                <ImageView
+                <FrameLayout
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:src="@drawable/ic_league_master"
-                    android:layout_margin="4dp"
-                    android:alpha="0.3"/>
+                    android:layout_margin="4dp">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_league_master"
+                        android:alpha="0.3"/>
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_lock"/>
+                </FrameLayout>
             </LinearLayout>
         </HorizontalScrollView>
 
