@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -20,41 +21,129 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_back"
             android:contentDescription="Back"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="Leaderboard"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"/>
     </RelativeLayout>
 
-    <!-- Current User's Rank Section -->
+    <!-- League Header Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp"
-        android:background="@color/highlight_color"
-        android:elevation="2dp">
+        android:background="@color/white"
+        android:elevation="4dp">
 
+        <!-- League Icons Scroll -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <!-- Obsidian League (Locked) -->
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_league_obsidian"
+                    android:layout_margin="4dp"
+                    android:alpha="0.3"/>
+
+                <!-- Bronze League -->
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_league_bronze"
+                    android:layout_margin="4dp"/>
+
+                <!-- Silver League -->
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_league_silver"
+                    android:layout_margin="4dp"/>
+
+                <!-- Pearl League (Current) -->
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:src="@drawable/ic_league_pearl"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/circle_highlight"/>
+
+                <!-- Sapphire League (Locked) -->
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_league_sapphire"
+                    android:layout_margin="4dp"
+                    android:alpha="0.3"/>
+
+                <!-- Ruby League (Locked) -->
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_league_ruby"
+                    android:layout_margin="4dp"
+                    android:alpha="0.3"/>
+
+                <!-- Emerald League (Locked) -->
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_league_emerald"
+                    android:layout_margin="4dp"
+                    android:alpha="0.3"/>
+
+                <!-- Diamond League (Locked) -->
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_league_diamond"
+                    android:layout_margin="4dp"
+                    android:alpha="0.3"/>
+
+                <!-- Master League (Locked) -->
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_league_master"
+                    android:layout_margin="4dp"
+                    android:alpha="0.3"/>
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- League Name and Timer -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Your Current Rank"
-            android:textColor="@color/white"
-            android:textSize="16sp"/>
-
-        <TextView
-            android:id="@+id/currentRank"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="2nd / 3"
-            android:textColor="@color/white"
+            android:layout_gravity="center"
+            android:text="Pearl League"
             android:textSize="24sp"
             android:textStyle="bold"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Top 7 advance to the next league"
+            android:textSize="14sp"
+            android:textColor="@color/gray"
+            android:layout_marginTop="4dp"/>
+
+        <TextView
+            android:id="@+id/timerTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="4 days"
+            android:textSize="14sp"
+            android:textColor="@color/yellow"
             android:layout_marginTop="4dp"/>
     </LinearLayout>
 
