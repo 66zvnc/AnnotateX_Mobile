@@ -62,13 +62,6 @@ public class FriendsFragment extends Fragment {
             startActivity(new Intent(getContext(), SearchUsersActivity.class));
         });
 
-        // Set up the "Create Group" icon
-        ImageView createGroupIcon = view.findViewById(R.id.addGroupIcon);
-        createGroupIcon.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), GroupCreationActivity.class);
-            startActivity(intent);
-        });
-
         // Set up SearchView
         androidx.appcompat.widget.SearchView searchView = view.findViewById(R.id.searchView);
         searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {

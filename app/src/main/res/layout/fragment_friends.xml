@@ -28,15 +28,6 @@
             android:padding="8dp"
             android:src="@drawable/ic_add_friend"
             android:contentDescription="Add Friend" />
-
-        <!-- Add Group Icon -->
-        <ImageView
-            android:id="@+id/addGroupIcon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="8dp"
-            android:src="@drawable/ic_add_group"
-            android:contentDescription="Create Group" />
     </LinearLayout>
 
     <!-- Combined RecyclerView for Groups and Friends -->

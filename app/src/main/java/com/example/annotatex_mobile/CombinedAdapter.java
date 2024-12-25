@@ -25,8 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CombinedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private static final int TYPE_GROUP = 0;
-    private static final int TYPE_FRIEND = 1;
+    private static final int VIEW_TYPE_GROUP = 0;
+    private static final int VIEW_TYPE_FRIEND = 1;
+    private static final int VIEW_TYPE_ADD_GROUP = 2;
 
     private List<Object> items;
     private Context context;
@@ -43,9 +44,14 @@ public class CombinedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_ADD_GROUP) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_add_group, parent, false);
+            return new AddGroupViewHolder(view);
+        }
         LayoutInflater inflater = LayoutInflater.from(context);
         
-        if (viewType == TYPE_GROUP) {
+        if (viewType == VIEW_TYPE_GROUP) {
             View groupView = inflater.inflate(R.layout.item_group, parent, false);
             return new GroupViewHolder(groupView);
         } else { // TYPE_FRIEND
@@ -56,9 +62,20 @@ public class CombinedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (holder.getItemViewType() == TYPE_GROUP) {
+        if (holder.getItemViewType() == VIEW_TYPE_ADD_GROUP) {
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, GroupCreationActivity.class);
+                context.startActivity(intent);
+            });
+            return;
+        }
+
+        Object item = items.get(position);
+        
+        if (holder.getItemViewType() == VIEW_TYPE_GROUP && item instanceof Group) {
             GroupViewHolder groupHolder = (GroupViewHolder) holder;
-            Group group = (Group) items.get(position);
+            Group group = (Group) item;
+            
             groupHolder.groupNameTextView.setText(group.getName());
             groupHolder.memberCountTextView.setText(group.getMembers().size() + " Members");
             
@@ -113,12 +130,13 @@ public class CombinedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 intent.putExtra("groupName", group.getName());
                 context.startActivity(intent);
             });
-        } else {
+        } else if (holder.getItemViewType() == VIEW_TYPE_FRIEND && item instanceof Friend) {
             FriendViewHolder friendHolder = (FriendViewHolder) holder;
-            Friend friend = (Friend) items.get(position);
+            Friend friend = (Friend) item;
+            
             friendHolder.nameTextView.setText(friend.getName());
             friendHolder.statusTextView.setText(friend.getStatus());
-
+            
             // Load profile image
             if (friend.getProfileImageUrl() != null && !friend.getProfileImageUrl().isEmpty()) {
                 Glide.with(context)
@@ -265,16 +283,21 @@ public class CombinedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public int getItemCount() {
-        return items.size();
+        // Add 1 for the "Add Group" item
+        return items.size() + 1;
     }
 
     @Override
     public int getItemViewType(int position) {
-        if (items.get(position) instanceof Group) {
-            return TYPE_GROUP;
-        } else {
-            return TYPE_FRIEND;
+        if (position < items.size()) {
+            Object item = items.get(position);
+            if (item instanceof Group) {
+                return VIEW_TYPE_GROUP;
+            } else if (item instanceof Friend) {
+                return VIEW_TYPE_FRIEND;
+            }
         }
+        return VIEW_TYPE_ADD_GROUP;
     }
 
     // ViewHolder classes
@@ -313,5 +336,11 @@ public class CombinedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             items.addAll(friends);
         }
         notifyDataSetChanged();
+    }
+
+    private static class AddGroupViewHolder extends RecyclerView.ViewHolder {
+        public AddGroupViewHolder(@NonNull View itemView) {
+            super(itemView);
+        }
     }
 } 
