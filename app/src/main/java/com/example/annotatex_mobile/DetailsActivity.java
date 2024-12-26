@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,7 +17,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.annotatex_mobile.databinding.ActivityDetailsBinding;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -25,6 +29,8 @@ import com.pspdfkit.ui.PdfActivityIntentBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DetailsActivity extends AppCompatActivity {
     private static final String TAG = "DetailsActivity";
@@ -32,6 +38,10 @@ public class DetailsActivity extends AppCompatActivity {
     private PdfDocument pdfDocument;
     private File annotationsFile;
     private CollectionReference annotationsCollection;
+    private RatingBar ratingBar;
+    private TextView ratingText;
+    private FirebaseFirestore db;
+    private String bookId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,12 +49,20 @@ public class DetailsActivity extends AppCompatActivity {
         binding = ActivityDetailsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        db = FirebaseFirestore.getInstance();
+        
+        // Initialize views
+        ratingBar = binding.ratingBar;
+        ratingText = binding.ratingText;
+
         annotationsFile = new File(getFilesDir(), "annotations.json");
 
         // Get the Book object passed from the previous Activity
         Book book = (Book) getIntent().getSerializableExtra("book");
 
         if (book != null) {
+            bookId = book.getId();
+            
             // Initialize Firestore collection reference for annotations
             annotationsCollection = FirebaseFirestore.getInstance()
                     .collection("books")
@@ -57,6 +75,16 @@ public class DetailsActivity extends AppCompatActivity {
 
             // Load the book cover using the helper method
             loadBookCover(book);
+
+            // Load existing rating
+            loadBookRating();
+
+            // Set up rating change listener
+            ratingBar.setOnRatingBarChangeListener((ratingBar1, rating, fromUser) -> {
+                if (fromUser) {
+                    updateBookRating(rating);
+                }
+            });
 
             binding.mReadBookBtn.setOnClickListener(v -> {
                 if (book.getPdfUrl() != null && !book.getPdfUrl().isEmpty()) {
@@ -140,5 +168,97 @@ public class DetailsActivity extends AppCompatActivity {
                 .build();
 
         startActivity(intent);
+    }
+
+    private void loadBookRating() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        db.collection("books")
+            .document(bookId)
+            .collection("ratings")
+            .document(userId)
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    float rating = documentSnapshot.getDouble("rating").floatValue();
+                    ratingBar.setRating(rating);
+                    updateRatingText(rating);
+                }
+            })
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "Error loading rating", e);
+                Toast.makeText(this, "Error loading rating", Toast.LENGTH_SHORT).show();
+            });
+    }
+
+    private void updateBookRating(float rating) {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            Toast.makeText(this, "Please sign in to rate books", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        if (bookId == null || bookId.isEmpty()) {
+            Log.e(TAG, "Book ID is null or empty");
+            Toast.makeText(this, "Error: Invalid book reference", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            Map<String, Object> ratingData = new HashMap<>();
+            ratingData.put("rating", Double.valueOf(rating)); // Convert to Double for Firestore
+            ratingData.put("timestamp", System.currentTimeMillis());
+            ratingData.put("userId", userId);
+
+            db.collection("books")
+                .document(bookId)
+                .collection("ratings")
+                .document(userId)
+                .set(ratingData)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "Rating updated successfully");
+                    updateRatingText(rating);
+                    updateAverageRating();
+                    Toast.makeText(this, "Rating updated successfully", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error updating rating", e);
+                    Toast.makeText(this, "Failed to update rating: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+        } catch (Exception e) {
+            Log.e(TAG, "Error preparing rating data", e);
+            Toast.makeText(this, "Error preparing rating data", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateRatingText(float rating) {
+        if (rating == 0) {
+            ratingText.setText("Rate this book");
+        } else {
+            ratingText.setText(String.format("%.1f/5.0", rating));
+        }
+    }
+
+    private void updateAverageRating() {
+        db.collection("books")
+            .document(bookId)
+            .collection("ratings")
+            .get()
+            .addOnSuccessListener(querySnapshot -> {
+                double totalRating = 0;
+                int count = querySnapshot.size();
+                
+                for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                    totalRating += doc.getDouble("rating");
+                }
+                
+                double averageRating = count > 0 ? totalRating / count : 0;
+                
+                // Update book's average rating
+                db.collection("books")
+                    .document(bookId)
+                    .update("averageRating", averageRating)
+                    .addOnFailureListener(e -> Log.e(TAG, "Error updating average rating", e));
+            })
+            .addOnFailureListener(e -> Log.e(TAG, "Error calculating average rating", e));
     }
 }

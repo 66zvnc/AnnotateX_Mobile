@@ -68,4 +68,6 @@
 
     <color name="highlight_color">#4CAF50</color>
 
+    <color name="gold">#FFD700</color>
+
 </resources>
