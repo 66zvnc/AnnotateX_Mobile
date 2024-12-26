@@ -4,6 +4,8 @@
     <string name="language_update_failed">Sprachaktualisierung fehlgeschlagen</string>
     <string name="select_language">Sprache auswählen</string>
     <string name="language">Sprache</string>
+    <string name="leaderboard">Bestenliste</string>
+    <string name="profile">Profil</string>
 
     <!-- Profile Fragment -->
     <string name="profile_image_desc">Profilbild</string>

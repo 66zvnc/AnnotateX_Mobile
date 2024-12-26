@@ -12,6 +12,8 @@
     <string name="language_update_failed">Failed to update language</string>
     <string name="select_language">Select Language</string>
     <string name="language">Language</string>
+    <string name="leaderboard">Leaderboard</string>
+    <string name="profile">Profile</string>
 
     <!-- Profile Fragment -->
     <string name="profile_image_desc">Profile Image</string>
@@ -31,4 +33,8 @@
     <string name="lang_german">Deutsch</string>
     <string name="lang_chinese">中文</string>
     <string name="lang_japanese">日本語</string>
+
+
+
+
 </resources>
