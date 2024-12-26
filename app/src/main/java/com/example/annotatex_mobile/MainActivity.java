@@ -23,6 +23,8 @@ import com.google.firebase.appcheck.FirebaseAppCheck;
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory;
 
 import android.widget.PopupMenu;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -208,25 +210,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showMoreOptions() {
-        PopupMenu popup = new PopupMenu(this, findViewById(R.id.nav_more));
-        popup.getMenuInflater().inflate(R.menu.more_options_menu, popup.getMenu());
-        
-        popup.setOnMenuItemClickListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.nav_reading_goal) {
-                startActivity(new Intent(MainActivity.this, LeaderboardActivity.class));
-                return true;
-            } else if (itemId == R.id.nav_profile && !(activeFragment instanceof ProfileFragment)) {
+        // Create and show bottom sheet dialog
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_more_options, null);
+        bottomSheetDialog.setContentView(bottomSheetView);
+
+        // Profile option click listener
+        View profileOption = bottomSheetView.findViewById(R.id.profile_option);
+        profileOption.setOnClickListener(v -> {
+            if (!(activeFragment instanceof ProfileFragment)) {
                 Fragment selectedFragment = new ProfileFragment();
                 getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, selectedFragment)
                     .commit();
                 activeFragment = selectedFragment;
-                return true;
             }
-            return false;
+            bottomSheetDialog.dismiss();
         });
-        
-        popup.show();
+
+        // Reading goals option click listener
+        View readingGoalsOption = bottomSheetView.findViewById(R.id.reading_goals_option);
+        readingGoalsOption.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, LeaderboardActivity.class));
+            bottomSheetDialog.dismiss();
+        });
+
+        bottomSheetDialog.show();
     }
 }
