@@ -127,6 +127,33 @@
             android:gravity="start|center_vertical"
             android:clickable="true" />
 
+        <!-- Language Option -->
+        <TextView
+            android:id="@+id/languageOption"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:minHeight="48dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="Language"
+            android:textSize="16sp"
+            android:drawablePadding="8dp"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="start|center_vertical"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- Current Language Display -->
+        <TextView
+            android:id="@+id/currentLanguageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="@color/gray"
+            android:layout_gravity="end"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="-32dp"/>
+
         <!-- Logout Option -->
         <TextView
             android:id="@+id/logoutOption"
@@ -140,6 +167,8 @@
             android:gravity="start|center_vertical"
             android:textColor="@color/dark_pink"
             android:clickable="true" />
+
+        <!-- Language Option -->
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

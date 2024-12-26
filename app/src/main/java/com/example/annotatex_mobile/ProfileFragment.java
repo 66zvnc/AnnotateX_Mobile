@@ -4,15 +4,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
@@ -60,6 +63,30 @@ public class ProfileFragment extends Fragment {
 
         // Set up onClick listeners for navigation options
         setupNavigationListeners(view);
+
+        // Add language option
+        TextView languageOption = view.findViewById(R.id.languageOption);
+        TextView currentLanguageText = view.findViewById(R.id.currentLanguageText);
+
+        // Load and display current language
+        SharedPreferences prefs = requireContext().getSharedPreferences("AppSettings", Context.MODE_PRIVATE);
+        String currentLanguage = prefs.getString("selected_language", "English");
+        currentLanguageText.setText(currentLanguage);
+
+        languageOption.setOnClickListener(v -> {
+            String[] languages = {"English", "Español", "Français", "Deutsch", "中文", "日本語"};
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            builder.setTitle("Select Language")
+                   .setItems(languages, (dialog, which) -> {
+                        String selectedLanguage = languages[which];
+                        saveLanguagePreference(selectedLanguage);
+                        currentLanguageText.setText(selectedLanguage);
+                        Toast.makeText(requireContext(), 
+                            "Language changed to " + selectedLanguage, 
+                            Toast.LENGTH_SHORT).show();
+                   });
+            builder.create().show();
+        });
 
         return view;
     }
@@ -158,5 +185,23 @@ public class ProfileFragment extends Fragment {
         if (isAdded()) {
             Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void saveLanguagePreference(String language) {
+        // Save to SharedPreferences
+        SharedPreferences prefs = requireContext().getSharedPreferences(
+            "AppSettings", Context.MODE_PRIVATE);
+        prefs.edit().putString("selected_language", language).apply();
+
+        // Update Firestore user profile
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(userId)
+            .update("preferredLanguage", language)
+            .addOnSuccessListener(aVoid -> 
+                Log.d("ProfileFragment", "Language preference updated successfully"))
+            .addOnFailureListener(e -> 
+                Log.e("ProfileFragment", "Error updating language preference", e));
     }
 }
