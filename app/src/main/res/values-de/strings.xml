@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">AnnotateX</string>
+    <string name="language_updated_success">Sprache erfolgreich aktualisiert</string>
+    <string name="language_update_failed">Sprachaktualisierung fehlgeschlagen</string>
+    <string name="select_language">Sprache auswählen</string>
+    <string name="language">Sprache</string>
+
+    <!-- Profile Fragment -->
+    <string name="profile_image_desc">Profilbild</string>
+    <string name="edit_profile_image_desc">Profilbild bearbeiten</string>
+    <string name="default_name">Dein Name</string>
+    <string name="default_username">\@benutzername</string>
+    <string name="settings">Einstellungen</string>
+    <string name="payment">Zahlung</string>
+    <string name="help">Hilfe</string>
+    <string name="privacy_policy">Datenschutzrichtlinie</string>
+    <string name="logout">Abmelden</string>
+
+    <!-- Keep language names in their original form -->
+    <string name="lang_english">English</string>
+    <string name="lang_spanish">Español</string>
+    <string name="lang_french">Français</string>
+    <string name="lang_german">Deutsch</string>
+    <string name="lang_chinese">中文</string>
+    <string name="lang_japanese">日本語</string>
+</resources> 

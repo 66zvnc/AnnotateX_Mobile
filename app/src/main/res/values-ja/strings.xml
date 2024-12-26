@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">AnnotateX</string>
+    <string name="language_updated_success">言語が正常に更新されました</string>
+    <string name="language_update_failed">言語の更新に失敗しました</string>
+    <string name="select_language">言語を選択</string>
+    <string name="language">言語</string>
+
+    <!-- Profile Fragment -->
+    <string name="profile_image_desc">プロフィール画像</string>
+    <string name="edit_profile_image_desc">プロフィール画像を編集</string>
+    <string name="default_name">あなたの名前</string>
+    <string name="default_username">\@ユーザー名</string>
+    <string name="settings">設定</string>
+    <string name="payment">支払い</string>
+    <string name="help">ヘルプ</string>
+    <string name="privacy_policy">プライバシーポリシー</string>
+    <string name="logout">ログアウト</string>
+
+    <!-- Keep language names in their original form -->
+    <string name="lang_english">English</string>
+    <string name="lang_spanish">Español</string>
+    <string name="lang_french">Français</string>
+    <string name="lang_german">Deutsch</string>
+    <string name="lang_chinese">中文</string>
+    <string name="lang_japanese">日本語</string>
+</resources> 

@@ -26,6 +26,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 
+import com.example.annotatex_mobile.utils.LanguageUtils;
+
 public class ProfileFragment extends Fragment {
 
     private static final String PREFS_NAME = "ProfilePrefs";
@@ -74,16 +76,20 @@ public class ProfileFragment extends Fragment {
         currentLanguageText.setText(currentLanguage);
 
         languageOption.setOnClickListener(v -> {
-            String[] languages = {"English", "Español", "Français", "Deutsch", "中文", "日本語"};
+            String[] languages = {
+                getString(R.string.lang_english),
+                getString(R.string.lang_spanish),
+                getString(R.string.lang_french),
+                getString(R.string.lang_german),
+                getString(R.string.lang_chinese),
+                getString(R.string.lang_japanese)
+            };
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-            builder.setTitle("Select Language")
+            builder.setTitle(getString(R.string.select_language))
                    .setItems(languages, (dialog, which) -> {
                         String selectedLanguage = languages[which];
                         saveLanguagePreference(selectedLanguage);
                         currentLanguageText.setText(selectedLanguage);
-                        Toast.makeText(requireContext(), 
-                            "Language changed to " + selectedLanguage, 
-                            Toast.LENGTH_SHORT).show();
                    });
             builder.create().show();
         });
@@ -182,7 +188,7 @@ public class ProfileFragment extends Fragment {
     }
 
     private void showToast(String message) {
-        if (isAdded()) {
+        if (isAdded() && getContext() != null) {
             Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         }
     }
@@ -191,7 +197,17 @@ public class ProfileFragment extends Fragment {
         // Save to SharedPreferences
         SharedPreferences prefs = requireContext().getSharedPreferences(
             "AppSettings", Context.MODE_PRIVATE);
-        prefs.edit().putString("selected_language", language).apply();
+        prefs.edit()
+            .putString("selected_language", language)
+            .putString("language_code", language)
+            .apply();
+
+        // Store success/failure messages before context change
+        final String successMessage = getString(R.string.language_updated_success);
+        final String failureMessage = getString(R.string.language_update_failed);
+
+        // Update app locale
+        Context updatedContext = LanguageUtils.updateLocale(requireContext(), language);
 
         // Update Firestore user profile
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -199,9 +215,22 @@ public class ProfileFragment extends Fragment {
             .collection("users")
             .document(userId)
             .update("preferredLanguage", language)
-            .addOnSuccessListener(aVoid -> 
-                Log.d("ProfileFragment", "Language preference updated successfully"))
-            .addOnFailureListener(e -> 
-                Log.e("ProfileFragment", "Error updating language preference", e));
+            .addOnSuccessListener(aVoid -> {
+                Log.d("ProfileFragment", "Language preference updated successfully");
+                if (isAdded() && getContext() != null) {
+                    showToast(successMessage);
+                }
+            })
+            .addOnFailureListener(e -> {
+                Log.e("ProfileFragment", "Error updating language preference", e);
+                if (isAdded() && getContext() != null) {
+                    showToast(failureMessage);
+                }
+            });
+
+        // Recreate activity after Firestore update is initiated
+        if (getActivity() != null) {
+            getActivity().recreate();
+        }
     }
 }

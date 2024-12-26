@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">AnnotateX</string>
+    <string name="language_updated_success">语言更新成功</string>
+    <string name="language_update_failed">语言更新失败</string>
+    <string name="select_language">选择语言</string>
+    <string name="language">语言</string>
+
+    <!-- Profile Fragment -->
+    <string name="profile_image_desc">个人资料图片</string>
+    <string name="edit_profile_image_desc">编辑个人资料图片</string>
+    <string name="default_name">你的名字</string>
+    <string name="default_username">\@用户名</string>
+    <string name="settings">设置</string>
+    <string name="payment">支付</string>
+    <string name="help">帮助</string>
+    <string name="privacy_policy">隐私政策</string>
+    <string name="logout">退出登录</string>
+
+    <!-- Keep language names in their original form -->
+    <string name="lang_english">English</string>
+    <string name="lang_spanish">Español</string>
+    <string name="lang_french">Français</string>
+    <string name="lang_german">Deutsch</string>
+    <string name="lang_chinese">中文</string>
+    <string name="lang_japanese">日本語</string>
+</resources> 

@@ -1,0 +1,26 @@
+<resources>
+    <!-- ... existing strings ... -->
+    <string name="language_updated_success">Idioma actualizado correctamente</string>
+    <string name="language_update_failed">Error al actualizar el idioma</string>
+    <string name="select_language">Seleccionar Idioma</string>
+    <string name="language">Idioma</string>
+
+    <!-- Profile Fragment -->
+    <string name="profile_image_desc">Imagen de Perfil</string>
+    <string name="edit_profile_image_desc">Editar Imagen de Perfil</string>
+    <string name="default_name">Tu Nombre</string>
+    <string name="default_username">\@nombre_usuario</string>
+    <string name="settings">Configuración</string>
+    <string name="payment">Pago</string>
+    <string name="help">Ayuda</string>
+    <string name="privacy_policy">Política de Privacidad</string>
+    <string name="logout">Cerrar Sesión</string>
+
+    <!-- Keep language names in their original form -->
+    <string name="lang_english">English</string>
+    <string name="lang_spanish">Español</string>
+    <string name="lang_french">Français</string>
+    <string name="lang_german">Deutsch</string>
+    <string name="lang_chinese">中文</string>
+    <string name="lang_japanese">日本語</string>
+</resources> 
