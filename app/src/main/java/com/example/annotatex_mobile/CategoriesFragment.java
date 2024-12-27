@@ -2,9 +2,13 @@ package com.example.annotatex_mobile;
 
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -22,11 +26,16 @@ public class CategoriesFragment extends Fragment {
     private AuthorsAdapter authorsAdapter;
     private List<Categories> categoriesList;
     private List<Author> authorsList;
+    private EditText searchView;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_categories, container, false);
+
+        // Initialize search view
+        searchView = view.findViewById(R.id.searchInLibrary);
+        setupSearchView();
 
         // Initialize authors RecyclerView
         authorsRecyclerView = view.findViewById(R.id.authorsRecyclerView);
@@ -82,6 +91,42 @@ public class CategoriesFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void setupSearchView() {
+        searchView.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                filterCategories(searchView.getText().toString());
+                return true;
+            }
+            return false;
+        });
+
+        searchView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterCategories(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void filterCategories(String query) {
+        List<Categories> filteredList = new ArrayList<>();
+        String lowerCaseQuery = query.toLowerCase();
+
+        for (Categories category : categoriesList) {
+            if (category.getName().toLowerCase().contains(lowerCaseQuery)) {
+                filteredList.add(category);
+            }
+        }
+
+        categoriesAdapter.updateCategories(filteredList);
     }
 
     private static class SpaceItemDecoration extends RecyclerView.ItemDecoration {

@@ -47,6 +47,12 @@ public class CategoriesAdapter extends RecyclerView.Adapter<CategoriesAdapter.Vi
         return categories.size();
     }
 
+    public void updateCategories(List<Categories> newCategories) {
+        categories.clear();
+        categories.addAll(newCategories);
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView categoryImage;
         TextView categoryName;

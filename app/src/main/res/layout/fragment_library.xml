@@ -40,11 +40,9 @@
                 <androidx.appcompat.widget.SearchView
                     android:id="@+id/searchView"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:background="@null"
+                    android:layout_height="wrap_content"
                     android:iconifiedByDefault="false"
-                    android:queryHint="Search books..."
-                    app:queryBackground="@null"/>
+                    android:queryHint="Search in Library..." />
 
             </com.google.android.material.card.MaterialCardView>
 
