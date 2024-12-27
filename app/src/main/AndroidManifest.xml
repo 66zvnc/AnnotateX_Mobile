@@ -51,9 +51,6 @@
         <activity android:name=".AddGroupMemberActivity"/>
         <activity android:name=".CategoryActivity"/>
 
-        <activity
-            android:name=".LeaderboardActivity"
-            android:exported="false" />
 
         <service
             android:name=".MyFirebaseMessagingService"

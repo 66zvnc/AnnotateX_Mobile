@@ -22,7 +22,6 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.appcheck.FirebaseAppCheck;
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory;
 
-import android.widget.PopupMenu;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import android.view.View;
 
@@ -231,7 +230,12 @@ public class MainActivity extends AppCompatActivity {
         // Reading goals option click listener
         View readingGoalsOption = bottomSheetView.findViewById(R.id.reading_goals_option);
         readingGoalsOption.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, LeaderboardActivity.class));
+            Fragment leaderboardFragment = new LeaderboardFragment();
+            getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, leaderboardFragment)
+                .addToBackStack(null)  // Add to back stack so back button works
+                .commit();
+            activeFragment = leaderboardFragment;
             bottomSheetDialog.dismiss();
         });
 

@@ -2,9 +2,14 @@ package com.example.annotatex_mobile;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-public class LeaderboardActivity extends AppCompatActivity {
+public class LeaderboardFragment extends Fragment {
     private FirebaseFirestore firestore;
     private String userId;
     private RecyclerView leaderboardRecyclerView;
@@ -27,23 +32,30 @@ public class LeaderboardActivity extends AppCompatActivity {
     private String actualUserRank = "0";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_leaderboard);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, 
+                           @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_leaderboard, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         firestore = FirebaseFirestore.getInstance();
         userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        initializeViews();
+        initializeViews(view);
         loadUserStats();
         setupLeaderboard();
 
-        findViewById(R.id.backButton).setOnClickListener(v -> finish());
+        // Set up back button
+        view.findViewById(R.id.backButton).setOnClickListener(v -> 
+            requireActivity().getSupportFragmentManager().popBackStack());
     }
 
-    private void initializeViews() {
-        leaderboardRecyclerView = findViewById(R.id.leaderboardRecyclerView);
-        leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+    private void initializeViews(View view) {
+        leaderboardRecyclerView = view.findViewById(R.id.leaderboardRecyclerView);
+        leaderboardRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
     }
 
     private void loadUserStats() {
@@ -121,7 +133,7 @@ public class LeaderboardActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(allUsersSnapshot -> {
                     if (allUsersSnapshot.isEmpty()) {
-                        Toast.makeText(this, "No other users found", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "No other users found", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -188,22 +200,22 @@ public class LeaderboardActivity extends AppCompatActivity {
                                 }
 
                                 if (leaderboardItems.isEmpty()) {
-                                    Toast.makeText(this, "No users found in leaderboard", 
+                                    Toast.makeText(requireContext(), "No users found in leaderboard", 
                                                  Toast.LENGTH_SHORT).show();
                                 } else {
-                                    leaderboardAdapter = new LeaderboardAdapter(leaderboardItems, this);
+                                    leaderboardAdapter = new LeaderboardAdapter(leaderboardItems, requireContext());
                                     leaderboardRecyclerView.setAdapter(leaderboardAdapter);
                                 }
                             })
                             .addOnFailureListener(e -> {
                                 Log.e("Leaderboard", "Error fetching leaderboard data", e);
-                                Toast.makeText(this, "Failed to load leaderboard", 
+                                Toast.makeText(requireContext(), "Failed to load leaderboard", 
                                              Toast.LENGTH_SHORT).show();
                             });
                 })
                 .addOnFailureListener(e -> {
                     Log.e("Leaderboard", "Error fetching users", e);
-                    Toast.makeText(this, "Failed to load users", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Failed to load users", Toast.LENGTH_SHORT).show();
                 });
     }
 
