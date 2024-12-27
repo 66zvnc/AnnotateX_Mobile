@@ -93,6 +93,22 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
     }
 
     private void setupSearchView() {
+        // Get the search auto complete object
+        int searchPlateId = searchView.getContext().getResources()
+                .getIdentifier("android:id/search_src_text", null, null);
+        SearchView.SearchAutoComplete searchAutoComplete = 
+                searchView.findViewById(searchPlateId);
+        
+        // Configure the SearchView
+        searchView.setIconifiedByDefault(false);
+        searchView.setQueryHint("Search in Library...");
+        
+        // Set colors for the search text and hint
+        if (searchAutoComplete != null) {
+            searchAutoComplete.setHintTextColor(getResources().getColor(android.R.color.darker_gray));
+            searchAutoComplete.setTextColor(getResources().getColor(android.R.color.black));
+        }
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {

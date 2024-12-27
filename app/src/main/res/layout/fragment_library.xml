@@ -42,7 +42,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:iconifiedByDefault="false"
-                    android:queryHint="Search in Library..." />
+                    app:iconifiedByDefault="false"
+                    app:queryHint="Search in Library..."
+                    app:defaultQueryHint="Search in Library..."
+                    android:theme="@style/SearchViewStyle" />
 
             </com.google.android.material.card.MaterialCardView>
 
