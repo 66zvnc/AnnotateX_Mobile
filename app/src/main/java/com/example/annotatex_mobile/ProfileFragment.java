@@ -67,7 +67,7 @@ public class ProfileFragment extends Fragment {
         setupNavigationListeners(view);
 
         // Add language option
-        TextView languageOption = view.findViewById(R.id.languageOption);
+        LinearLayout languageOption = view.findViewById(R.id.languageOption);
         TextView currentLanguageText = view.findViewById(R.id.currentLanguageText);
 
         // Load and display current language
@@ -76,21 +76,14 @@ public class ProfileFragment extends Fragment {
         currentLanguageText.setText(currentLanguage);
 
         languageOption.setOnClickListener(v -> {
-            String[] languages = {
-                getString(R.string.lang_english),
-                getString(R.string.lang_spanish),
-                getString(R.string.lang_french),
-                getString(R.string.lang_german),
-                getString(R.string.lang_chinese),
-                getString(R.string.lang_japanese)
-            };
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-            builder.setTitle(getString(R.string.select_language))
-                   .setItems(languages, (dialog, which) -> {
-                        String selectedLanguage = languages[which];
-                        saveLanguagePreference(selectedLanguage);
-                        currentLanguageText.setText(selectedLanguage);
-                   });
+            builder.setTitle("Select Language");
+            String[] languages = {"English", "Español", "Français", "Deutsch"};
+            builder.setItems(languages, (dialog, which) -> {
+                String selectedLanguage = languages[which];
+                saveLanguagePreference(selectedLanguage);
+                currentLanguageText.setText(selectedLanguage);
+            });
             builder.create().show();
         });
 
