@@ -6,12 +6,24 @@
     android:padding="8dp"
     android:background="?android:attr/selectableItemBackground">
 
+    <!-- Profile Image -->
+    <ImageView
+        android:id="@+id/senderProfileImage"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="12dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_default_profile"
+        android:background="@drawable/circle_background"
+        android:clipToOutline="true" />
+
     <!-- Notification Message -->
     <TextView
         android:id="@+id/requestTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:layout_gravity="center_vertical"
         android:text="Friend request message"
         android:textSize="16sp"
         android:textColor="?attr/colorOnSurface" />

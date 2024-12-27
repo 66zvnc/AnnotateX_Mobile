@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.List;
@@ -39,6 +40,9 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         FriendRequest request = activitiesList.get(position);
 
         holder.requestTextView.setText(request.getSenderName() + " sent you a friend request.");
+
+        // Load sender's profile image
+        loadSenderProfileImage(request.getSenderId(), holder.senderProfileImage);
 
         holder.acceptButton.setOnClickListener(v -> {
             holder.acceptButton.setEnabled(false);
@@ -143,6 +147,30 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         }
     }
 
+    private void loadSenderProfileImage(String senderId, ImageView imageView) {
+        firestore.collection("users")
+            .document(senderId)
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                    if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                        Glide.with(imageView.getContext())
+                            .load(profileImageUrl)
+                            .placeholder(R.drawable.ic_default_profile)
+                            .error(R.drawable.ic_default_profile)
+                            .circleCrop()
+                            .into(imageView);
+                    } else {
+                        imageView.setImageResource(R.drawable.ic_default_profile);
+                    }
+                }
+            })
+            .addOnFailureListener(e -> {
+                imageView.setImageResource(R.drawable.ic_default_profile);
+            });
+    }
+
     @Override
     public int getItemCount() {
         return activitiesList.size();
@@ -150,13 +178,16 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
 
     public static class ActivityViewHolder extends RecyclerView.ViewHolder {
         TextView requestTextView;
-        ImageView acceptButton, denyButton;
+        ImageView acceptButton;
+        ImageView denyButton;
+        ImageView senderProfileImage;
 
         public ActivityViewHolder(@NonNull View itemView) {
             super(itemView);
             requestTextView = itemView.findViewById(R.id.requestTextView);
             acceptButton = itemView.findViewById(R.id.acceptButton);
             denyButton = itemView.findViewById(R.id.denyButton);
+            senderProfileImage = itemView.findViewById(R.id.senderProfileImage);
         }
     }
 }
