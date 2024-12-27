@@ -29,4 +29,16 @@
 
     <!-- Application theme -->
     <style name="Theme.AnnotateX_Mobile" parent="Base.Theme.AnnotateX_Mobile" />
+
+    <style name="BookCard" parent="Widget.MaterialComponents.CardView">
+        <item name="cardElevation">4dp</item>
+        <item name="cardCornerRadius">8dp</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+    </style>
+
+    <style name="SearchBar" parent="Widget.MaterialComponents.CardView">
+        <item name="cardElevation">2dp</item>
+        <item name="cardCornerRadius">24dp</item>
+        <item name="android:background">@color/white</item>
+    </style>
 </resources>

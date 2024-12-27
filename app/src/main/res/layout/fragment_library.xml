@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.motion.widget.MotionLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -19,44 +20,54 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Container for Search View and Icons (Notifications) -->
+        <!-- Container for Search View and Icons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="start|center_vertical"
-            android:paddingEnd="8dp"
-            android:paddingTop="8dp">
+            android:gravity="center_vertical">
 
-            <!-- Search View -->
-            <androidx.appcompat.widget.SearchView
-                android:id="@+id/searchView"
+            <!-- Search View with Material Design -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:iconifiedByDefault="false"
-                android:queryHint="Search books..."
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"/>
-
-            <!-- Notifications Icon -->
-            <ImageView
-                android:id="@+id/icon_notifications"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
                 android:layout_marginEnd="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Notifications"
-                android:padding="6dp"
-                android:src="@drawable/ic_notifications"
-                app:tint="?attr/colorOnSurface" />
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="?attr/colorSurface">
+
+                <androidx.appcompat.widget.SearchView
+                    android:id="@+id/searchView"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="@null"
+                    android:iconifiedByDefault="false"
+                    android:queryHint="Search books..."
+                    app:queryBackground="@null"/>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Notifications Icon with Material Design -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="?attr/colorSurface">
+
+                <ImageView
+                    android:id="@+id/icon_notifications"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_notifications"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Notifications"
+                    app:tint="?attr/colorOnSurface"/>
+
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
-
-        <!-- Sorting Bar (added just below the search view and icons) -->
-
-        <!-- Underline Container -->
-
     </LinearLayout>
 
     <!-- Centered RecyclerView for Books -->
@@ -71,8 +82,7 @@
         android:paddingBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.625"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/searchContainer"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@id/searchContainer"/>
+
 </androidx.constraintlayout.motion.widget.MotionLayout>
