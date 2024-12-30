@@ -14,6 +14,7 @@
     <string name="language">Language</string>
     <string name="leaderboard">Leaderboard</string>
     <string name="profile">Profile</string>
+    <string name="manage_subscription">Manage Subscription</string>
 
     <!-- Profile Fragment -->
     <string name="profile_image_desc">Profile Image</string>
@@ -33,8 +34,10 @@
     <string name="lang_german">Deutsch</string>
     <string name="lang_chinese">中文</string>
     <string name="lang_japanese">日本語</string>
-
-
+    <string name="change_profile_picture">Change Profile Picture</string>
+    <string name="save">Save</string>
+    <string name="help_center">Help Center</string>
+    <string name="dark_mode">Dark Mode</string>
 
 
 </resources>

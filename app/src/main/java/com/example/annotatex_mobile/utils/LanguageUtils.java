@@ -49,6 +49,8 @@ public class LanguageUtils {
                 return Locale.SIMPLIFIED_CHINESE;
             case "日本語":
                 return Locale.JAPANESE;
+            case "Български":
+                return new Locale("bg");
             default:
                 return new Locale("en");
         }
@@ -69,6 +71,7 @@ public class LanguageUtils {
         if (currentLocale.getLanguage().equals("de")) return "Deutsch";
         if (currentLocale.getLanguage().equals("zh")) return "中文";
         if (currentLocale.getLanguage().equals("ja")) return "日本語";
+        if (currentLocale.getLanguage().equals("bg")) return "Български";
         
         return "English"; // Default fallback
     }

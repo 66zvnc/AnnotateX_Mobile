@@ -78,7 +78,7 @@ public class ProfileFragment extends Fragment {
         languageOption.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
             builder.setTitle("Select Language");
-            String[] languages = {"English", "Español", "Français", "Deutsch"};
+            String[] languages = {"English", "Español", "Français", "Deutsch", "中文", "日本語", "Български"};
             builder.setItems(languages, (dialog, which) -> {
                 String selectedLanguage = languages[which];
                 saveLanguagePreference(selectedLanguage);

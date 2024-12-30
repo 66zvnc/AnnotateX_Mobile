@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">AnnotateX</string>
+    <string name="language_updated_success">Езикът е актуализиран успешно</string>
+    <string name="language_update_failed">Неуспешна актуализация на езика</string>
+    <string name="select_language">Избери език</string>
+    <string name="language">Език</string>
+    <string name="leaderboard">Класация</string>
+    <string name="profile">Профил</string>
+
+    <!-- Profile Fragment -->
+    <string name="profile_image_desc">Профилна снимка</string>
+    <string name="edit_profile_image_desc">Редактирай профилна снимка</string>
+    <string name="default_name">Вашето име</string>
+    <string name="default_username">/@потребителско_име</string>
+    <string name="settings">Настройки</string>
+    <string name="payment">Плащане</string>
+    <string name="help">Помощ</string>
+    <string name="privacy_policy">Политика за поверителност</string>
+    <string name="logout">Изход</string>
+    <string name="manage_subscription">Провери Абонамент</string>
+
+    <!-- Keep language names in their original form -->
+    <string name="lang_english">English</string>
+    <string name="lang_spanish">Español</string>
+    <string name="lang_french">Français</string>
+    <string name="lang_german">Deutsch</string>
+    <string name="lang_chinese">中文</string>
+    <string name="lang_japanese">日本語</string>
+    <string name="lang_bulgarian">Български</string>
+    <string name="change_profile_picture">Промени профилна снимка</string>
+    <string name="save">Запази</string>
+    <string name="help_center">Помощ</string>
+    <string name="dark_mode">Тъмен режим</string>
+</resources> 
