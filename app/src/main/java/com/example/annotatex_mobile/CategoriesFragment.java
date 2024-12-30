@@ -34,7 +34,7 @@ public class CategoriesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_categories, container, false);
 
         // Initialize search view
-        searchView = view.findViewById(R.id.searchInLibrary);
+        searchView = view.findViewById(R.id.searchInCategories);
         setupSearchView();
 
         // Initialize authors RecyclerView
