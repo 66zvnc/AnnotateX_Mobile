@@ -26,11 +26,11 @@
         app:cardBackgroundColor="?attr/colorSurface">
 
         <EditText
-            android:id="@+id/searchInLibrary"
+            android:id="@+id/searchInCategories"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:background="@null"
-            android:drawableStart="@drawable/ic_search"
+            android:drawableStart="@drawable/ic_search_book"
             android:drawablePadding="12dp"
             android:hint="Search in Categories..."
             android:paddingStart="16dp"
