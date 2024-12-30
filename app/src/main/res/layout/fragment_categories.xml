@@ -42,28 +42,6 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Top Authors Section -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Top authors"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="8dp"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/authorsRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:clipToPadding="false"
-        android:orientation="horizontal"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:scrollbars="none"
-        android:overScrollMode="never"/>
-
     <!-- Popular Section -->
     <TextView
         android:layout_width="wrap_content"

@@ -21,11 +21,8 @@ import java.util.List;
 public class CategoriesFragment extends Fragment {
 
     private RecyclerView categoriesRecyclerView;
-    private RecyclerView authorsRecyclerView;
     private CategoriesAdapter categoriesAdapter;
-    private AuthorsAdapter authorsAdapter;
     private List<Categories> categoriesList;
-    private List<Author> authorsList;
     private EditText searchView;
 
     @Nullable
@@ -36,22 +33,6 @@ public class CategoriesFragment extends Fragment {
         // Initialize search view
         searchView = view.findViewById(R.id.searchInCategories);
         setupSearchView();
-
-        // Initialize authors RecyclerView
-        authorsRecyclerView = view.findViewById(R.id.authorsRecyclerView);
-        authorsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        
-        // Initialize authors list
-        authorsList = new ArrayList<>();
-        authorsList.add(new Author("Stephen King", R.drawable.author_king));
-        authorsList.add(new Author("George Orwell", R.drawable.author_orwell));
-        authorsList.add(new Author("Agatha Christie", R.drawable.author_christie));
-        authorsList.add(new Author("J.K. Rowling", R.drawable.author_rowling));
-        authorsList.add(new Author("Ivan Vazov", R.drawable.author_vazov));
-
-        // Set up authors adapter
-        authorsAdapter = new AuthorsAdapter(getContext(), authorsList);
-        authorsRecyclerView.setAdapter(authorsAdapter);
 
         // Initialize RecyclerView
         categoriesRecyclerView = view.findViewById(R.id.categoriesRecyclerView);
@@ -76,19 +57,6 @@ public class CategoriesFragment extends Fragment {
         // Initialize and set adapter
         categoriesAdapter = new CategoriesAdapter(getContext(), categoriesList);
         categoriesRecyclerView.setAdapter(categoriesAdapter);
-
-        // Add spacing between authors
-        authorsRecyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
-            @Override
-            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, 
-                                      @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-                int position = parent.getChildAdapterPosition(view);
-                // Add spacing between items, but not at the start
-                if (position > 0) {
-                    outRect.left = getResources().getDimensionPixelSize(R.dimen.author_spacing);
-                }
-            }
-        });
 
         return view;
     }
