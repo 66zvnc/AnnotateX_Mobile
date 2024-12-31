@@ -18,13 +18,17 @@
     <!-- Bottom Navigation Bar -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
         android:background="?attr/colorSurface"
-        app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="?attr/colorOnSurface"
-        app:itemTextColor="?attr/colorOnSurface"
+        android:stateListAnimator="@null"
+        app:itemBackground="@null"
+        app:itemIconTint="@color/bottom_nav_item_color"
+        app:itemRippleColor="@null"
+        app:itemActiveIndicatorStyle="@null"
         app:labelVisibilityMode="unlabeled"
+        app:menu="@menu/bottom_nav_menu"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
