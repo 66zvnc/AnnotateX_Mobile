@@ -1,17 +1,20 @@
 package com.example.annotatex_mobile;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class CategoryActivity extends AppCompatActivity {
     private RecyclerView booksRecyclerView;
-    private SearchView searchView;
+    private EditText searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,18 +40,31 @@ public class CategoryActivity extends AppCompatActivity {
 
     private void setupSearch() {
         searchView = findViewById(R.id.searchView);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                // TODO: Implement search functionality
+        searchView.setHint("Search books in this category");
+        
+        searchView.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                filterBooks(searchView.getText().toString());
                 return true;
+            }
+            return false;
+        });
+
+        searchView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterBooks(s.toString());
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                // TODO: Implement search functionality
-                return true;
-            }
+            public void afterTextChanged(Editable s) {}
         });
+    }
+
+    private void filterBooks(String query) {
+        // TODO: Implement book filtering logic
     }
 } 

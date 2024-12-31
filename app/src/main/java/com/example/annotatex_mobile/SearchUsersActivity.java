@@ -7,13 +7,16 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,7 +33,7 @@ public class SearchUsersActivity extends AppCompatActivity {
     private List<Friend> usersList;
     private FirebaseFirestore firestore;
     private FirebaseAuth auth;
-    private SearchView searchView;
+    private EditText searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,22 +55,42 @@ public class SearchUsersActivity extends AppCompatActivity {
         loadContacts();
 
         // Set up search functionality
-        searchView = findViewById(R.id.searchView);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
+        setupSearch();
+    }
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if (newText.isEmpty()) {
-                    loadContacts(); // Show contacts when search is empty
+    private void setupSearch() {
+        searchView = findViewById(R.id.searchView);
+        searchView.setHint("Search for users");
+        
+        searchView.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                String query = searchView.getText().toString();
+                if (query.isEmpty()) {
+                    loadContacts();
                 } else {
-                    searchUsers(newText); // Show search results when typing
+                    searchUsers(query);
                 }
                 return true;
             }
+            return false;
+        });
+
+        searchView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString();
+                if (query.isEmpty()) {
+                    loadContacts();
+                } else {
+                    searchUsers(query);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
         });
     }
 

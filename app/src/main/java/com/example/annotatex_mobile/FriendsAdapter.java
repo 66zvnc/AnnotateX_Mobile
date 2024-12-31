@@ -194,6 +194,12 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
         notifyDataSetChanged();
     }
 
+    public void updateFriends(List<Friend> newList) {
+        friendsList.clear();
+        friendsList.addAll(newList);
+        notifyDataSetChanged();
+    }
+
     public static class FriendViewHolder extends RecyclerView.ViewHolder {
         ImageView profileImageView;
         TextView nameTextView, statusTextView;

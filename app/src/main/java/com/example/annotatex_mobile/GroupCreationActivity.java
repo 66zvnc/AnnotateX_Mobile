@@ -1,8 +1,11 @@
 package com.example.annotatex_mobile;
 
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -81,6 +84,9 @@ public class GroupCreationActivity extends AppCompatActivity {
 
         // Handle group creation
         createGroupButton.setOnClickListener(v -> createGroup());
+
+        // Set up search functionality
+        setupSearch();
     }
 
     private void fetchFriends() {
@@ -155,5 +161,41 @@ public class GroupCreationActivity extends AppCompatActivity {
                 Log.e("GroupCreation", "Error loading friend profile picture", e);
                 imageView.setImageResource(R.drawable.ic_default_profile);
             });
+    }
+
+    private void setupSearch() {
+        EditText searchView = findViewById(R.id.searchView);
+        searchView.setHint("Search for friends");
+        
+        searchView.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                filterFriends(searchView.getText().toString());
+                return true;
+            }
+            return false;
+        });
+
+        searchView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterFriends(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void filterFriends(String query) {
+        List<Friend> filteredList = new ArrayList<>();
+        for (Friend friend : friendsList) {
+            if (friend.getName().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(friend);
+            }
+        }
+        friendsAdapter.updateFriends(filteredList);
     }
 }

@@ -4,8 +4,11 @@ import static android.content.ContentValues.TAG;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -118,20 +121,27 @@ public class GroupChatActivity extends AppCompatActivity {
         sendButton.setOnClickListener(v -> sendMessage());
 
         // Set up SearchView
-        SearchView searchView = findViewById(R.id.searchView);
-        searchView.setQueryHint("Search Books");
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        EditText searchView = findViewById(R.id.searchView);
+        searchView.setHint("Search Books or Notes");
+        searchView.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                filterBooks(searchView.getText().toString());
+                return true;
+            }
+            return false;
+        });
+
+        searchView.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                filterBooks(query);
-                return false;
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterBooks(s.toString());
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                filterBooks(newText);
-                return false;
-            }
+            public void afterTextChanged(Editable s) {}
         });
     }
 

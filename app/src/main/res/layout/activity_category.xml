@@ -34,16 +34,31 @@
 
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- Search Bar -->
-    <androidx.appcompat.widget.SearchView
-        android:id="@+id/searchView"
+    <!-- Search Bar with Material Design -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:background="@android:color/white"
-        android:elevation="2dp"
-        app:iconifiedByDefault="false"
-        app:queryHint="Search books in this category"/>
+        app:cardCornerRadius="10dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="?attr/colorSurface">
+
+        <EditText
+            android:id="@+id/searchView"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@null"
+            android:drawableStart="@drawable/ic_search_book"
+            android:drawablePadding="12dp"
+            android:hint="Search books in this category"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textSize="16sp"
+            android:inputType="text"
+            android:maxLines="1"
+            android:imeOptions="actionSearch"/>
+
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- Books RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView

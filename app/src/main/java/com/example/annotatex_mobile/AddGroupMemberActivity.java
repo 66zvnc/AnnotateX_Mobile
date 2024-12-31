@@ -7,6 +7,10 @@ import android.widget.Button;
 import android.widget.ImageView;
 import androidx.appcompat.widget.SearchView;
 import android.widget.Toast;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -108,19 +112,33 @@ public class AddGroupMemberActivity extends AppCompatActivity {
             }
         });
 
-        // Add search functionality
-        SearchView searchView = findViewById(R.id.searchView);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        // Replace the SearchView setup with EditText setup
+        setupSearch();
+    }
+
+    private void setupSearch() {
+        EditText searchView = findViewById(R.id.searchView);
+        searchView.setHint("Search in Friends");
+        
+        searchView.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                filterFriends(searchView.getText().toString());
+                return true;
+            }
+            return false;
+        });
+
+        searchView.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterFriends(s.toString());
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                filterFriends(newText);
-                return true;
-            }
+            public void afterTextChanged(Editable s) {}
         });
     }
 
