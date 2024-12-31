@@ -39,7 +39,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <!-- Search View with Material Design -->
+            <!-- Search Bar with Material Design -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -49,15 +49,20 @@
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="?attr/colorSurface">
 
-                <androidx.appcompat.widget.SearchView
+                <EditText
                     android:id="@+id/searchView"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:iconifiedByDefault="false"
-                    app:iconifiedByDefault="false"
-                    app:queryHint="Search in Library..."
-                    app:defaultQueryHint="Search in Library..."
-                    android:theme="@style/SearchViewStyle" />
+                    android:layout_height="48dp"
+                    android:background="@null"
+                    android:drawableStart="@drawable/ic_search_book"
+                    android:drawablePadding="12dp"
+                    android:hint="Search in Library..."
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:textSize="16sp"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:imeOptions="actionSearch"/>
 
             </com.google.android.material.card.MaterialCardView>
 
@@ -76,8 +81,7 @@
                     android:padding="12dp"
                     android:src="@drawable/ic_notifications"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Notifications"
-                    app:tint="?attr/colorOnSurface"/>
+                    android:contentDescription="Notifications"/>
 
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>

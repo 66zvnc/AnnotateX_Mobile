@@ -3,11 +3,15 @@ package com.example.annotatex_mobile;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -36,7 +40,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
     private FirebaseFirestore firestore;
     private FirebaseAuth auth;
     private MotionLayout motionLayout;
-    private SearchView searchView;
+    private EditText searchView;
     private boolean isSearchViewVisible = true;
 
     @Nullable
@@ -93,34 +97,25 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
     }
 
     private void setupSearchView() {
-        // Get the search auto complete object
-        int searchPlateId = searchView.getContext().getResources()
-                .getIdentifier("android:id/search_src_text", null, null);
-        SearchView.SearchAutoComplete searchAutoComplete = 
-                searchView.findViewById(searchPlateId);
-        
-        // Configure the SearchView
-        searchView.setIconifiedByDefault(false);
-        searchView.setQueryHint("Search in Library...");
-        
-        // Set colors for the search text and hint
-        if (searchAutoComplete != null) {
-            searchAutoComplete.setHintTextColor(getResources().getColor(android.R.color.darker_gray));
-            searchAutoComplete.setTextColor(getResources().getColor(android.R.color.black));
-        }
-
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        searchView.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                filterBooks(query);
-                return true;
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterBooks(s.toString());
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                filterBooks(newText);
+            public void afterTextChanged(Editable s) {}
+        });
+
+        searchView.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                filterBooks(searchView.getText().toString());
                 return true;
             }
+            return false;
         });
     }
 
