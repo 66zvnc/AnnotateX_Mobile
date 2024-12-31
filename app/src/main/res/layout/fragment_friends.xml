@@ -5,29 +5,71 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/friends"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:textColor="@android:color/black"/>
+
     <!-- Search and Actions Container -->
     <LinearLayout
         android:id="@+id/searchContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:padding="16dp">
 
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/searchView"
+
+
+        <!-- Search Bar with Material Design -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:queryHint="Search friends or groups" />
+            android:layout_marginEnd="8dp"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="?attr/colorSurface">
+
+            <EditText
+                android:id="@+id/searchView"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@null"
+                android:drawableStart="@drawable/ic_search_friends"
+                android:drawablePadding="10dp"
+                android:hint="@string/search_in_friends"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textSize="16sp"
+                android:inputType="text"
+                android:maxLines="1"
+                android:imeOptions="actionSearch"/>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Add Friend Icon -->
-        <ImageView
-            android:id="@+id/addFriendIcon"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:padding="8dp"
-            android:src="@drawable/ic_add_friend"
-            android:contentDescription="Add Friend" />
+            app:cardCornerRadius="10dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="?attr/colorSurface">
+
+            <ImageView
+                android:id="@+id/addFriendIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="12dp"
+                android:src="@drawable/ic_add_friend"
+                android:contentDescription="Add Friend"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
     <!-- Combined RecyclerView for Groups and Friends -->

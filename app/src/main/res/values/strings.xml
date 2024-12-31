@@ -38,6 +38,8 @@
     <string name="save">Save</string>
     <string name="help_center">Help Center</string>
     <string name="dark_mode">Dark Mode</string>
+    <string name="friends">Friends</string>
+    <string name="search_in_friends">Search in Friends...</string>
 
 
 </resources>

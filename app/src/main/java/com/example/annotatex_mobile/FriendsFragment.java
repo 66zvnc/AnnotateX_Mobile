@@ -2,10 +2,14 @@ package com.example.annotatex_mobile;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 
@@ -38,6 +42,7 @@ public class FriendsFragment extends Fragment {
     private ListenerRegistration listenerRegistration;
     private List<Group> groupsList;
     private ListenerRegistration groupsListenerRegistration;
+    private EditText searchView;
 
     @Nullable
     @Override
@@ -63,19 +68,8 @@ public class FriendsFragment extends Fragment {
         });
 
         // Set up SearchView
-        androidx.appcompat.widget.SearchView searchView = view.findViewById(R.id.searchView);
-        searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                filterItems(newText);
-                return true;
-            }
-        });
+        searchView = view.findViewById(R.id.searchView);
+        setupSearchView();
 
         return view;
     }
@@ -251,5 +245,28 @@ public class FriendsFragment extends Fragment {
 
         // Update adapter with filtered lists
         combinedAdapter.updateItems(filteredGroups, filteredFriends);
+    }
+
+    private void setupSearchView() {
+        searchView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterItems(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        searchView.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                filterItems(searchView.getText().toString());
+                return true;
+            }
+            return false;
+        });
     }
 }

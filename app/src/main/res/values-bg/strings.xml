@@ -6,6 +6,8 @@
     <string name="language">Език</string>
     <string name="leaderboard">Класация</string>
     <string name="profile">Профил</string>
+    <string name="friends">Приятели</string>
+    <string name="search_in_friends">Търси в приятели…</string>
 
     <!-- Profile Fragment -->
     <string name="profile_image_desc">Профилна снимка</string>
