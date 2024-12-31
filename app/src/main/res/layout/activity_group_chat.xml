@@ -152,7 +152,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:padding="12dp"
-                android:src="@drawable/ic_add_book"
+                android:src="@drawable/ic_plus_bg"
                 android:contentDescription="Add Collaborative Book"
                 android:clickable="true"
                 android:focusable="true"
