@@ -24,7 +24,7 @@
             android:layout_height="24dp"
             android:src="@drawable/ic_profile"
             android:layout_marginEnd="32dp"
-            app:tint="?attr/colorOnSurface" />
+            app:tint="@color/selected_nav_color" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -58,7 +58,7 @@
             android:layout_height="24dp"
             android:src="@drawable/ic_goal"
             android:layout_marginEnd="32dp"
-            app:tint="?attr/colorOnSurface" />
+            app:tint="@color/selected_nav_color" />
 
         <TextView
             android:layout_width="wrap_content"
