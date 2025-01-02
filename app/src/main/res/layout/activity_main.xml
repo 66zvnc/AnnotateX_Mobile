@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="59dp"
         android:layout_gravity="bottom"
-        android:background="?attr/colorSurface"
+        android:background="#F7F1F1"
         android:paddingTop="1dp"
         android:paddingBottom="1dp"
         android:stateListAnimator="@null"
@@ -32,6 +32,7 @@
         app:itemActiveIndicatorStyle="@null"
         app:labelVisibilityMode="unlabeled"
         app:menu="@menu/bottom_nav_menu"
+        android:foreground="@drawable/nav_bar_top_divider"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

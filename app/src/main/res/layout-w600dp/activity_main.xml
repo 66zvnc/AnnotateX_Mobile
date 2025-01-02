@@ -15,12 +15,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Bottom Navigation Bar for Tablets, place it at the bottom of the screen -->
+    <!-- Bottom Navigation Bar for Tablets -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav"
         android:layout_width="0dp"
         android:layout_height="59dp"
-        android:background="?attr/colorSurface"
+        android:background="#F7F1F1"
         android:paddingTop="1dp"
         android:paddingBottom="1dp"
         app:itemIconSize="30dp"
@@ -28,6 +28,7 @@
         app:itemIconTint="?attr/colorOnSurface"
         app:itemTextColor="?attr/colorOnSurface"
         app:labelVisibilityMode="unlabeled"
+        android:foreground="@drawable/nav_bar_top_divider"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
