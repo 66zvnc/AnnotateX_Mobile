@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHolder> {
     private static final String TAG = "LibraryAdapter";
@@ -186,15 +188,31 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     }
 
     private void showPopupMenu(View view, Book book) {
-        PopupMenu popupMenu = new PopupMenu(context, view);
-        MenuInflater inflater = popupMenu.getMenuInflater();
-        inflater.inflate(R.menu.item_book_menu, popupMenu.getMenu());
+        PopupMenu popup = new PopupMenu(context, view);
+        popup.getMenuInflater().inflate(R.menu.item_book_menu, popup.getMenu());
 
-        MenuItem deleteItem = popupMenu.getMenu().findItem(R.id.menu_delete);
+        // Force showing icons in popup menu
+        try {
+            Field[] fields = popup.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                if ("mPopup".equals(field.getName())) {
+                    field.setAccessible(true);
+                    Object menuPopupHelper = field.get(popup);
+                    Class<?> classPopupHelper = Class.forName(menuPopupHelper.getClass().getName());
+                    Method setForceIcons = classPopupHelper.getMethod("setForceShowIcon", boolean.class);
+                    setForceIcons.invoke(menuPopupHelper, true);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        MenuItem deleteItem = popup.getMenu().findItem(R.id.menu_delete);
         deleteItem.setTitle(book.isPreloaded() ? "Don't Suggest" : "Delete");
 
-        popupMenu.setOnMenuItemClickListener(item -> onMenuItemClick(item, book));
-        popupMenu.show();
+        popup.setOnMenuItemClickListener(item -> onMenuItemClick(item, book));
+        popup.show();
     }
 
     private boolean onMenuItemClick(MenuItem item, Book book) {

@@ -3,11 +3,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/menu_view_details"
+        android:icon="@drawable/ic_details"
         android:title="View Details" />
     <item
         android:id="@+id/menu_share"
+        android:icon="@drawable/ic_collaborate"
         android:title="Collaborate" />
     <item
         android:id="@+id/menu_delete"
+        android:icon="@drawable/ic_delete"
         android:title="Delete" />
 </menu>
