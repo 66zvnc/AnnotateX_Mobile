@@ -101,20 +101,6 @@
             android:background="@drawable/option_background"
             android:gravity="center_vertical"/>
 
-        <!-- Payment Methods Option -->
-        <TextView
-            android:id="@+id/paymentOption"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:text="@string/manage_subscription"
-            android:textSize="16sp"
-            android:drawableStart="@drawable/ic_payment"
-            android:drawableEnd="@drawable/ic_right_arrow"
-            android:drawablePadding="16dp"
-            android:background="@drawable/option_background"
-            android:gravity="center_vertical"/>
-
         <!-- Help Center Option -->
         <TextView
             android:id="@+id/helpOption"
