@@ -31,6 +31,10 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+
 public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfClickListener {
 
     private static final String TAG = "LibraryFragment";
@@ -147,14 +151,14 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
     }
 
     private void loadBooksFromFirestore() {
-        CollectionReference booksCollection = firestore.collection("books");
-        String userId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
-
-        if (userId != null) {
-            booksCollection.whereEqualTo("userId", userId).get().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
+        String userId = auth.getCurrentUser().getUid();
+        
+        firestore.collection("books")
+                .whereEqualTo("userId", userId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
                     bookList.clear();
-                    for (QueryDocumentSnapshot document : task.getResult()) {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String pdfUrl = document.getString("pdfUrl");
                         String title = document.getString("title");
                         String author = document.getString("author");
@@ -162,17 +166,25 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.OnPdfCli
                         String description = document.getString("description");
                         String id = document.getId();
                         Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
+                        
+                        // Preload images
+                        if (book.getCoverImageUrl() != null) {
+                            Glide.with(requireContext())
+                                .load(book.getCoverImageUrl())
+                                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                .preload();
+                        }
+                        
                         bookList.add(book);
                     }
-                    loadCollaborativeBooks(userId); // Load collaborative books after personal books
-                } else {
-                    Log.e(TAG, "Error getting documents: ", task.getException());
-                }
-            });
-        } else {
-            addPreloadedBooks(); // Add predefined books if the user is not logged in
-            adapter.updateBooks(bookList);
-        }
+                    adapter.updateBooks(bookList);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error getting documents: ", e);
+                    // Still add preloaded books and update adapter even if books fail to load
+                    addPreloadedBooks();
+                    adapter.updateBooks(bookList);
+                });
     }
 
     private void loadCollaborativeBooks(String userId) {

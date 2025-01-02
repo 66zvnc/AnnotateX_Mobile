@@ -3,6 +3,7 @@ package com.example.annotatex_mobile;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
+import android.util.LruCache;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,6 +33,20 @@ public class Book implements Serializable {
     private List<String> annotations = new ArrayList<>(); // Annotations field
     private String groupId; // New field for group association
     private Map<String, CollaborationType> collaborations;
+
+    // Add caching fields
+    private static final int CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB cache
+    private static LruCache<String, Bitmap> memoryCache;
+
+    // Initialize cache in static block
+    static {
+        memoryCache = new LruCache<String, Bitmap>(CACHE_SIZE_BYTES) {
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                return bitmap.getByteCount();
+            }
+        };
+    }
 
     public enum CollaborationType {
         INDIVIDUAL,
@@ -313,5 +328,16 @@ public class Book implements Serializable {
 
     public CollaborationType getCollaborationType(String userId) {
         return collaborations != null ? collaborations.get(userId) : null;
+    }
+
+    // Add cache methods
+    public void addBitmapToCache(String key, Bitmap bitmap) {
+        if (getBitmapFromCache(key) == null && bitmap != null) {
+            memoryCache.put(key, bitmap);
+        }
+    }
+
+    public Bitmap getBitmapFromCache(String key) {
+        return memoryCache.get(key);
     }
 }
