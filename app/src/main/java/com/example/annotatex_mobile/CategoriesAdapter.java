@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
@@ -20,24 +22,39 @@ public class CategoriesAdapter extends RecyclerView.Adapter<CategoriesAdapter.Vi
         this.categories = categories;
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return categories.get(position).isHeader() ? 1 : 0;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == 1) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_category_header, parent, false);
+            return new HeaderViewHolder(view);
+        }
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_category, parent, false);
-        return new ViewHolder(view);
+        return new CategoryViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Categories category = categories.get(position);
-        holder.categoryImage.setImageResource(category.getImageResId());
-        
-        holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, CategoryActivity.class);
-            intent.putExtra("CATEGORY_NAME", category.getName());
-            context.startActivity(intent);
-        });
+        if (holder instanceof HeaderViewHolder) {
+            ((HeaderViewHolder) holder).headerText.setText(category.getName());
+        } else {
+            CategoryViewHolder categoryHolder = (CategoryViewHolder) holder;
+            categoryHolder.categoryImage.setImageResource(category.getImageResId());
+            
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, CategoryActivity.class);
+                intent.putExtra("CATEGORY_NAME", category.getName());
+                context.startActivity(intent);
+            });
+        }
     }
 
     @Override
@@ -57,6 +74,21 @@ public class CategoriesAdapter extends RecyclerView.Adapter<CategoriesAdapter.Vi
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             categoryImage = itemView.findViewById(R.id.categoryImage);
+        }
+    }
+
+    public static class HeaderViewHolder extends ViewHolder {
+        TextView headerText;
+
+        public HeaderViewHolder(@NonNull View itemView) {
+            super(itemView);
+            headerText = itemView.findViewById(R.id.headerText);
+        }
+    }
+
+    public static class CategoryViewHolder extends ViewHolder {
+        public CategoryViewHolder(@NonNull View itemView) {
+            super(itemView);
         }
     }
 }

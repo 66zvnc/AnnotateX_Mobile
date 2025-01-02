@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +20,9 @@ import java.util.Random;
 
 public class CategoriesFragment extends Fragment {
 
-    private RecyclerView popularCategoriesRecyclerView;
-    private RecyclerView allCategoriesRecyclerView;
-    private CategoriesAdapter popularCategoriesAdapter;
-    private CategoriesAdapter allCategoriesAdapter;
-    private List<Categories> allCategoriesList;
+    private RecyclerView categoriesRecyclerView;
+    private CategoriesAdapter categoriesAdapter;
+    private List<Categories> categoriesList;
     private EditText searchView;
 
     @Nullable
@@ -37,67 +34,50 @@ public class CategoriesFragment extends Fragment {
         searchView = view.findViewById(R.id.searchInCategories);
         setupSearchView();
 
-        // Initialize RecyclerViews
-        popularCategoriesRecyclerView = view.findViewById(R.id.popularCategoriesRecyclerView);
-        allCategoriesRecyclerView = view.findViewById(R.id.allCategoriesRecyclerView);
-
-        // Set up layouts with span count of 2 (for grid layout)
-        GridLayoutManager popularGridManager = new GridLayoutManager(getContext(), 2);
-        GridLayoutManager allGridManager = new GridLayoutManager(getContext(), 2);
+        // Initialize RecyclerView
+        categoriesRecyclerView = view.findViewById(R.id.categoriesRecyclerView);
         
-        popularCategoriesRecyclerView.setLayoutManager(popularGridManager);
-        allCategoriesRecyclerView.setLayoutManager(allGridManager);
+        // Set up layout with span count of 2 (for grid layout)
+        GridLayoutManager gridManager = new GridLayoutManager(getContext(), 2);
+        // Configure the GridLayoutManager to make headers span the full width
+        gridManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                // If it's a header, make it span the full width (2 columns)
+                return categoriesList.get(position).isHeader() ? 2 : 1;
+            }
+        });
+        categoriesRecyclerView.setLayoutManager(gridManager);
 
         // Add spacing
         int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.grid_spacing);
-        popularCategoriesRecyclerView.addItemDecoration(new SpaceItemDecoration(spacingInPixels));
-        allCategoriesRecyclerView.addItemDecoration(new SpaceItemDecoration(spacingInPixels));
+        categoriesRecyclerView.addItemDecoration(new SpaceItemDecoration(spacingInPixels));
 
-        // Initialize categories
-        allCategoriesList = new ArrayList<>();
+        // Initialize categories list with header items
+        categoriesList = new ArrayList<>();
         
-        // Add all categories
-        allCategoriesList.add(new Categories("Classic", R.drawable.img_category_classic));
-        allCategoriesList.add(new Categories("Fantasy", R.drawable.img_category_fantasy));
-        allCategoriesList.add(new Categories("For Kids", R.drawable.img_category_kids));
-        allCategoriesList.add(new Categories("Novels", R.drawable.img_category_novels));
-        allCategoriesList.add(new Categories("Comedy", R.drawable.img_category_comedy));
-        allCategoriesList.add(new Categories("Horror", R.drawable.img_category_horror));
-        allCategoriesList.add(new Categories("Science Fiction", R.drawable.img_category_scifi));
+        // Add header for Popular section
+        categoriesList.add(new Categories("Popular", -1, true)); // Use a flag for headers
+        
+        // Add popular categories (first 4)
+        categoriesList.add(new Categories("Classic", R.drawable.img_category_classic));
+        categoriesList.add(new Categories("Fantasy", R.drawable.img_category_fantasy));
+        categoriesList.add(new Categories("For Kids", R.drawable.img_category_kids));
+        categoriesList.add(new Categories("Novels", R.drawable.img_category_novels));
+        
+        // Add header for All Categories section
+        categoriesList.add(new Categories("All Categories", -1, true));
+        
+        // Add remaining categories
+        categoriesList.add(new Categories("Comedy", R.drawable.img_category_comedy));
+        categoriesList.add(new Categories("Horror", R.drawable.img_category_horror));
+        categoriesList.add(new Categories("Science Fiction", R.drawable.img_category_scifi));
 
-        // Get 4 random categories for popular section
-        List<Categories> popularCategories = getRandomCategories(new ArrayList<>(allCategoriesList), 4);
-
-        // Set up adapters with fixed size
-        popularCategoriesAdapter = new CategoriesAdapter(getContext(), popularCategories);
-        allCategoriesAdapter = new CategoriesAdapter(getContext(), allCategoriesList);
-
-        popularCategoriesRecyclerView.setAdapter(popularCategoriesAdapter);
-        allCategoriesRecyclerView.setAdapter(allCategoriesAdapter);
-
-        // Force layout measurement
-        popularCategoriesRecyclerView.setHasFixedSize(true);
-        allCategoriesRecyclerView.setHasFixedSize(true);
-
-        // Post a runnable to notify adapter after layout
-        allCategoriesRecyclerView.post(() -> {
-            allCategoriesAdapter.notifyDataSetChanged();
-        });
+        // Set up adapter
+        categoriesAdapter = new CategoriesAdapter(getContext(), categoriesList);
+        categoriesRecyclerView.setAdapter(categoriesAdapter);
 
         return view;
-    }
-
-    private List<Categories> getRandomCategories(List<Categories> source, int count) {
-        List<Categories> copy = new ArrayList<>(source);
-        List<Categories> randomCategories = new ArrayList<>();
-        Random random = new Random();
-
-        for (int i = 0; i < count && !copy.isEmpty(); i++) {
-            int index = random.nextInt(copy.size());
-            randomCategories.add(copy.remove(index));
-        }
-
-        return randomCategories;
     }
 
     private void setupSearchView() {
@@ -127,13 +107,13 @@ public class CategoriesFragment extends Fragment {
         List<Categories> filteredList = new ArrayList<>();
         String lowerCaseQuery = query.toLowerCase();
 
-        for (Categories category : allCategoriesList) {
-            if (category.getName().toLowerCase().contains(lowerCaseQuery)) {
+        for (Categories category : categoriesList) {
+            if (category.isHeader() || category.getName().toLowerCase().contains(lowerCaseQuery)) {
                 filteredList.add(category);
             }
         }
 
-        allCategoriesAdapter.updateCategories(filteredList);
+        categoriesAdapter.updateCategories(filteredList);
     }
 
     private static class SpaceItemDecoration extends RecyclerView.ItemDecoration {
