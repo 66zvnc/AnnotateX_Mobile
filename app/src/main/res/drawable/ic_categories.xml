@@ -1,28 +1,28 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="26dp"
-    android:height="26dp"
-    android:viewportWidth="26"
-    android:viewportHeight="26">
+    android:width="33dp"
+    android:height="32dp"
+    android:viewportWidth="33"
+    android:viewportHeight="32">
   <path
-      android:pathData="M2,1L10,1A1,1 0,0 1,11 2L11,10A1,1 0,0 1,10 11L2,11A1,1 0,0 1,1 10L1,2A1,1 0,0 1,2 1z"
+      android:pathData="M1.5,3.5C1.5,2.321 1.5,1.732 1.866,1.366C2.232,1 2.821,1 4,1H11.5C12.679,1 13.268,1 13.634,1.366C14,1.732 14,2.321 14,3.5V11C14,12.179 14,12.768 13.634,13.134C13.268,13.5 12.679,13.5 11.5,13.5H4C2.821,13.5 2.232,13.5 1.866,13.134C1.5,12.768 1.5,12.179 1.5,11V3.5Z"
       android:strokeWidth="2"
       android:fillColor="#00000000"
       android:strokeColor="#000000"
       android:strokeLineCap="round"/>
   <path
-      android:pathData="M2,15L10,15A1,1 0,0 1,11 16L11,24A1,1 0,0 1,10 25L2,25A1,1 0,0 1,1 24L1,16A1,1 0,0 1,2 15z"
+      android:pathData="M19,3.5C19,2.321 19,1.732 19.366,1.366C19.732,1 20.322,1 21.5,1H29C30.178,1 30.768,1 31.134,1.366C31.5,1.732 31.5,2.321 31.5,3.5V11C31.5,12.179 31.5,12.768 31.134,13.134C30.768,13.5 30.178,13.5 29,13.5H21.5C20.322,13.5 19.732,13.5 19.366,13.134C19,12.768 19,12.179 19,11V3.5Z"
       android:strokeWidth="2"
       android:fillColor="#00000000"
       android:strokeColor="#000000"
       android:strokeLineCap="round"/>
   <path
-      android:pathData="M16,1L24,1A1,1 0,0 1,25 2L25,10A1,1 0,0 1,24 11L16,11A1,1 0,0 1,15 10L15,2A1,1 0,0 1,16 1z"
+      android:pathData="M1.5,21C1.5,19.822 1.5,19.232 1.866,18.866C2.232,18.5 2.821,18.5 4,18.5H11.5C12.679,18.5 13.268,18.5 13.634,18.866C14,19.232 14,19.822 14,21V28.5C14,29.678 14,30.268 13.634,30.634C13.268,31 12.679,31 11.5,31H4C2.821,31 2.232,31 1.866,30.634C1.5,30.268 1.5,29.678 1.5,28.5V21Z"
       android:strokeWidth="2"
       android:fillColor="#00000000"
       android:strokeColor="#000000"
       android:strokeLineCap="round"/>
   <path
-      android:pathData="M16,15L24,15A1,1 0,0 1,25 16L25,24A1,1 0,0 1,24 25L16,25A1,1 0,0 1,15 24L15,16A1,1 0,0 1,16 15z"
+      android:pathData="M19,21C19,19.822 19,19.232 19.366,18.866C19.732,18.5 20.322,18.5 21.5,18.5H29C30.178,18.5 30.768,18.5 31.134,18.866C31.5,19.232 31.5,19.822 31.5,21V28.5C31.5,29.678 31.5,30.268 31.134,30.634C30.768,31 30.178,31 29,31H21.5C20.322,31 19.732,31 19.366,30.634C19,30.268 19,29.678 19,28.5V21Z"
       android:strokeWidth="2"
       android:fillColor="#00000000"
       android:strokeColor="#000000"
