@@ -35,7 +35,6 @@
             android:name="com.pspdfkit.ui.PdfActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
 
-        <activity android:name=".PrivacyPolicyActivity" />
         <activity android:name=".HelpCenterProfileActivity" />
         <activity android:name=".SettingsProfileActivity" />
         <activity android:name=".EditProfileActivity" />

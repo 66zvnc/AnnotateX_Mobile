@@ -64,6 +64,7 @@ public class SettingsProfileActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+
         permissionsButton.setOnClickListener(v -> {
             Intent intent = new Intent(SettingsProfileActivity.this, PermissionsActivity.class);
             startActivity(intent);

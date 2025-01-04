@@ -109,25 +109,11 @@
             android:padding="16dp"
             android:text="@string/help_center"
             android:textSize="16sp"
-            android:drawableStart="@drawable/ic_help"
-            android:drawableEnd="@drawable/ic_right_arrow"
             android:drawablePadding="16dp"
             android:background="@drawable/option_background"
-            android:gravity="center_vertical"/>
-
-        <!-- Privacy Policy Option -->
-        <TextView
-            android:id="@+id/privacyPolicyOption"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:text="@string/privacy_policy"
-            android:textSize="16sp"
-            android:drawableStart="@drawable/ic_privacy"
-            android:drawableEnd="@drawable/ic_right_arrow"
-            android:drawablePadding="16dp"
-            android:background="@drawable/option_background"
-            android:gravity="center_vertical"/>
+            android:gravity="center_vertical"
+            app:drawableEndCompat="@drawable/ic_right_arrow"
+            app:drawableStartCompat="@drawable/ic_help" />
 
         <!-- Language Option -->
         <LinearLayout
@@ -176,7 +162,7 @@
             android:padding="16dp"
             android:text="@string/logout"
             android:textSize="16sp"
-            android:textColor="@color/dark_pink"
+            android:textColor="@color/red"
             android:drawableStart="@drawable/ic_logout"
             android:drawablePadding="16dp"
             android:background="@drawable/option_background"
