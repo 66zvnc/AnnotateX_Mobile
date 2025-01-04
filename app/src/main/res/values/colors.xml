@@ -29,11 +29,9 @@
     <color name="my_light_error">#B00020</color>
     <color name="my_light_on_error">#FFFFFF</color>
 
->
     <color name="my_light_secondary">#03DAC6</color>
     <color name="my_light_on_secondary">#000000</color>
     <color name="my_elevation_overlay">#1F000000</color>
-
 
     <color name="dark_primary">#BB86FC</color>
     <color name="dark_primary_variant">#3700B3</color>
@@ -53,12 +51,10 @@
 
     <color name="light_grey">#D3D3D3</color>
 
-
-<!-- subscription page -->
-    <color name="selected_plan">#1A092765</color> <!-- Highlighted background -->
-    <color name="unselected_plan">#0D15AABF</color> <!-- Slightly darker than light_blue -->
-    <color name="light_blue">#99E9F2</color> <!-- Page background color -->
-    <color name="dark_blue">#047B90</color> <!-- Text color -->
+    <color name="selected_plan">#1A092765</color>
+    <color name="unselected_plan">#0D15AABF</color>
+    <color name="light_blue">#99E9F2</color>
+    <color name="dark_blue">#047B90</color>
     <color name="green">#4CAF50</color>
 
     <color name="selected_background">#678C8C8C</color>
@@ -71,5 +67,7 @@
     <color name="gold">#FFD700</color>
 
     <color name="selected_nav_color">#DE7773</color>
+
+    <color name="colorPrimary">#FF2196F3</color>
 
 </resources>

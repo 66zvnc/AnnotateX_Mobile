@@ -33,4 +33,7 @@
     <string name="save">Запази</string>
     <string name="help_center">Помощ</string>
     <string name="dark_mode">Тъмен режим</string>
+    <string name="notifications">Известия</string>
+    <string name="add_member">Добави участник</string>
+    <string name="leave_group">Напусни</string>
 </resources> 

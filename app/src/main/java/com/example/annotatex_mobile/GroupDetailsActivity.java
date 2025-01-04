@@ -49,7 +49,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
     private ImageView editGroupPhotoButton;
     private FirebaseStorage storage;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
-    private ImageView addMemberButton;
+    private LinearLayout addMemberButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

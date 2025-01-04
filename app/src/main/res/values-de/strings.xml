@@ -29,4 +29,7 @@
     <string name="save">Save</string>
     <string name="help_center">Help Center</string>
     <string name="dark_mode">Dark Mode</string>
+    <string name="notifications">Notifications</string>
+    <string name="add_member">Add Member</string>
+    <string name="leave_group">Leave Group</string>
 </resources> 
