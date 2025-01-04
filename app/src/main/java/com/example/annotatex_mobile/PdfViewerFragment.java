@@ -248,7 +248,8 @@ public class PdfViewerFragment extends Fragment {
             
             // Check if file size exceeds 1MB (1024 * 1024 bytes)
             if (fileSize > 1024 * 1024) {
-                Toast.makeText(requireContext(), "File size must be less than 1MB", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "The file exceeds the maximum allowed size of 1MB.\n" +
+                        "Please select a smaller file.", Toast.LENGTH_LONG).show();
                 return;
             }
 
