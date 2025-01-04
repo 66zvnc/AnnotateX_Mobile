@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:padding="12dp"
     android:background="?attr/selectableItemBackground">
@@ -12,15 +13,16 @@
         android:layout_height="48dp"
         android:layout_marginEnd="12dp"
         android:padding="8dp"
-        android:src="@drawable/ic_add_group"
+        android:src="@drawable/ic_plus_bg"
+        app:tint="@color/white"
         android:background="@drawable/circle_background"
-        android:tint="?attr/colorControlNormal" />
+        android:backgroundTint="@color/selected_nav_color" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:text="Create New Group"
+        android:text="Create Group"
         android:textSize="16sp"
         android:textColor="?attr/colorOnSurface" />
 
