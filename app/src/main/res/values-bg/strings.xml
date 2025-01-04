@@ -36,4 +36,5 @@
     <string name="notifications">Известия</string>
     <string name="add_member">Добави участник</string>
     <string name="leave_group">Напусни</string>
+    <string name="members">Членове</string>
 </resources> 

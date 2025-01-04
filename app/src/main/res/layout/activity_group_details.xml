@@ -30,12 +30,6 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <ImageButton
-            android:id="@+id/infoButton"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_info"
-            android:background="?attr/selectableItemBackgroundBorderless" />
     </LinearLayout>
 
     <!-- Group Image and Icons -->
@@ -65,14 +59,14 @@
 
         <ImageView
             android:id="@+id/editGroupPhotoButton"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
             android:layout_gravity="end|bottom"
             android:src="@drawable/ic_edit"
+            app:tint="@color/white"
             android:padding="6dp"
             android:background="@drawable/circle_background"
-            android:backgroundTint="@color/white"
-            app:tint="@color/colorPrimary" />
+            android:backgroundTint="@color/selected_nav_color" />
 
     </FrameLayout>
 
@@ -118,7 +112,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_edit"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/selected_nav_color"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:clickable="true"
                     android:focusable="true" />
@@ -139,8 +133,9 @@
             android:layout_weight="1"
             android:text="@string/notifications" />
 
-        <androidx.appcompat.widget.SwitchCompat
+        <Switch
             android:id="@+id/notificationsSwitch"
+            app:tint="@color/selected_nav_color"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>
@@ -150,7 +145,7 @@
         android:id="@+id/memberCountText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Members(2)"
+        android:text="@string/members"
         android:textStyle="bold"
         android:padding="16dp" />
 
@@ -167,35 +162,37 @@
             android:paddingTop="8dp"
             android:paddingBottom="8dp" />
 
+
+
     </ScrollView>
 
-    <!-- Add Member Button -->
     <LinearLayout
         android:id="@+id/addMemberButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:orientation="horizontal"
+        android:padding="16dp">
 
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/circle_background"
+            android:backgroundTint="@color/selected_nav_color"
             android:padding="8dp"
             android:src="@drawable/ic_add"
-            android:background="@drawable/circle_background"
-            android:layout_marginEnd="16dp" />
+            app:tint="@color/white"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:text="@string/add_member"/>
+            android:text="@string/add_member" />
     </LinearLayout>
 
-    <!-- Leave Group Button -->
     <Button
         android:id="@+id/leaveGroupButton"
         android:layout_width="match_parent"
