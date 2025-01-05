@@ -72,7 +72,7 @@ public class PdfViewerFragment extends Fragment {
         // Initialize Firebase
         storage = FirebaseStorage.getInstance();
         auth = FirebaseAuth.getInstance();
-        firestore = FirebaseFirestore.getInstance();  // Make sure Firestore is initialized
+        firestore = FirebaseFirestore.getInstance();
 
         // Initialize AdMob
         MobileAds.initialize(requireContext(), initializationStatus -> {});
@@ -85,7 +85,8 @@ public class PdfViewerFragment extends Fragment {
         uploadProgressBar = view.findViewById(R.id.uploadProgressBar);
         uploadProgressText = view.findViewById(R.id.uploadProgressPercent);
 
-        Button uploadButton = view.findViewById(R.id.uploadButton);
+        // Find the upload button LinearLayout instead of Button
+        View uploadButton = view.findViewById(R.id.uploadButton);
         uploadButton.setOnClickListener(v -> openFileChooser());
 
         // Load PDF if flag is true
