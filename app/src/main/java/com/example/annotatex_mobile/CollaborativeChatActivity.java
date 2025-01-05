@@ -472,11 +472,16 @@ public class CollaborativeChatActivity extends AppCompatActivity {
     }
 
     private void markMessageAsSeen(String chatId, String messageId) {
+        String currentUserId = auth.getCurrentUser().getUid();
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("seen", true);
+        updates.put("seenBy." + currentUserId, System.currentTimeMillis());
+
         firestore.collection("chats")
                 .document(chatId)
                 .collection("messages")
                 .document(messageId)
-                .update("seen", true)
+                .update(updates)
                 .addOnFailureListener(e -> Log.e(TAG, "Error marking message as seen", e));
     }
 

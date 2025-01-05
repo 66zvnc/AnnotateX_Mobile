@@ -73,6 +73,6 @@ public class LanguageUtils {
         if (currentLocale.getLanguage().equals("ja")) return "日本語";
         if (currentLocale.getLanguage().equals("bg")) return "Български";
         
-        return "English"; // Default fallback
+        return "English"; //  fallback
     }
 } 

@@ -464,11 +464,16 @@ public class GroupChatActivity extends AppCompatActivity {
     }
 
     private void markMessageAsSeen(String messageId) {
+        String currentUserId = auth.getCurrentUser().getUid();
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("seen", true);
+        updates.put("seenBy." + currentUserId, System.currentTimeMillis());
+
         firestore.collection("groups")
                 .document(groupId)
                 .collection("messages")
                 .document(messageId)
-                .update("seen", true)
+                .update(updates)
                 .addOnFailureListener(e -> Log.e(TAG, "Error marking message as seen", e));
     }
 

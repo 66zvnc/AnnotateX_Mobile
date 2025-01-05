@@ -1,5 +1,8 @@
 package com.example.annotatex_mobile;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Message {
     private String id;
     private String senderId;
@@ -7,10 +10,12 @@ public class Message {
     private String content;
     private long timestamp;
     private boolean seen;
+    private Map<String, Long> seenBy; // Map of userIds to timestamp when they saw the message
 
     public Message() {
         // Required empty constructor for Firestore
         this.seen = false;
+        this.seenBy = new HashMap<>();
     }
 
     public Message(String senderId, String senderName, String content) {
@@ -19,6 +24,7 @@ public class Message {
         this.content = content;
         this.timestamp = System.currentTimeMillis();
         this.seen = false;
+        this.seenBy = new HashMap<>();
     }
 
     // Getters and setters
@@ -34,4 +40,6 @@ public class Message {
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
     public boolean isSeen() { return seen; }
     public void setSeen(boolean seen) { this.seen = seen; }
+    public Map<String, Long> getSeenBy() { return seenBy; }
+    public void setSeenBy(Map<String, Long> seenBy) { this.seenBy = seenBy; }
 } 
