@@ -1,13 +1,17 @@
 package com.example.annotatex_mobile;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -15,8 +19,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,7 +29,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import com.example.annotatex_mobile.utils.LanguageUtils;
 
@@ -75,17 +82,7 @@ public class ProfileFragment extends Fragment {
         String currentLanguage = prefs.getString("selected_language", "English");
         currentLanguageText.setText(currentLanguage);
 
-        languageOption.setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-            builder.setTitle("Select Language");
-            String[] languages = {"English", "Español", "Français", "Deutsch", "中文", "日本語", "Български"};
-            builder.setItems(languages, (dialog, which) -> {
-                String selectedLanguage = languages[which];
-                saveLanguagePreference(selectedLanguage);
-                currentLanguageText.setText(selectedLanguage);
-            });
-            builder.create().show();
-        });
+        languageOption.setOnClickListener(v -> showLanguageDialog());
 
         return view;
     }
@@ -184,44 +181,73 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    private void saveLanguagePreference(String language) {
-        // Save to SharedPreferences
-        SharedPreferences prefs = requireContext().getSharedPreferences(
-            "AppSettings", Context.MODE_PRIVATE);
-        prefs.edit()
-            .putString("selected_language", language)
-            .putString("language_code", language)
-            .apply();
+    private void saveLanguagePreference(String selectedLanguage) {
+        // Save the selection to SharedPreferences
+        SharedPreferences prefs = requireContext().getSharedPreferences("AppSettings", Context.MODE_PRIVATE);
+        prefs.edit().putString("selected_language", selectedLanguage).apply();
 
-        // Store success/failure messages before context change
-        final String successMessage = getString(R.string.language_updated_success);
-        final String failureMessage = getString(R.string.language_update_failed);
+        // Update the app locale using LanguageUtils
+        Context updatedContext = LanguageUtils.updateLocale(requireContext(), selectedLanguage);
+        
+        // Update the UI text
+        TextView currentLanguageText = requireView().findViewById(R.id.currentLanguageText);
+        currentLanguageText.setText(selectedLanguage);
+        
+        // Show success message
+        Toast.makeText(requireContext(), R.string.language_updated_success, Toast.LENGTH_SHORT).show();
+        
+        // Recreate activity to apply changes
+        requireActivity().recreate();
+    }
 
-        // Update app locale
-        Context updatedContext = LanguageUtils.updateLocale(requireContext(), language);
-
-        // Update Firestore user profile
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(userId)
-            .update("preferredLanguage", language)
-            .addOnSuccessListener(aVoid -> {
-                Log.d("ProfileFragment", "Language preference updated successfully");
-                if (isAdded() && getContext() != null) {
-                    showToast(successMessage);
-                }
-            })
-            .addOnFailureListener(e -> {
-                Log.e("ProfileFragment", "Error updating language preference", e);
-                if (isAdded() && getContext() != null) {
-                    showToast(failureMessage);
-                }
-            });
-
-        // Recreate activity after Firestore update is initiated
-        if (getActivity() != null) {
-            getActivity().recreate();
+    private void showLanguageDialog() {
+        Dialog languageDialog = new Dialog(requireContext());
+        languageDialog.setContentView(R.layout.dialog_language_selection);
+        
+        // Set dialog window attributes
+        Window window = languageDialog.getWindow();
+        if (window != null) {
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
+
+        // Initialize views
+        ImageButton backButton = languageDialog.findViewById(R.id.backButton);
+        RecyclerView otherLanguagesRecyclerView = languageDialog.findViewById(R.id.otherLanguagesRecyclerView);
+        
+        // Set up the RecyclerView for other languages
+        List<Language> otherLanguages = Arrays.asList(
+            new Language("Bulgarian", R.drawable.flag_bg),
+            new Language("German", R.drawable.flag_de),
+            new Language("Russian", R.drawable.flag_ru),
+            new Language("French", R.drawable.flag_fr),
+            new Language("Spanish", R.drawable.flag_es)
+        );
+        
+        LanguageAdapter adapter = new LanguageAdapter(otherLanguages, selectedLanguage -> {
+            saveLanguagePreference(selectedLanguage);
+            languageDialog.dismiss();
+        });
+        
+        otherLanguagesRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        otherLanguagesRecyclerView.setAdapter(adapter);
+
+        // Set click listeners
+        backButton.setOnClickListener(v -> languageDialog.dismiss());
+        
+        languageDialog.findViewById(R.id.englishUsOption).setOnClickListener(v -> {
+            saveLanguagePreference("English (US)");
+            languageDialog.dismiss();
+        });
+        
+        languageDialog.findViewById(R.id.englishUkOption).setOnClickListener(v -> {
+            saveLanguagePreference("English (UK)");
+            languageDialog.dismiss();
+        });
+
+        languageDialog.show();
     }
 }

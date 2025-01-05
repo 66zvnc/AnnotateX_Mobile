@@ -37,22 +37,23 @@ public class LanguageUtils {
 
     private static Locale mapLanguageCodeToLocale(String languageCode) {
         switch (languageCode) {
-            case "English":
-                return new Locale("en");
-            case "Español":
-                return new Locale("es");
-            case "Français":
-                return new Locale("fr");
-            case "Deutsch":
-                return new Locale("de");
-            case "中文":
-                return Locale.SIMPLIFIED_CHINESE;
-            case "日本語":
-                return Locale.JAPANESE;
-            case "Български":
+            case "English (US)":
+                return new Locale("en", "US");
+            case "English (UK)":
+                return new Locale("en", "GB");
+            case "Bulgarian":
                 return new Locale("bg");
+            case "German":
+                return new Locale("de");
+            case "Russian":
+                return new Locale("ru");
+            case "French":
+                return new Locale("fr");
+            case "Spanish":
+                return new Locale("es");
+            // Add other languages as needed
             default:
-                return new Locale("en");
+                return new Locale("en", "US"); // Default to US English
         }
     }
 
@@ -64,15 +65,21 @@ public class LanguageUtils {
             currentLocale = context.getResources().getConfiguration().locale;
         }
 
+        String language = currentLocale.getLanguage();
+        String country = currentLocale.getCountry();
+
         // Map locale back to display name
-        if (currentLocale.getLanguage().equals("en")) return "English";
-        if (currentLocale.getLanguage().equals("es")) return "Español";
-        if (currentLocale.getLanguage().equals("fr")) return "Français";
-        if (currentLocale.getLanguage().equals("de")) return "Deutsch";
-        if (currentLocale.getLanguage().equals("zh")) return "中文";
-        if (currentLocale.getLanguage().equals("ja")) return "日本語";
-        if (currentLocale.getLanguage().equals("bg")) return "Български";
+        if (language.equals("en")) {
+            if (country.equals("US")) return "English (US)";
+            if (country.equals("GB")) return "English (UK)";
+            return "English (US)"; // Default if no country specified
+        }
+        if (language.equals("bg")) return "Bulgarian";
+        if (language.equals("de")) return "German";
+        if (language.equals("ru")) return "Russian";
+        if (language.equals("fr")) return "French";
+        if (language.equals("es")) return "Spanish";
         
-        return "English"; //  fallback
+        return "English (US)"; // Default fallback
     }
 } 
