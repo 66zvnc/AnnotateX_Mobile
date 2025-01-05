@@ -19,7 +19,7 @@
             android:contentDescription="Go Back"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_back_arrow"
-            app:tint="@color/dark_pink"
+            app:tint="@color/black"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -116,12 +116,12 @@
         <!-- Read Book Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/mReadBookBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="375dp"
+            android:layout_height="40dp"
             android:layout_marginTop="16dp"
-            android:text="Read Book"
-            android:textColor="@color/black"
-            android:background="@drawable/button_border"
+            android:text="@string/read_book"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/selected_nav_color"
             app:layout_constraintTop_toBottomOf="@id/ratingContainer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
