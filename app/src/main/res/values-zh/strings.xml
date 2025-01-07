@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">AnnotateX</string>
     <string name="language_updated_success">语言更新成功</string>
     <string name="language_update_failed">语言更新失败</string>
     <string name="select_language">选择语言</string>
