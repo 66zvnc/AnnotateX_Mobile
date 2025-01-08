@@ -4,10 +4,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
     android:layout_marginVertical="4dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,34 +15,37 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <!-- Rank with Medal for top 3 -->
+        <!-- Rank with Trophy -->
         <FrameLayout
-            android:layout_width="36dp"
-            android:layout_height="36dp">
-            
-            <ImageView
-                android:id="@+id/medalIcon"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone"/>
+            android:layout_width="24dp"
+            android:layout_height="wrap_content">
             
             <TextView
                 android:id="@+id/rankTextView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:gravity="center"
-                android:textColor="@color/dark_blue"
+                android:textColor="@color/black"
                 android:textSize="16sp"
                 android:textStyle="bold"/>
+
+            <ImageView
+                android:id="@+id/trophyIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:visibility="gone"/>
         </FrameLayout>
 
-        <ImageView
+        <!-- Profile Image -->
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/userImageView"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginStart="12dp"
-            android:src="@drawable/ic_default_profile"/>
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/CircularImageView"/>
 
+        <!-- Username -->
         <TextView
             android:id="@+id/userNameTextView"
             android:layout_width="0dp"
@@ -53,14 +55,14 @@
             android:textColor="@color/black"
             android:textSize="16sp"/>
 
+        <!-- Points -->
         <TextView
-            android:id="@+id/xpTextView"
+            android:id="@+id/pointsTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:textColor="@color/dark_blue"
-            android:textSize="16sp"
-            android:textStyle="bold"/>
+            android:textColor="@color/gray"
+            android:textSize="14sp"/>
     </LinearLayout>
 
 </androidx.cardview.widget.CardView> 

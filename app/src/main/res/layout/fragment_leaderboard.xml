@@ -3,193 +3,33 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/white">
 
-    <!-- Top Bar with Back Button -->
+    <!-- Top Bar -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/white"
-        android:elevation="4dp">
+        android:paddingHorizontal="16dp">
 
         <ImageButton
             android:id="@+id/backButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_centerVertical="true"
-            android:layout_marginStart="8dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_back"
             android:contentDescription="Back"/>
-    </RelativeLayout>
 
-    <!-- League Header Section -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:background="@color/white"
-        android:elevation="4dp">
-
-        <!-- League Icons Scroll -->
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:layout_marginBottom="8dp">
-
-                <!-- Obsidian League (Past) -->
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_league_obsidian"
-                    android:layout_margin="4dp"/>
-
-                <!-- Bronze League (Past) -->
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_league_bronze"
-                    android:layout_margin="4dp"/>
-
-                <!-- Silver League (Past) -->
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_league_silver"
-                    android:layout_margin="4dp"/>
-
-                <!-- Pearl League (Current) -->
-                <ImageView
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:src="@drawable/ic_league_pearl"
-                    android:layout_margin="4dp"
-                    android:background="@drawable/circle_highlight"/>
-
-                <!-- Sapphire League (Locked) -->
-                <FrameLayout
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_margin="4dp">
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_league_sapphire"
-                        android:alpha="0.3"/>
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_lock"/>
-                </FrameLayout>
-
-                <!-- Ruby League (Locked) -->
-                <FrameLayout
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_margin="4dp">
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_league_ruby"
-                        android:alpha="0.3"/>
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_lock"/>
-                </FrameLayout>
-
-                <!-- Emerald League (Locked) -->
-                <FrameLayout
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_margin="4dp">
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_league_emerald"
-                        android:alpha="0.3"/>
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_lock"/>
-                </FrameLayout>
-
-                <!-- Diamond League (Locked) -->
-                <FrameLayout
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_margin="4dp">
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_league_diamond"
-                        android:alpha="0.3"/>
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_lock"/>
-                </FrameLayout>
-
-                <!-- Master League (Locked) -->
-                <FrameLayout
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_margin="4dp">
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_league_master"
-                        android:alpha="0.3"/>
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_lock"/>
-                </FrameLayout>
-            </LinearLayout>
-        </HorizontalScrollView>
-
-        <!-- League Name and Timer -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Pearl League"
-            android:textSize="24sp"
+            android:layout_centerInParent="true"
+            android:text="@string/leaderboard"
+            android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/black"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Top 7 advance to the next league"
-            android:textSize="14sp"
-            android:textColor="@color/gray"
-            android:layout_marginTop="4dp"/>
-
-        <TextView
-            android:id="@+id/timerTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="4 days"
-            android:textSize="14sp"
-            android:textColor="@color/yellow"
-            android:layout_marginTop="4dp"/>
-    </LinearLayout>
+    </RelativeLayout>
 
     <!-- Leaderboard List -->
     <androidx.recyclerview.widget.RecyclerView
@@ -197,7 +37,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp"
+        android:padding="16dp"
         android:clipToPadding="false"/>
 
 </LinearLayout> 

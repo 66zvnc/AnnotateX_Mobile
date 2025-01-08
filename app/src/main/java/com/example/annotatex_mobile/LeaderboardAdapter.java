@@ -32,12 +32,44 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         LeaderboardItem item = items.get(position);
+        int rank = position + 1;
         
-        // Always show the actual position (1-based indexing)
-        holder.rankTextView.setText(String.valueOf(position + 1));
+        // Handle trophy icons for top 3
+        if (rank <= 3) {
+            holder.rankTextView.setVisibility(View.GONE);
+            holder.trophyIcon.setVisibility(View.VISIBLE);
+            
+            int trophyResource;
+            switch (rank) {
+                case 1:
+                    trophyResource = R.drawable.ic_trophy_gold;
+                    holder.itemView.setBackgroundColor(context.getColor(R.color.rank_1_bg));
+                    break;
+                case 2:
+                    trophyResource = R.drawable.ic_trophy_silver;
+                    holder.itemView.setBackgroundColor(context.getColor(R.color.rank_2_bg));
+                    break;
+                case 3:
+                    trophyResource = R.drawable.ic_trophy_bronze;
+                    holder.itemView.setBackgroundColor(context.getColor(R.color.rank_3_bg));
+                    break;
+                default:
+                    trophyResource = 0;
+                    break;
+            }
+            holder.trophyIcon.setImageResource(trophyResource);
+        } else {
+            holder.rankTextView.setVisibility(View.VISIBLE);
+            holder.trophyIcon.setVisibility(View.GONE);
+            holder.rankTextView.setText(String.valueOf(rank));
+            holder.itemView.setBackgroundColor(context.getColor(android.R.color.white));
+        }
+        
+        // Set username and points
         holder.userNameTextView.setText(item.getUserName());
-
-        // Load profile image using Glide
+        holder.pointsTextView.setText(item.getBooksRead() + " pts.");
+        
+        // Load profile image
         if (item.getProfileImageUrl() != null && !item.getProfileImageUrl().isEmpty()) {
             Glide.with(context)
                     .load(item.getProfileImageUrl())
@@ -45,19 +77,11 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
                     .error(R.drawable.ic_default_profile)
                     .circleCrop()
                     .into(holder.userImageView);
-        } else {
-            holder.userImageView.setImageResource(R.drawable.ic_default_profile);
         }
-
+        
         // Highlight current user
         if (item.isCurrentUser()) {
-            holder.itemView.setBackgroundColor(context.getResources().getColor(R.color.highlight_color));
-            holder.userNameTextView.setTextColor(context.getResources().getColor(R.color.white));
-            holder.rankTextView.setTextColor(context.getResources().getColor(R.color.white));
-        } else {
-            holder.itemView.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
-            holder.userNameTextView.setTextColor(context.getResources().getColor(R.color.black));
-            holder.rankTextView.setTextColor(context.getResources().getColor(R.color.black));
+            holder.itemView.setBackgroundColor(context.getColor(R.color.highlight_color));
         }
     }
 
@@ -68,14 +92,18 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView rankTextView;
+        ImageView trophyIcon;
         ImageView userImageView;
         TextView userNameTextView;
+        TextView pointsTextView;
 
         ViewHolder(View view) {
             super(view);
             rankTextView = view.findViewById(R.id.rankTextView);
+            trophyIcon = view.findViewById(R.id.trophyIcon);
             userImageView = view.findViewById(R.id.userImageView);
             userNameTextView = view.findViewById(R.id.userNameTextView);
+            pointsTextView = view.findViewById(R.id.pointsTextView);
         }
     }
 } 
