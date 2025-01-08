@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
 
 public class LeaderboardFragment extends Fragment {
     private FirebaseFirestore firestore;
@@ -127,95 +128,56 @@ public class LeaderboardFragment extends Fragment {
 
     private void setupLeaderboard() {
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        List<LeaderboardItem> leaderboardItems = new ArrayList<>();
         
-        // First get all users except current user
+        // Get all users at once
         firestore.collection("users")
                 .get()
-                .addOnSuccessListener(allUsersSnapshot -> {
-                    if (allUsersSnapshot.isEmpty()) {
-                        Toast.makeText(requireContext(), "No other users found", Toast.LENGTH_SHORT).show();
-                        return;
+                .addOnSuccessListener(querySnapshot -> {
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        String userName = doc.getString("username");
+                        String profileImageUrl = doc.getString("profileImageUrl");
+                        long booksCompleted = doc.getLong("booksCompleted") != null ? 
+                                doc.getLong("booksCompleted") : 0;
+
+                        // Check if this is the current user
+                        boolean isCurrentUser = doc.getId().equals(currentUserId);
+
+                        LeaderboardItem item = new LeaderboardItem(
+                                userName,
+                                booksCompleted,
+                                profileImageUrl,
+                                isCurrentUser
+                        );
+                        leaderboardItems.add(item);
                     }
 
-                    // Add random stats to users with a distribution around the current user's score
-                    for (DocumentSnapshot doc : allUsersSnapshot) {
-                        String docUserId = doc.getId();
-                        if (!docUserId.equals(currentUserId)) {
-                            // Generate random numbers to create a distribution
-                            // Some users will have more books, some less than current user
-                            int randomBooks;
-                            if (Math.random() < 0.5) {
-                                // Lower than current user (5-24)
-                                randomBooks = (int) (Math.random() * 20) + 5;
-                            } else {
-                                // Higher than current user (26-45)
-                                randomBooks = (int) (Math.random() * 20) + 26;
-                            }
-                            
-                            Map<String, Object> userData = new HashMap<>();
-                            String username = doc.getString("username");
-                            String name = username != null && !username.isEmpty() ? username : "Anonymous Reader";
-                            
-                            userData.put("name", name);
-                            userData.put("booksCompleted", randomBooks);
-                            userData.put("username", username);
-                            userData.put("profileImageUrl", doc.getString("profileImageUrl"));
+                    // Sort the list by books completed in descending order
+                    Collections.sort(leaderboardItems, (item1, item2) -> 
+                        Long.compare(item2.getBooksRead(), item1.getBooksRead()));
 
-                            firestore.collection("users")
-                                    .document(docUserId)
-                                    .set(userData, SetOptions.merge())
-                                    .addOnSuccessListener(aVoid -> 
-                                        Log.d("Leaderboard", "Updated user stats: " + docUserId));
+                    // Set up the adapter
+                    if (leaderboardItems.isEmpty()) {
+                        Toast.makeText(requireContext(), 
+                            "No users found in leaderboard", Toast.LENGTH_SHORT).show();
+                    } else {
+                        leaderboardAdapter = new LeaderboardAdapter(leaderboardItems, requireContext());
+                        leaderboardRecyclerView.setAdapter(leaderboardAdapter);
+                        
+                        // Find current user's rank
+                        for (int i = 0; i < leaderboardItems.size(); i++) {
+                            if (leaderboardItems.get(i).isCurrentUser()) {
+                                int rank = i + 1;
+                                actualUserRank = rank + getRankSuffix(rank);
+                                break;
+                            }
                         }
                     }
-
-                    // Then get top 10 users for leaderboard
-                    firestore.collection("users")
-                            .orderBy("booksCompleted", Query.Direction.DESCENDING)
-                            .limit(10)
-                            .get()
-                            .addOnSuccessListener(querySnapshot -> {
-                                List<LeaderboardItem> leaderboardItems = new ArrayList<>();
-                                for (DocumentSnapshot doc : querySnapshot) {
-                                    String docUserId = doc.getId();
-                                    Log.d("Leaderboard", "User found: " + doc.getString("name") + 
-                                                       " Books: " + doc.getLong("booksCompleted"));
-                                    
-                                    String name = doc.getString("name");
-                                    Long booksCompletedLong = doc.getLong("booksCompleted");
-                                    String profileImageUrl = doc.getString("profileImageUrl");
-                                    
-                                    name = (name != null) ? name : "Anonymous Reader";
-                                    int booksCompleted = (booksCompletedLong != null) ? 
-                                                       booksCompletedLong.intValue() : 0;
-                                    
-                                    // Create LeaderboardItem with isCurrentUser flag
-                                    LeaderboardItem item = new LeaderboardItem(
-                                        name,
-                                        booksCompleted,
-                                        profileImageUrl,
-                                        docUserId.equals(currentUserId) // Set isCurrentUser flag
-                                    );
-                                    leaderboardItems.add(item);
-                                }
-
-                                if (leaderboardItems.isEmpty()) {
-                                    Toast.makeText(requireContext(), "No users found in leaderboard", 
-                                                 Toast.LENGTH_SHORT).show();
-                                } else {
-                                    leaderboardAdapter = new LeaderboardAdapter(leaderboardItems, requireContext());
-                                    leaderboardRecyclerView.setAdapter(leaderboardAdapter);
-                                }
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e("Leaderboard", "Error fetching leaderboard data", e);
-                                Toast.makeText(requireContext(), "Failed to load leaderboard", 
-                                             Toast.LENGTH_SHORT).show();
-                            });
                 })
                 .addOnFailureListener(e -> {
                     Log.e("Leaderboard", "Error fetching users", e);
-                    Toast.makeText(requireContext(), "Failed to load users", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), 
+                        "Failed to load leaderboard", Toast.LENGTH_SHORT).show();
                 });
     }
 
