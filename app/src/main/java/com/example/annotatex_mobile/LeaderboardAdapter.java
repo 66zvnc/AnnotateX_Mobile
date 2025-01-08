@@ -34,35 +34,33 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
         LeaderboardItem item = items.get(position);
         int rank = position + 1;
         
-        // Handle trophy icons for top 3
+        // Reset background first
+        holder.itemView.setBackgroundColor(context.getColor(android.R.color.white));
+        
+        // Handle backgrounds for top 3 and show rank number
+        holder.rankTextView.setVisibility(View.VISIBLE);
+        holder.rankTextView.setText(String.valueOf(rank));
+        
         if (rank <= 3) {
-            holder.rankTextView.setVisibility(View.GONE);
-            holder.trophyIcon.setVisibility(View.VISIBLE);
-            
-            int trophyResource;
+            int backgroundResource;
             switch (rank) {
                 case 1:
-                    trophyResource = R.drawable.ic_trophy_gold;
-                    holder.itemView.setBackgroundColor(context.getColor(R.color.rank_1_bg));
+                    backgroundResource = R.drawable.rank_1_background;
                     break;
                 case 2:
-                    trophyResource = R.drawable.ic_trophy_silver;
-                    holder.itemView.setBackgroundColor(context.getColor(R.color.rank_2_bg));
+                    backgroundResource = R.drawable.rank_2_background;
                     break;
                 case 3:
-                    trophyResource = R.drawable.ic_trophy_bronze;
-                    holder.itemView.setBackgroundColor(context.getColor(R.color.rank_3_bg));
+                    backgroundResource = R.drawable.rank_3_background;
                     break;
                 default:
-                    trophyResource = 0;
+                    backgroundResource = 0;
                     break;
             }
-            holder.trophyIcon.setImageResource(trophyResource);
+            holder.itemView.setBackground(context.getDrawable(backgroundResource));
         } else {
-            holder.rankTextView.setVisibility(View.VISIBLE);
-            holder.trophyIcon.setVisibility(View.GONE);
-            holder.rankTextView.setText(String.valueOf(rank));
-            holder.itemView.setBackgroundColor(context.getColor(android.R.color.white));
+            // Set light gray background for items below 3rd place
+            holder.itemView.setBackgroundColor(Color.parseColor("#F7F1F1"));
         }
         
         // Set username and points
@@ -79,8 +77,8 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
                     .into(holder.userImageView);
         }
         
-        // Highlight current user
-        if (item.isCurrentUser()) {
+        // Highlight current user with a different background if needed
+        if (item.isCurrentUser() && rank > 3) {
             holder.itemView.setBackgroundColor(context.getColor(R.color.highlight_color));
         }
     }

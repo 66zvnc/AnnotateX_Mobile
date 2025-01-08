@@ -73,8 +73,7 @@
     <color name="pink_500">#FF4081</color>
     <color name="silver">#C0C0C0</color>
     <color name="bronze">#CD7F32</color>
-    <color name="rank_1_bg">#FFF7E6</color>
-    <color name="rank_2_bg">#F5F5F5</color>
-    <color name="rank_3_bg">#FFF0E6</color>
-
+    <color name="rank_1_bg">#99FFCA28</color>
+    <color name="rank_2_bg">#9987C1D8</color>
+    <color name="rank_3_bg">#99FF8228</color>
 </resources>
