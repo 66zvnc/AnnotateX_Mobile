@@ -116,7 +116,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                                 .set(senderAsFriend)
                                 .addOnSuccessListener(aVoid -> {
                                     deleteFriendRequest(request);
-                                    holder.acceptButton.setImageResource(R.drawable.ic_check);
+                                    holder.acceptButton.setText("Accepted");
                                     Toast.makeText(context, "Friend request accepted", Toast.LENGTH_SHORT).show();
                                 })
                                 .addOnFailureListener(e -> Toast.makeText(context, "Failed to add friend", Toast.LENGTH_SHORT).show());
@@ -178,8 +178,8 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
 
     public static class ActivityViewHolder extends RecyclerView.ViewHolder {
         TextView requestTextView;
-        ImageView acceptButton;
-        ImageView denyButton;
+        TextView acceptButton;
+        TextView denyButton;
         ImageView senderProfileImage;
 
         public ActivityViewHolder(@NonNull View itemView) {

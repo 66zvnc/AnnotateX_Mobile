@@ -74,14 +74,20 @@ public class NotificationsFragment extends Fragment {
                         String senderId = document.getString("senderId");
                         String senderName = document.getString("senderName");
                         String receiverId = document.getString("receiverId");
-                        long timestamp = document.getLong("timestamp");
+                        Object timestampObj = document.get("timestamp");
+                        long timestamp = 0;
+                        if (timestampObj instanceof com.google.firebase.Timestamp) {
+                            timestamp = ((com.google.firebase.Timestamp) timestampObj).toDate().getTime();
+                        }
 
                         FriendRequest request = new FriendRequest(senderId, senderName, receiverId, timestamp);
                         activitiesList.add(request);
                     }
 
                     // Notify the adapter to update the UI
-                    activitiesAdapter.notifyDataSetChanged();
+                    if (activitiesAdapter != null) {
+                        activitiesAdapter.notifyDataSetChanged();
+                    }
                 });
     }
 
