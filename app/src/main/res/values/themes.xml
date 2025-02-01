@@ -29,6 +29,17 @@
 
         <!-- Add this to enable smooth theme transitions -->
         <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+
+        <!-- Force enable DayNight theme -->
+        <item name="android:forceDarkAllowed">true</item>
+
+        <!-- Navigation bar color -->
+        <item name="android:navigationBarColor">#F7F1F1</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">#F7F1F1</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <!-- Application theme -->

@@ -18,6 +18,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import android.content.res.Configuration;
+import androidx.annotation.NonNull;
+
 public class SettingsProfileActivity extends AppCompatActivity {
 
     private static final String PREFS_NAME = "SettingsPrefs";
@@ -28,6 +31,17 @@ public class SettingsProfileActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Load preferences before setting content view
+        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        boolean isDarkMode = preferences.getBoolean(KEY_DARK_MODE, false);
+        
+        // Apply theme before setting content view
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+        
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_settings);
 
@@ -40,12 +54,9 @@ public class SettingsProfileActivity extends AppCompatActivity {
         firestore = FirebaseFirestore.getInstance();
 
         // Load dark mode preference
-        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        boolean isDarkMode = preferences.getBoolean(KEY_DARK_MODE, false);
         darkModeSwitch.setChecked(isDarkMode);
-        applyDarkMode(isDarkMode);
 
-        // Dark mode switch listener
+        // Update dark mode switch listener
         darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChangingTheme) return;
             
@@ -54,11 +65,17 @@ public class SettingsProfileActivity extends AppCompatActivity {
             editor.putBoolean(KEY_DARK_MODE, isChecked);
             editor.apply();
             
-            // Use a handler to delay the theme change slightly
+            // Apply theme change
+            if (isChecked) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            }
+            
+            // Reset the flag after a delay
             new Handler().postDelayed(() -> {
-                applyDarkMode(isChecked);
                 isChangingTheme = false;
-            }, 100);
+            }, 500);
         });
 
         privacyButton.setOnClickListener(v -> {
@@ -81,16 +98,13 @@ public class SettingsProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void applyDarkMode(boolean isDarkMode) {
-        AppCompatDelegate.setDefaultNightMode(
-            isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
-        );
-    }
-
     @Override
-    public void recreate() {
-        if (isChangingTheme) return;
-        super.recreate();
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Reload the activity when configuration changes
+        if (!isChangingTheme) {
+            recreate();
+        }
     }
 
     private void showDeleteConfirmationDialog() {
