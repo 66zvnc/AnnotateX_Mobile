@@ -39,7 +39,6 @@
         <activity android:name=".HelpCenterProfileActivity" />
         <activity android:name=".SettingsProfileActivity" />
         <activity android:name=".EditProfileActivity" />
-        <activity android:name=".PreferencesActivity" />
         <activity android:name=".PrivacyActivity" />
         <activity android:name=".SearchUsersActivity"/>
         <activity android:name=".CollaborativeChatActivity"/>

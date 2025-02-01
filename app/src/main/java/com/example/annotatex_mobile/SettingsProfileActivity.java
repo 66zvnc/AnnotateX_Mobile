@@ -30,7 +30,6 @@ public class SettingsProfileActivity extends AppCompatActivity {
 
         Switch darkModeSwitch = findViewById(R.id.darkModeSwitch);
         Button deleteAccountButton = findViewById(R.id.deleteAccountButton);
-        Button preferencesButton = findViewById(R.id.preferencesButton);
         Button privacyButton = findViewById(R.id.privacyButton);
         Button permissionsButton = findViewById(R.id.permissionsButton);
         ImageView goBackButton = findViewById(R.id.goBackButton);
@@ -54,10 +53,6 @@ public class SettingsProfileActivity extends AppCompatActivity {
 
         deleteAccountButton.setOnClickListener(v -> showDeleteConfirmationDialog());
 
-        preferencesButton.setOnClickListener(v -> {
-            Intent intent = new Intent(SettingsProfileActivity.this, PreferencesActivity.class);
-            startActivity(intent);
-        });
 
         privacyButton.setOnClickListener(v -> {
             Intent intent = new Intent(SettingsProfileActivity.this, PrivacyActivity.class);
