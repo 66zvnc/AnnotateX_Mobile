@@ -26,6 +26,9 @@
         <!-- Custom attributes for elevation or overlays -->
         <item name="elevationOverlayColor">@color/my_elevation_overlay</item>
         <item name="elevationOverlayEnabled">true</item>
+
+        <!-- Add this to enable smooth theme transitions -->
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
     </style>
 
     <!-- Application theme -->
@@ -50,5 +53,11 @@
         <item name="android:textColorHint">@android:color/darker_gray</item>
         <item name="android:textSize">16sp</item>
         <item name="queryHint">Search in Library...</item>
+    </style>
+
+    <!-- Add this new style for window animations -->
+    <style name="WindowAnimationTransition">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
     </style>
 </resources>

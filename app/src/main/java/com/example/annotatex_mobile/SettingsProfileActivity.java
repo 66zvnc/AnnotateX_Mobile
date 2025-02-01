@@ -3,9 +3,11 @@ package com.example.annotatex_mobile;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -22,6 +24,7 @@ public class SettingsProfileActivity extends AppCompatActivity {
     private static final String KEY_DARK_MODE = "darkMode";
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
+    private boolean isChangingTheme = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,10 +32,9 @@ public class SettingsProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile_settings);
 
         Switch darkModeSwitch = findViewById(R.id.darkModeSwitch);
-        Button deleteAccountButton = findViewById(R.id.deleteAccountButton);
-        Button privacyButton = findViewById(R.id.privacyButton);
-        Button permissionsButton = findViewById(R.id.permissionsButton);
-        ImageView goBackButton = findViewById(R.id.goBackButton);
+        TextView privacyButton = findViewById(R.id.privacyButton);
+        TextView permissionsButton = findViewById(R.id.permissionsButton);
+        ImageView goBackButton = findViewById(R.id.backButton);
 
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
@@ -45,20 +47,24 @@ public class SettingsProfileActivity extends AppCompatActivity {
 
         // Dark mode switch listener
         darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChangingTheme) return;
+            
+            isChangingTheme = true;
             SharedPreferences.Editor editor = preferences.edit();
             editor.putBoolean(KEY_DARK_MODE, isChecked);
             editor.apply();
-            applyDarkMode(isChecked);
+            
+            // Use a handler to delay the theme change slightly
+            new Handler().postDelayed(() -> {
+                applyDarkMode(isChecked);
+                isChangingTheme = false;
+            }, 100);
         });
-
-        deleteAccountButton.setOnClickListener(v -> showDeleteConfirmationDialog());
-
 
         privacyButton.setOnClickListener(v -> {
             Intent intent = new Intent(SettingsProfileActivity.this, PrivacyActivity.class);
             startActivity(intent);
         });
-
 
         permissionsButton.setOnClickListener(v -> {
             Intent intent = new Intent(SettingsProfileActivity.this, PermissionsActivity.class);
@@ -76,11 +82,15 @@ public class SettingsProfileActivity extends AppCompatActivity {
     }
 
     private void applyDarkMode(boolean isDarkMode) {
-        if (isDarkMode) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
+        AppCompatDelegate.setDefaultNightMode(
+            isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
+        );
+    }
+
+    @Override
+    public void recreate() {
+        if (isChangingTheme) return;
+        super.recreate();
     }
 
     private void showDeleteConfirmationDialog() {
