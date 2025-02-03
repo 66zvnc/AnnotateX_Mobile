@@ -1,5 +1,6 @@
 package com.example.annotatex_mobile;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
@@ -7,6 +8,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -42,6 +45,7 @@ public class DetailsActivity extends AppCompatActivity {
     private TextView ratingText;
     private FirebaseFirestore db;
     private String bookId;
+    private float currentRating = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +56,12 @@ public class DetailsActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         
         // Initialize views
-        ratingBar = binding.ratingBar;
         ratingText = binding.ratingText;
+        
+        // Set up click listener for rating container
+        binding.ratingContainer.setOnClickListener(v -> {
+            showRatingDialog();
+        });
 
         annotationsFile = new File(getFilesDir(), "annotations.json");
 
@@ -75,34 +83,15 @@ public class DetailsActivity extends AppCompatActivity {
 
             // Load the book cover using the helper method
             loadBookCover(book);
-
-            // Load existing rating
-            loadBookRating();
-
-            // Set up rating change listener
-            ratingBar.setOnRatingBarChangeListener((ratingBar1, rating, fromUser) -> {
-                if (fromUser) {
-                    updateBookRating(rating);
-                }
-            });
-
-            binding.mReadBookBtn.setOnClickListener(v -> {
-                if (book.getPdfUrl() != null && !book.getPdfUrl().isEmpty()) {
-                    downloadAndOpenPdf(book.getPdfUrl());
-                } else {
-                    Toast.makeText(this, "Invalid PDF URL", Toast.LENGTH_SHORT).show();
-                }
-            });
-        } else {
-            Log.e(TAG, "Book data is missing");
+            
+            // Load the initial rating
+            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                loadBookRating();
+            }
         }
 
-        // Back button functionality
-        ImageView goBackButton = findViewById(R.id.goBackButton);
-        goBackButton.setOnClickListener(v -> {
-            // Navigate back to the previous activity or fragment
-            onBackPressed();
-        });
+        // Set up back button
+        binding.goBackButton.setOnClickListener(v -> finish());
     }
 
     private void loadBookCover(Book book) {
@@ -180,7 +169,8 @@ public class DetailsActivity extends AppCompatActivity {
             .addOnSuccessListener(documentSnapshot -> {
                 if (documentSnapshot.exists()) {
                     float rating = documentSnapshot.getDouble("rating").floatValue();
-                    ratingBar.setRating(rating);
+                    currentRating = rating;
+                    updateRatingDisplay(rating);
                     updateRatingText(rating);
                 }
             })
@@ -218,6 +208,7 @@ public class DetailsActivity extends AppCompatActivity {
                     Log.d(TAG, "Rating updated successfully");
                     updateRatingText(rating);
                     updateAverageRating();
+                    currentRating = rating;
                     Toast.makeText(this, "Rating updated successfully", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
@@ -228,6 +219,9 @@ public class DetailsActivity extends AppCompatActivity {
             Log.e(TAG, "Error preparing rating data", e);
             Toast.makeText(this, "Error preparing rating data", Toast.LENGTH_SHORT).show();
         }
+
+        // Update the UI
+        updateRatingDisplay(rating);
     }
 
     private void updateRatingText(float rating) {
@@ -260,5 +254,30 @@ public class DetailsActivity extends AppCompatActivity {
                     .addOnFailureListener(e -> Log.e(TAG, "Error updating average rating", e));
             })
             .addOnFailureListener(e -> Log.e(TAG, "Error calculating average rating", e));
+    }
+
+    private void showRatingDialog() {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_rating);
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        RatingBar dialogRatingBar = dialog.findViewById(R.id.ratingBar);
+        Button submitButton = dialog.findViewById(R.id.submitButton);
+
+        // Set initial rating if exists
+        dialogRatingBar.setRating(currentRating);
+
+        submitButton.setOnClickListener(v -> {
+            float rating = dialogRatingBar.getRating();
+            updateBookRating(rating);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    private void updateRatingDisplay(float rating) {
+        TextView ratingText = findViewById(R.id.ratingText);
+        ratingText.setText(String.format("%.1f", rating));
     }
 }
