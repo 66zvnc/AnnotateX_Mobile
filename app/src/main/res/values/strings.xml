@@ -47,5 +47,6 @@
     <string name="add_your_pdf_files_here_n_max_file_size_1mb">Add your PDF files here\n\t\t Max file size: 1MB</string>
     <string name="read_book">Read Book</string>
     <string name="lang_bulgarian">български</string>
+    <string name="default_web_client_id">YOUR_WEB_CLIENT_ID</string>
 
 </resources>

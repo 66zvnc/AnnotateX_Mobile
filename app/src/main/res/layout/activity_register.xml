@@ -7,27 +7,26 @@
     android:background="@color/white"
     android:padding="24dp">
 
-    <!-- Welcome Back Image -->
+    <!-- Get Started Image -->
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="250dp"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="24dp"
-        android:src="@drawable/welcome_back_image"
-        android:contentDescription="Welcome Back" />
+        android:src="@drawable/get_started_image"
+        android:contentDescription="Get Started" />
 
-    <!-- Welcome Back Text -->
+    <!-- Get Started Text -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Welcome Back!"
-        android:textAlignment="center"
+        android:text="Get Started Free"
         android:textSize="28sp"
         android:textStyle="bold"
         android:textColor="@color/black"
         android:layout_marginBottom="32dp"/>
 
-    <!-- Email Input with Icon -->
+    <!-- Email Input -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -46,20 +45,47 @@
             android:layout_height="wrap_content"
             android:hint="Email Address"
             android:inputType="textEmailAddress"
-            android:padding="16dp"/>
+            android:drawableStart="@drawable/ic_email"
+            android:drawablePadding="8dp"/>
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Password Input with Icon -->
+    <!-- Username Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Your Username"
+            android:drawableStart="@drawable/ic_username"
+            android:drawablePadding="8dp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Full Name Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/fullname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Your Name"
+            android:drawableStart="@drawable/ic_person"
+            android:drawablePadding="8dp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Password Input -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        app:boxStrokeColor="@color/coral_pink"
-        app:boxStrokeWidth="1dp"
-        app:boxCornerRadiusTopStart="8dp"
-        app:boxCornerRadiusTopEnd="8dp"
-        app:boxCornerRadiusBottomStart="8dp"
-        app:boxCornerRadiusBottomEnd="8dp"
         app:passwordToggleEnabled="true"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
@@ -69,15 +95,17 @@
             android:layout_height="wrap_content"
             android:hint="Password"
             android:inputType="textPassword"
-            android:padding="16dp"/>
+
+            android:drawableStart="@drawable/ic_key"
+            android:drawablePadding="8dp"/>
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Sign In Button -->
+    <!-- Sign Up Button -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/login_button"
+        android:id="@+id/register_button"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:text="Sign In"
+        android:text="Sign up"
         android:textAllCaps="false"
         android:textSize="16sp"
         app:cornerRadius="8dp"
@@ -87,7 +115,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Or sign in with"
+        android:text="Or sign up with"
         android:textAlignment="center"
         android:textColor="@color/gray"
         android:layout_marginTop="24dp"
@@ -98,12 +126,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginBottom="24dp">
+        android:gravity="center">
 
-        <!-- Google Button -->
         <ImageView
-            android:id="@+id/google_login_button"
+            android:id="@+id/google_signup"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:src="@drawable/ic_google"
@@ -111,9 +137,8 @@
             android:background="@drawable/social_button_background"
             android:layout_marginEnd="16dp"/>
 
-        <!-- Apple Button -->
         <ImageView
-            android:id="@+id/apple_login"
+            android:id="@+id/apple_signup"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:src="@drawable/ic_apple"
@@ -121,9 +146,8 @@
             android:background="@drawable/social_button_background"
             android:layout_marginEnd="16dp"/>
 
-        <!-- Facebook Button -->
         <ImageView
-            android:id="@+id/facebook_login"
+            android:id="@+id/facebook_signup"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:src="@drawable/ic_facebook"
@@ -131,26 +155,30 @@
             android:background="@drawable/social_button_background"/>
     </LinearLayout>
 
-    <!-- Sign Up Text -->
+    <!-- Login Link -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginTop="24dp"
         android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Don't have an account? "
+            android:text="Already have an account? "
             android:textColor="@color/gray"/>
 
         <TextView
-            android:id="@+id/register_button"
+            android:id="@+id/login_link"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sign up"
+            android:text="Sign in"
             android:textStyle="bold"
-            android:textColor="@color/coral_pink"/>
+            android:textColor="@color/coral_pink"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"/>
     </LinearLayout>
 
-</LinearLayout>
+</LinearLayout> 

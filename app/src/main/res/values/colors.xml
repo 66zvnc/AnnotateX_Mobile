@@ -76,4 +76,6 @@
     <color name="rank_1_bg">#99FFCA28</color>
     <color name="rank_2_bg">#9987C1D8</color>
     <color name="rank_3_bg">#99FF8228</color>
+
+    <color name="coral_pink">#FF7B7B</color>
 </resources>

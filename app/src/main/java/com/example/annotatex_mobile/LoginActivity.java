@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -42,18 +44,21 @@ public class LoginActivity extends AppCompatActivity {
         emailField = findViewById(R.id.email);
         passwordField = findViewById(R.id.password);
         Button loginButton = findViewById(R.id.login_button);
-        Button registerButton = findViewById(R.id.register_button);
-        LinearLayout googleLoginButton = findViewById(R.id.google_login_button);
+        TextView registerButton = findViewById(R.id.register_button);
+        ImageView googleLoginButton = findViewById(R.id.google_login_button);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestIdToken("YOUR_WEB_CLIENT_ID_HERE")
                 .requestEmail()
                 .build();
 
         googleSignInClient = GoogleSignIn.getClient(this, gso);
 
         loginButton.setOnClickListener(v -> loginUser());
-        registerButton.setOnClickListener(v -> registerUser());
+        registerButton.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
+        });
         googleLoginButton.setOnClickListener(v -> signInWithGoogle());
     }
 
