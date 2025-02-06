@@ -31,18 +31,12 @@ public class SettingsProfileActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
         // Load preferences before setting content view
         SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         boolean isDarkMode = preferences.getBoolean(KEY_DARK_MODE, false);
         
-        // Apply theme before setting content view
-        if (isDarkMode) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
-        
-        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_settings);
 
         Switch darkModeSwitch = findViewById(R.id.darkModeSwitch);
