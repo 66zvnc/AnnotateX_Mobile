@@ -39,7 +39,6 @@
         <activity android:name=".HelpCenterProfileActivity" />
         <activity android:name=".SettingsProfileActivity" />
         <activity android:name=".EditProfileActivity" />
-        <activity android:name=".PrivacyActivity" />
         <activity android:name=".SearchUsersActivity"/>
         <activity android:name=".CollaborativeChatActivity"/>
         <activity android:name=".PermissionsActivity"/>
@@ -51,6 +50,10 @@
         <activity
             android:name=".RegisterActivity"
             android:exported="false"/>
+
+        <activity android:name=".NotificationsActivity" />
+
+        <activity android:name=".PrivacyPolicyActivity" />
 
         <service
             android:name=".MyFirebaseMessagingService"
