@@ -21,6 +21,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import android.content.res.Configuration;
 import androidx.annotation.NonNull;
 
+import com.google.android.material.card.MaterialCardView;
+
 public class SettingsProfileActivity extends AppCompatActivity {
 
     private static final String PREFS_NAME = "SettingsPrefs";
@@ -39,16 +41,25 @@ public class SettingsProfileActivity extends AppCompatActivity {
         
         setContentView(R.layout.activity_profile_settings);
 
+        // Find all views
         Switch darkModeSwitch = findViewById(R.id.darkModeSwitch);
         TextView privacyButton = findViewById(R.id.privacyButton);
         TextView permissionsButton = findViewById(R.id.permissionsButton);
         ImageView goBackButton = findViewById(R.id.backButton);
+        MaterialCardView accountCard = findViewById(R.id.accountCard);
+        MaterialCardView notificationsCard = findViewById(R.id.notificationsCard);
 
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
         // Load dark mode preference
         darkModeSwitch.setChecked(isDarkMode);
+
+        // Add click listener for Account card
+        accountCard.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsProfileActivity.this, EditProfileActivity.class);
+            startActivity(intent);
+        });
 
         // Update dark mode switch listener
         darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -89,6 +100,12 @@ public class SettingsProfileActivity extends AppCompatActivity {
             intent.putExtra("navigateTo", "ProfileFragment"); // Add extra to identify navigation
             startActivity(intent);
             finish();
+        });
+
+        // Add click listener for Notifications card
+        notificationsCard.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsProfileActivity.this, NotificationsActivity.class);
+            startActivity(intent);
         });
     }
 

@@ -71,4 +71,10 @@
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
     </style>
+
+    <style name="CustomSwitchTheme" parent="Theme.AppCompat.Light">
+        <item name="colorControlActivated">#DE7773</item>
+        <item name="colorSwitchThumbNormal">#FFFFFF</item>
+        <item name="android:colorForeground">#99000000</item>
+    </style>
 </resources>
