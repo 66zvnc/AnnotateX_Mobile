@@ -88,6 +88,16 @@ public class DetailsActivity extends AppCompatActivity {
             if (FirebaseAuth.getInstance().getCurrentUser() != null) {
                 loadBookRating();
             }
+
+            // Add click listener for read book button
+            binding.mReadBookBtn.setOnClickListener(v -> {
+                String pdfUrl = book.getPdfUrl();
+                if (pdfUrl != null && !pdfUrl.isEmpty()) {
+                    downloadAndOpenPdf(pdfUrl);
+                } else {
+                    Toast.makeText(this, "PDF URL not available", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
         // Set up back button
