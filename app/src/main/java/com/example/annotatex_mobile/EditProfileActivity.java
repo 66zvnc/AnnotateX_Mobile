@@ -32,10 +32,10 @@ public class EditProfileActivity extends AppCompatActivity {
     private FirebaseUser user;
     private FirebaseStorage storage;
     private FirebaseFirestore firestore;
-    private ImageView profileImageView;
+    private ImageView profileImageView, backButton;
     private Uri imageUri;
     private EditText fullNameEditText, usernameEditText, phoneEditText, emailEditText;
-    private Button changeProfilePictureButton, saveButton;
+    private Button saveButton, deleteAccountButton;
     private boolean hasProfilePicture = false;
 
     @Override
@@ -48,18 +48,23 @@ public class EditProfileActivity extends AppCompatActivity {
         firestore = FirebaseFirestore.getInstance();
         user = auth.getCurrentUser();
 
+        // Initialize views
         profileImageView = findViewById(R.id.profileImageView);
+        backButton = findViewById(R.id.backButton);
         fullNameEditText = findViewById(R.id.fullNameEditText);
         usernameEditText = findViewById(R.id.usernameEditText);
         phoneEditText = findViewById(R.id.phoneEditText);
         emailEditText = findViewById(R.id.emailEditText);
-        changeProfilePictureButton = findViewById(R.id.changeProfilePictureButton);
         saveButton = findViewById(R.id.saveButton);
+        deleteAccountButton = findViewById(R.id.deleteAccountButton);
 
         loadProfileData();
 
-        changeProfilePictureButton.setOnClickListener(v -> showProfilePictureOptions());
+        // Set click listeners
+        profileImageView.setOnClickListener(v -> showProfilePictureOptions());
         saveButton.setOnClickListener(v -> saveProfileData());
+        backButton.setOnClickListener(v -> finish());
+        deleteAccountButton.setOnClickListener(v -> showDeleteConfirmationDialog());
     }
 
     private void loadProfileData() {
@@ -142,7 +147,7 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private void showProfilePictureOptions() {
-        PopupMenu popupMenu = new PopupMenu(this, changeProfilePictureButton);
+        PopupMenu popupMenu = new PopupMenu(this, profileImageView);
         MenuInflater inflater = popupMenu.getMenuInflater();
 
         if (hasProfilePicture) {
@@ -226,5 +231,9 @@ public class EditProfileActivity extends AppCompatActivity {
 
     private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showDeleteConfirmationDialog() {
+        // Implementation of showDeleteConfirmationDialog method
     }
 }
