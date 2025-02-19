@@ -84,6 +84,12 @@ public class ProfileFragment extends Fragment {
 
         languageOption.setOnClickListener(v -> showLanguageDialog());
 
+        TextView helpOption = view.findViewById(R.id.helpOption);
+        helpOption.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), HelpSupportActivity.class);
+            startActivity(intent);
+        });
+
         return view;
     }
 
