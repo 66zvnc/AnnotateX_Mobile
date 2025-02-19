@@ -38,6 +38,17 @@
         android:layout_marginBottom="8dp"
         android:padding="12dp" />
 
+    <!-- Author Input -->
+    <EditText
+        android:id="@+id/authorInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Author Name (required)"
+        android:inputType="textPersonName"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:padding="12dp" />
+
     <!-- Book Description Input -->
     <EditText
         android:id="@+id/bookDescriptionInput"
