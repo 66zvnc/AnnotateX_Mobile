@@ -98,6 +98,9 @@ public class ProfileFragment extends Fragment {
         view.findViewById(R.id.helpOption).setOnClickListener(v -> startActivity(new Intent(getActivity(), HelpCenterProfileActivity.class)));
         view.findViewById(R.id.logoutOption).setOnClickListener(v -> logoutUser());
         view.findViewById(R.id.editProfileImageIcon).setOnClickListener(v -> startActivity(new Intent(getActivity(), EditProfileActivity.class)));
+        view.findViewById(R.id.profileViewButton).setOnClickListener(v -> 
+            startActivity(new Intent(getActivity(), ProfileViewActivity.class))
+        );
     }
 
     private void loadFullName(TextView nameTextView) {

@@ -55,6 +55,9 @@
         <activity
             android:name=".HelpSupportActivity"
             android:exported="false"/>
+        <activity
+            android:name=".ProfileViewActivity"
+            android:exported="false"/>
 
         <service
             android:name=".MyFirebaseMessagingService"
