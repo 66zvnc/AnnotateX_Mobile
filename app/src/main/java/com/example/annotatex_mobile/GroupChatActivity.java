@@ -64,6 +64,7 @@ public class GroupChatActivity extends AppCompatActivity {
     private ChatAdapter chatAdapter;
     private EditText messageInput;
     private ImageButton sendButton;
+    private ImageButton addButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +109,7 @@ public class GroupChatActivity extends AppCompatActivity {
         messageInput = findViewById(R.id.messageInput);
         sendButton = findViewById(R.id.sendButton);
         collaborativeBooksRecyclerView = findViewById(R.id.collaborativeBooksRecyclerView);
+        addButton = findViewById(R.id.addButton);
 
         // Set up click listeners
         goBackButton.setOnClickListener(v -> finish());
@@ -119,6 +121,10 @@ public class GroupChatActivity extends AppCompatActivity {
             startActivity(intent);
         });
         sendButton.setOnClickListener(v -> sendMessage());
+        addButton.setOnClickListener(v -> {
+            // Handle add button click
+            // Show options menu, etc.
+        });
 
         // Set up SearchView
         EditText searchView = findViewById(R.id.searchView);

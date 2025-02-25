@@ -198,22 +198,37 @@
         android:padding="8dp"
         android:gravity="center_vertical">
 
+        <!-- Plus Button -->
+        <ImageButton
+            android:id="@+id/addButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_plus"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"/>
+
+        <!-- Message Input -->
         <EditText
             android:id="@+id/messageInput"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_weight="1"
-            android:hint="Type a message"
-            android:padding="12dp"
-            android:background="?attr/colorSurface"/>
+            android:layout_marginHorizontal="8dp"
+            android:background="@null"
+            android:hint="Input Your Message"
+            android:textSize="14sp"
+            android:textColorHint="#999999"
+            android:paddingHorizontal="8dp"/>
 
+        <!-- Send Button -->
         <ImageButton
             android:id="@+id/sendButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:src="@drawable/ic_send"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:layout_marginStart="8dp"/>
+            android:padding="8dp"
+            android:tint="#DE7773"/>
     </LinearLayout>
 
     <!-- Notes Section Header -->
