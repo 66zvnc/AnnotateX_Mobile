@@ -59,23 +59,43 @@
         <!-- Stats Container -->
     </LinearLayout>
 
-    <!-- Shelf Section -->
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Shelf Section Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Shelf"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp">
 
-    <!-- Books Grid -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Shelf"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+
+        <ImageButton
+            android:id="@+id/addToShelfButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_add"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            app:tint="@color/black"/>
+    </LinearLayout>
+
+    <!-- Shelf RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/shelfRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:clipToPadding="false"/>
+        android:layout_marginTop="8dp"
+        android:layout_marginHorizontal="16dp"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp"/>
 
     <!-- Genre Chips Section -->
     <TextView

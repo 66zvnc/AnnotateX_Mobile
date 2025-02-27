@@ -58,6 +58,9 @@
         <activity
             android:name=".ProfileViewActivity"
             android:exported="false"/>
+        <activity
+            android:name=".BookSelectionActivity"
+            android:exported="false"/>
 
         <service
             android:name=".MyFirebaseMessagingService"

@@ -2,6 +2,8 @@ package com.example.annotatex_mobile;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 import android.util.LruCache;
 
@@ -13,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Book implements Serializable {
+public class Book implements Parcelable {
     private static final String TAG = "Book";
 
     private String id;
@@ -102,6 +104,62 @@ public class Book implements Serializable {
         this.annotations = other.annotations != null ? new ArrayList<>(other.annotations) : new ArrayList<>();
         this.collaborations = other.collaborations != null ? new HashMap<>(other.collaborations) : new HashMap<>();
     }
+
+    // Constructor for Parcelable
+    protected Book(Parcel in) {
+        id = in.readString();
+        imageResId = in.readInt();
+        coverImageUrl = in.readString();
+        pdfUrl = in.readString();
+        title = in.readString();
+        author = in.readString();
+        description = in.readString();
+        userId = in.readString();
+        isPreloaded = in.readByte() != 0;
+        hidden = in.readByte() != 0;
+        ownerId = in.readString();
+        collaborators = in.createStringArrayList();
+        annotations = in.createStringArrayList();
+        groupId = in.readString();
+        collaborations = new HashMap<>();
+        in.readMap(collaborations, CollaborationType.class.getClassLoader());
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeInt(imageResId);
+        dest.writeString(coverImageUrl);
+        dest.writeString(pdfUrl);
+        dest.writeString(title);
+        dest.writeString(author);
+        dest.writeString(description);
+        dest.writeString(userId);
+        dest.writeByte((byte) (isPreloaded ? 1 : 0));
+        dest.writeByte((byte) (hidden ? 1 : 0));
+        dest.writeString(ownerId);
+        dest.writeStringList(collaborators);
+        dest.writeStringList(annotations);
+        dest.writeString(groupId);
+        dest.writeMap(collaborations);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Book> CREATOR = new Creator<Book>() {
+        @Override
+        public Book createFromParcel(Parcel in) {
+            return new Book(in);
+        }
+
+        @Override
+        public Book[] newArray(int size) {
+            return new Book[size];
+        }
+    };
 
     // Getters
     public String getId() {

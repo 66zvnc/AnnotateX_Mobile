@@ -3,6 +3,7 @@ package com.example.annotatex_mobile;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,7 +54,7 @@ public class CategoryBooksAdapter extends RecyclerView.Adapter<CategoryBooksAdap
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, DetailsActivity.class);
-            intent.putExtra("book", book);
+            intent.putExtra("book", (Parcelable) book);
             context.startActivity(intent);
         });
     }
