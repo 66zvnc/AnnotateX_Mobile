@@ -77,4 +77,17 @@
         <item name="colorSwitchThumbNormal">#FFFFFF</item>
         <item name="android:colorForeground">#99000000</item>
     </style>
+
+    <!-- Genre Chip Style -->
+    <style name="GenreChipStyle" parent="Widget.MaterialComponents.Chip.Action">
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="chipMinHeight">32dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="chipStartPadding">12dp</item>
+        <item name="chipEndPadding">12dp</item>
+        <item name="chipCornerRadius">16dp</item>
+        <item name="android:elevation">0dp</item>
+        <item name="elevation">0dp</item>
+        <item name="ensureMinTouchTargetSize">false</item>
+    </style>
 </resources>

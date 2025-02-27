@@ -77,65 +77,71 @@
         android:padding="16dp"
         android:clipToPadding="false"/>
 
-    <!-- Most Read Genres -->
+    <!-- Genre Chips Section -->
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="My Most Read Genres Books"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:textStyle="bold"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="8dp"/>
 
-    <!-- Genres Chips -->
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/genresChipGroup"
         android:layout_width="match_parent"
-        android:layout_height="51dp"
+        android:layout_height="wrap_content"
         android:paddingHorizontal="16dp"
-        app:singleLine="true">
+        app:singleLine="false"
+        app:chipSpacingHorizontal="8dp"
+        app:chipSpacingVertical="8dp">
 
         <com.google.android.material.chip.Chip
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="1. Fantasy"
             android:textColor="@color/white"
-            app:chipBackgroundColor="#4CD1F7" />
+            app:chipBackgroundColor="#4CD1F7"
+            style="@style/GenreChipStyle"/>
 
         <com.google.android.material.chip.Chip
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="2. Horror"
             android:textColor="@color/white"
-            app:chipBackgroundColor="#F74C4C" />
+            app:chipBackgroundColor="#F74C4C"
+            style="@style/GenreChipStyle"/>
 
         <com.google.android.material.chip.Chip
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="3. Novels"
             android:textColor="@color/white"
-            app:chipBackgroundColor="#4CF7B3" />
+            app:chipBackgroundColor="#4CF7B3"
+            style="@style/GenreChipStyle"/>
 
         <com.google.android.material.chip.Chip
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="4. Comedy"
             android:textColor="@color/white"
-            app:chipBackgroundColor="#F7E54C" />
+            app:chipBackgroundColor="#F7E54C"
+            style="@style/GenreChipStyle"/>
 
         <com.google.android.material.chip.Chip
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="5. Classic"
             android:textColor="@color/white"
-            app:chipBackgroundColor="#4CF76B" />
+            app:chipBackgroundColor="#4CF76B"
+            style="@style/GenreChipStyle"/>
 
         <com.google.android.material.chip.Chip
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Show more"
             android:textColor="#666666"
-            app:chipBackgroundColor="#EEEEEE" />
+            app:chipBackgroundColor="#EEEEEE"
+            style="@style/GenreChipStyle"/>
     </com.google.android.material.chip.ChipGroup>
 </LinearLayout> 
