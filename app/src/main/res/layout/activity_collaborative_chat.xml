@@ -1,203 +1,237 @@
-<LinearLayout
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <!-- Header with Go Back Button, Profile Picture, and Name -->
+    <!-- Main Content (Books Section) -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingBottom="12dp">
-
-        <!-- Go Back Button -->
-        <ImageView
-            android:id="@+id/goBackButton"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_back_arrow"
-            android:contentDescription="Go Back"
-            android:layout_marginEnd="12dp"
-            app:tint="?attr/colorOnSurface"
-            android:clickable="true"
-            android:focusable="true" />
-
-        <!-- Profile Image -->
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/profileImageView"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginEnd="12dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_default_profile"
-            android:contentDescription="Profile Image"
-            app:shapeAppearanceOverlay="@style/CircularImageView"
-            android:elevation="1dp" />
-
-        <!-- Name Text -->
-        <TextView
-            android:id="@+id/nameTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Friend Name"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
-            android:ellipsize="end"
-            android:maxLines="1" />
-    </LinearLayout>
-
-    <!-- Search Bar and Add Book Button Row -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="12dp">
-
-        <!-- Search Bar with Material Design -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            app:cardCornerRadius="10dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="?attr/colorSurface">
-
-            <EditText
-                android:id="@+id/searchView"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@null"
-                android:drawableStart="@drawable/ic_search_book"
-                android:drawablePadding="12dp"
-                android:hint="Search in Collabed Books..."
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textSize="16sp"
-                android:inputType="text"
-                android:maxLines="1"
-                android:imeOptions="actionSearch"/>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Add Book Button with Material Design -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:cardCornerRadius="10dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="?attr/colorSurface">
-
-            <ImageView
-                android:id="@+id/addBookButton"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="12dp"
-                android:src="@drawable/ic_plus_bg"
-                android:contentDescription="Add Collaborative Book"
-                android:clickable="true"
-                android:focusable="true"
-                app:tint="?attr/colorOnSurface" />
-
-        </com.google.android.material.card.MaterialCardView>
-    </LinearLayout>
-
-    <!-- Books Section Header -->
-    <TextView
-        android:id="@+id/booksSectionHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="16dp"
-        android:paddingBottom="8dp"
-        android:text="Books"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="18sp"
-        android:textStyle="bold" />
-
-    <!-- Collaborative Books RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/collaborativeBooksRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.6"
-        android:layout_marginTop="8dp"
-        android:background="?attr/colorBackground" />
-
-    <!-- Chat Section -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.4"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="#FFFFFF">
+        android:padding="16dp">
 
-        <!-- Chat Messages RecyclerView -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/chatRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:padding="16dp"
-            android:clipToPadding="false"/>
-
-        <!-- Sample Note Message -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginVertical="8dp"
-            android:background="@drawable/note_background"
-            android:padding="12dp"
-            android:text="Note: Страница 57"
-            android:textAlignment="center"
-            android:textColor="#000000"
-            android:textSize="16sp"/>
-
-        <!-- Message Input Section -->
+        <!-- Header with Go Back Button, Profile Picture, and Name -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="8dp"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:paddingBottom="12dp">
 
-            <!-- Plus Button -->
-            <ImageButton
-                android:id="@+id/addButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_plus"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"/>
+            <!-- Go Back Button -->
+            <ImageView
+                android:id="@+id/goBackButton"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_back_arrow"
+                android:contentDescription="Go Back"
+                android:layout_marginEnd="12dp"
+                app:tint="?attr/colorOnSurface"
+                android:clickable="true"
+                android:focusable="true" />
 
-            <!-- Message Input -->
-            <EditText
-                android:id="@+id/messageInput"
+            <!-- Profile Image -->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/profileImageView"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="12dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_default_profile"
+                android:contentDescription="Profile Image"
+                app:shapeAppearanceOverlay="@style/CircularImageView"
+                android:elevation="1dp" />
+
+            <!-- Name Text -->
+            <TextView
+                android:id="@+id/nameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Friend Name"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                android:ellipsize="end"
+                android:maxLines="1" />
+        </LinearLayout>
+
+        <!-- Search Bar and Add Book Button Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <!-- Search Bar with Material Design -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginHorizontal="8dp"
-                android:background="@null"
-                android:hint="Input Your Message"
-                android:textSize="14sp"
-                android:textColorHint="#999999"
-                android:paddingHorizontal="8dp"/>
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="?attr/colorSurface">
 
-            <!-- Send Button -->
-            <ImageButton
-                android:id="@+id/sendButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_send"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                <EditText
+                    android:id="@+id/searchView"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="@null"
+                    android:drawableStart="@drawable/ic_search_book"
+                    android:drawablePadding="12dp"
+                    android:hint="Search in Collabed Books..."
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:textSize="16sp"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:imeOptions="actionSearch"/>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Add Book Button with Material Design -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="?attr/colorSurface">
+
+                <ImageView
+                    android:id="@+id/addBookButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_plus_bg"
+                    android:contentDescription="Add Collaborative Book"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:tint="?attr/colorOnSurface" />
+
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- Books Section Header -->
+        <TextView
+            android:id="@+id/booksSectionHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp"
+            android:text="Books"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- Collaborative Books RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/collaborativeBooksRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.6"
+            android:layout_marginTop="8dp"
+            android:background="?attr/colorBackground" />
+    </LinearLayout>
+
+    <!-- Draggable Chat Section -->
+    <LinearLayout
+        android:id="@+id/bottomSheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/chat_background"
+        android:elevation="8dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        app:behavior_peekHeight="80dp"
+        app:behavior_hideable="false"
+        app:behavior_fitToContents="true">
+
+        <!-- Chat Header (Drag Handle) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <View
+                android:layout_width="32dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center_horizontal"
+                android:background="#CCCCCC"
+                android:layout_marginBottom="8dp"/>
+        </LinearLayout>
+
+        <!-- Chat Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Chat Messages RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/chatRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:padding="16dp"
+                android:clipToPadding="false"/>
+
+            <!-- Note Message -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginVertical="8dp"
+                android:background="@drawable/note_background"
+                android:padding="12dp"
+                android:text="Note: Страница 57"
+                android:textAlignment="center"
+                android:textColor="#000000"
+                android:textSize="16sp"/>
+
+            <!-- Message Input Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
                 android:padding="8dp"
-                android:tint="#DE7773"/>
+                android:layout_marginBottom="8dp"
+                android:gravity="center_vertical">
+
+                <!-- Plus Button -->
+                <ImageButton
+                    android:id="@+id/addButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_plus"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="8dp"/>
+
+                <!-- Message Input -->
+                <EditText
+                    android:id="@+id/messageInput"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="8dp"
+                    android:background="@null"
+                    android:hint="Input Your Message"
+                    android:textSize="14sp"
+                    android:textColorHint="#999999"
+                    android:paddingHorizontal="8dp"/>
+
+                <!-- Send Button -->
+                <ImageButton
+                    android:id="@+id/sendButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_send"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="8dp"
+                    android:tint="#DE7773"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
@@ -208,4 +242,4 @@
         android:layout_height="match_parent"
         android:visibility="gone" />
 
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

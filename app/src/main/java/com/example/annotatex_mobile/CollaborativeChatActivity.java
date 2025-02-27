@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -30,6 +31,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +52,8 @@ public class CollaborativeChatActivity extends AppCompatActivity {
     private ChatAdapter chatAdapter;
     private EditText messageInput;
     private ImageButton sendButton;
+
+    private BottomSheetBehavior bottomSheetBehavior;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,6 +153,38 @@ public class CollaborativeChatActivity extends AppCompatActivity {
         
         // Start listening for messages
         listenForMessages();
+
+        // Initialize bottom sheet behavior
+        View bottomSheet = findViewById(R.id.bottomSheet);
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        
+        // Prevent complete hiding and set minimum height
+        bottomSheetBehavior.setHideable(false);
+        bottomSheetBehavior.setPeekHeight(80); // 80dp minimum visible height
+
+        // Optional: Set maximum height to prevent over-stretching
+        bottomSheetBehavior.setMaxHeight(
+            (int) (getResources().getDisplayMetrics().heightPixels * 0.75)
+        );
+
+        // Set up bottom sheet callback
+        bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                    // Chat is at peek height
+                    bottomSheet.requestLayout();
+                } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                    // Chat is fully expanded
+                    chatRecyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                // Optional: Add sliding animations if needed
+            }
+        });
     }
 
     private void filterBooks(String query) {
