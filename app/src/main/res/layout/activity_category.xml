@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
+        android:backgroundTint="#F7F1F1"
         android:elevation="4dp">
 
         <LinearLayout
@@ -35,7 +36,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:textSize="20sp"
-                android:textColor="@android:color/white"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:textColor="@android:color/black"
                 android:textStyle="bold"/>
 
         </LinearLayout>
