@@ -30,6 +30,7 @@ public class CategoryActivity extends AppCompatActivity {
     private List<Book> booksList;
     private FirebaseFirestore firestore;
     private String categoryName;
+    private static final String TAG = "CategoryActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +43,21 @@ public class CategoryActivity extends AppCompatActivity {
         // Initialize books list
         booksList = new ArrayList<>();
 
-        // Get category name from intent
+        // Get category name from intent with validation
         categoryName = getIntent().getStringExtra("CATEGORY_NAME");
+        if (categoryName == null || categoryName.trim().isEmpty()) {
+            Toast.makeText(this, "Invalid category", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // Set up category title in toolbar
         TextView categoryTitle = findViewById(R.id.categoryTitle);
-        categoryTitle.setText(categoryName);
+        String normalizedCategory = normalizeCategoryName(categoryName);
+        categoryTitle.setText(normalizedCategory);
+
+        // Verify and fix categories in database (run this once)
+        // verifyAndFixBookCategories();
 
         // Set up back button
         ImageButton backButton = findViewById(R.id.backButton);
@@ -62,63 +74,66 @@ public class CategoryActivity extends AppCompatActivity {
 
         // Set up search functionality
         setupSearch();
+
+        // Run this once to fix all book categories
+        fixAllBookCategories();
     }
 
     private void loadCategoryBooks() {
-        Log.d("CategoryActivity", "Loading books for category: " + categoryName);
+        Log.d(TAG, "Loading books for category: " + categoryName);
         
         // Normalize the category name for comparison
         String normalizedCategory = normalizeCategoryName(categoryName);
-        Log.d("CategoryActivity", "Normalized category name: " + normalizedCategory);
+        Log.d(TAG, "Normalized category name: " + normalizedCategory);
 
+        // Query with case-insensitive comparison
         firestore.collection("books")
-                .whereEqualTo("category", normalizedCategory)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    Log.d("CategoryActivity", "Retrieved " + queryDocumentSnapshots.size() + " documents");
+                    Log.d(TAG, "Retrieved total documents: " + queryDocumentSnapshots.size());
                     booksList.clear();
+                    
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        String id = document.getId();
-                        String title = document.getString("title");
-                        String author = document.getString("author");
-                        String description = document.getString("description");
-                        String coverUrl = document.getString("coverUrl");
-                        String pdfUrl = document.getString("pdfUrl");
-                        String userId = document.getString("userId");
-                        String category = document.getString("category");
+                        try {
+                            String documentCategory = document.getString("category");
+                            String normalizedDocCategory = normalizeCategoryName(documentCategory);
+                            
+                            // Log for debugging
+                            Log.d(TAG, "Document category: " + documentCategory);
+                            Log.d(TAG, "Normalized doc category: " + normalizedDocCategory);
+                            Log.d(TAG, "Comparing with: " + normalizedCategory);
+                            
+                            // Compare normalized categories
+                            if (normalizedDocCategory.equalsIgnoreCase(normalizedCategory)) {
+                                String id = document.getId();
+                                String title = getStringOrDefault(document, "title", "Untitled");
+                                String author = getStringOrDefault(document, "author", "Unknown Author");
+                                String description = getStringOrDefault(document, "description", "");
+                                String coverUrl = getStringOrDefault(document, "coverUrl", "");
+                                String pdfUrl = getStringOrDefault(document, "pdfUrl", "");
+                                String userId = getStringOrDefault(document, "userId", "");
 
-                        Log.d("CategoryActivity", "Processing book: " + title);
-                        Log.d("CategoryActivity", "Cover URL: " + coverUrl);
-                        Log.d("CategoryActivity", "Category: " + category);
+                                Log.d(TAG, String.format("Adding book: %s, Category: %s", title, documentCategory));
 
-                        // Handle Firebase Storage URLs
-                        if (coverUrl != null && coverUrl.startsWith("gs://")) {
-                            // Convert Firebase Storage URL to HTTP URL
-                            FirebaseStorage.getInstance().getReferenceFromUrl(coverUrl)
-                                .getDownloadUrl()
-                                .addOnSuccessListener(uri -> {
-                                    Book book = new Book(id, uri.toString(), pdfUrl, title, author, description, userId);
-                                    booksList.add(book);
-                                    adapter.updateBooks(booksList);
-                                    Log.d("CategoryActivity", "Added book with converted URL: " + uri.toString());
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e("CategoryActivity", "Failed to get download URL for " + title, e);
-                                    // Add book with original URL as fallback
-                                    Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
-                                    booksList.add(book);
-                                    adapter.updateBooks(booksList);
-                                });
-                        } else {
-                            Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
-                            booksList.add(book);
+                                Book book = new Book(id, coverUrl, pdfUrl, title, author, description, userId);
+                                booksList.add(book);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error processing document: " + document.getId(), e);
                         }
                     }
+                    
+                    if (booksList.isEmpty()) {
+                        Log.w(TAG, "No books found for category: " + normalizedCategory);
+                        Toast.makeText(this, "No books available in this category", 
+                                     Toast.LENGTH_SHORT).show();
+                    }
+                    
                     adapter.updateBooks(booksList);
-                    Log.d("CategoryActivity", "Final books list size: " + booksList.size());
+                    Log.d(TAG, "Updated adapter with " + booksList.size() + " books");
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("CategoryActivity", "Error loading books", e);
+                    Log.e(TAG, "Error loading books for category: " + normalizedCategory, e);
                     Toast.makeText(this, "Failed to load books: " + e.getMessage(), 
                                  Toast.LENGTH_SHORT).show();
                 });
@@ -190,35 +205,126 @@ public class CategoryActivity extends AppCompatActivity {
             });
     }
 
-    // Add this helper method to normalize category names
+    // Update the normalizeCategoryName method
     private String normalizeCategoryName(String category) {
-        switch (category.toLowerCase().trim()) {
+        if (category == null || category.trim().isEmpty()) {
+            return "uncategorized";
+        }
+
+        // Trim and convert to lowercase for consistent comparison
+        String normalizedInput = category.trim().toLowerCase();
+        
+        // Log the input category for debugging
+        Log.d(TAG, "Normalizing category: " + normalizedInput);
+
+        switch (normalizedInput) {
             case "novels":
             case "novel":
                 return "Novel";
+            
             case "horror":
             case "horrors":
                 return "Horror";
+            
             case "science fiction":
             case "sci-fi":
             case "scifi":
                 return "Science Fiction";
-            case "biography":
-            case "biographies":
-                return "Biography";
-            case "history":
+            
+            case "historical fiction":
             case "historical":
-                return "History";
-            case "fantasy":
-                return "Fantasy";
-            case "mystery":
-            case "mysteries":
-                return "Mystery";
+            case "history fiction":
+            case "historicalfiction":
+                return "Historical Fiction";
+            
             case "romance":
             case "romantic":
+            case "love":
                 return "Romance";
+            
+            case "mystery":
+            case "mysteries":
+            case "thriller":
+                return "Mystery";
+            
+            case "autobiography":
+            case "auto-biography":
+            case "auto biography":
+            case "biography":
+            case "biographies":
+                return "Autobiography";
+            
+            case "fantasy":
+            case "fantasies":
+                return "Fantasy";
+            
             default:
-                return category; // Return original if no match
+                // Log unmatched categories
+                Log.w(TAG, "Unmatched category: " + normalizedInput);
+                // Return the capitalized version of the category
+                return capitalizeFirstLetter(category.trim());
         }
+    }
+
+    // Helper method to capitalize first letter
+    private String capitalizeFirstLetter(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        return text.substring(0, 1).toUpperCase() + text.substring(1);
+    }
+
+    // Helper method to safely get string values from documents
+    private String getStringOrDefault(QueryDocumentSnapshot document, String field, String defaultValue) {
+        String value = document.getString(field);
+        return (value != null && !value.trim().isEmpty()) ? value : defaultValue;
+    }
+
+    private void verifyAndFixBookCategories() {
+        firestore.collection("books")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        String currentCategory = document.getString("category");
+                        String normalizedCategory = normalizeCategoryName(currentCategory);
+                        
+                        if (!normalizedCategory.equals(currentCategory)) {
+                            Log.d(TAG, "Fixing category for book: " + document.getString("title") +
+                                  " from: " + currentCategory + " to: " + normalizedCategory);
+                            
+                            document.getReference().update("category", normalizedCategory)
+                                    .addOnSuccessListener(aVoid -> 
+                                        Log.d(TAG, "Successfully updated category"))
+                                    .addOnFailureListener(e -> 
+                                        Log.e(TAG, "Failed to update category", e));
+                        }
+                    }
+                });
+    }
+
+    // Add this method to fix existing books in the database
+    public void fixAllBookCategories() {
+        firestore.collection("books")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        String currentCategory = document.getString("category");
+                        String normalizedCategory = normalizeCategoryName(currentCategory);
+                        
+                        Log.d(TAG, "Checking book: " + document.getString("title"));
+                        Log.d(TAG, "Current category: " + currentCategory);
+                        Log.d(TAG, "Normalized category: " + normalizedCategory);
+                        
+                        if (!normalizedCategory.equals(currentCategory)) {
+                            document.getReference().update("category", normalizedCategory)
+                                    .addOnSuccessListener(aVoid -> 
+                                        Log.d(TAG, "Successfully updated category for: " + 
+                                             document.getString("title")))
+                                    .addOnFailureListener(e -> 
+                                        Log.e(TAG, "Failed to update category", e));
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Error fetching books", e));
     }
 } 

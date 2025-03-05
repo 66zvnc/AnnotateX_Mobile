@@ -72,10 +72,10 @@ public class CategoriesFragment extends Fragment {
         categoriesList.add(new Categories("Comedy", R.drawable.img_category_comedy));
         categoriesList.add(new Categories("Horror", R.drawable.img_category_horror));
         categoriesList.add(new Categories("Science Fiction", R.drawable.img_category_scifi));
-        categoriesList.add(new Categories("Science Fiction", R.drawable.img_category_historical_fiction));
-        categoriesList.add(new Categories("Science Fiction", R.drawable.img_category_romance));
-        categoriesList.add(new Categories("Science Fiction", R.drawable.img_category_mystery));
-        categoriesList.add(new Categories("Science Fiction", R.drawable.img_category_autobio));
+        categoriesList.add(new Categories("Historical Fiction", R.drawable.img_category_historical_fiction));
+        categoriesList.add(new Categories("Romance", R.drawable.img_category_romance));
+        categoriesList.add(new Categories("Mystery", R.drawable.img_category_mystery));
+        categoriesList.add(new Categories("Autobiography", R.drawable.img_category_autobio));
 
         // Set up adapter
         categoriesAdapter = new CategoriesAdapter(getContext(), categoriesList);
