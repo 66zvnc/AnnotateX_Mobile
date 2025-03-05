@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -72,42 +73,45 @@
         </LinearLayout>
 
         <!-- Book Title -->
+
+        <!-- Book Author -->
+
         <TextView
             android:id="@+id/mBookTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_width="393dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="24dp"
             android:text="Title"
             android:textSize="24sp"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@id/ratingContainer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/ratingContainer" />
 
-        <!-- Book Author -->
         <TextView
             android:id="@+id/mAuthorName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_width="374dp"
+            android:layout_height="18dp"
             android:layout_marginTop="8dp"
             android:text="Author"
             android:textSize="12sp"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@id/mBookTitle"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/mBookTitle" />
 
         <!-- Book Description -->
         <TextView
             android:id="@+id/mBookDesc"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_width="375dp"
+            android:layout_height="21dp"
             android:layout_marginTop="8dp"
             android:text="Description"
             android:textSize="14sp"
-            app:layout_constraintTop_toBottomOf="@id/mAuthorName"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/mAuthorName" />
 
         <!-- Read Book Button -->
         <com.google.android.material.button.MaterialButton

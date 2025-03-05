@@ -130,8 +130,8 @@ public class DetailsActivity extends AppCompatActivity {
                     .error(R.drawable.default_cover)
                     .into(binding.mBookImage);
             }
-        } else if (book.getImageResId() != 0) {
-            binding.mBookImage.setImageResource(book.getImageResId());
+        } else if (book.hasResIdCover()) {
+            binding.mBookImage.setImageResource(book.getImageResourceId());
         } else {
             binding.mBookImage.setImageResource(R.drawable.default_cover);
         }

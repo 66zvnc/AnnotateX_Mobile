@@ -23,6 +23,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -137,15 +138,16 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             .placeholder(R.drawable.book_handle)
             .error(R.drawable.book_handle);
 
-        if (book.getCoverImageUrl() != null && !book.getCoverImageUrl().isEmpty()) {
+        String coverUrl = book.getCoverImageUrl();
+        if (coverUrl != null && !coverUrl.isEmpty()) {
             Glide.with(context)
-                .load(book.getCoverImageUrl())
+                .load(coverUrl)
                 .apply(requestOptions)
                 .thumbnail(0.25f)  // Load 25% quality thumbnail first
                 .transition(DrawableTransitionOptions.withCrossFade())
                 .into(holder.imageView);
         } else if (book.hasResIdCover()) {
-            holder.imageView.setImageResource(book.getImageResId());
+            holder.imageView.setImageResource(book.getImageResourceId());
         } else {
             holder.imageView.setImageResource(R.drawable.book_handle);
         }
@@ -269,53 +271,83 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             .setTitle("Delete Book")
             .setMessage("Are you sure you want to delete this book? This action cannot be undone.")
             .setPositiveButton("Delete", (dialog, which) -> {
-                StorageReference pdfRef = FirebaseStorage.getInstance().getReferenceFromUrl(book.getPdfUrl());
-                pdfRef.delete()
-                    .addOnSuccessListener(aVoid -> FirebaseFirestore.getInstance()
-                        .collection("books")
-                        .whereEqualTo("id", book.getId())
-                        .get()
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                                String docId = task.getResult().getDocuments().get(0).getId();
-                                FirebaseFirestore.getInstance().collection("books").document(docId).delete()
-                                    .addOnSuccessListener(aVoid1 -> {
-                                        // Find positions in both lists before removing
-                                        int filteredPosition = filteredList.indexOf(book);
-                                        int originalPosition = bookList.indexOf(book);
-                                        
-                                        // Remove from both lists
-                                        if (filteredPosition != -1) {
-                                            filteredList.remove(filteredPosition);
-                                            notifyItemRemoved(filteredPosition);
-                                            // Notify adapter of changes in item positions after removal
-                                            if (filteredPosition < filteredList.size()) {
-                                                notifyItemRangeChanged(filteredPosition, filteredList.size() - filteredPosition);
-                                            }
-                                        }
-                                        
-                                        if (originalPosition != -1) {
-                                            bookList.remove(originalPosition);
-                                        }
-                                        
-                                        Toast.makeText(context, "Book deleted successfully", Toast.LENGTH_SHORT).show();
-                                        Log.d(TAG, "Book deleted successfully.");
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        Toast.makeText(context, "Failed to delete book", Toast.LENGTH_SHORT).show();
-                                        Log.e(TAG, "Failed to delete document from Firestore", e);
-                                    });
-                            }
-                        }))
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(context, "Failed to delete book file", Toast.LENGTH_SHORT).show();
-                        Log.e(TAG, "Failed to delete file from Storage", e);
+                // Delete from Firestore first
+                deleteFromFirestore(book);
+
+                // Then try to delete files if they exist
+                if (book.getPdfUrl() != null && !book.getPdfUrl().isEmpty()) {
+                    StorageReference pdfRef = FirebaseStorage.getInstance().getReferenceFromUrl(book.getPdfUrl());
+                    pdfRef.delete().addOnFailureListener(e -> {
+                        // Just log the error if file doesn't exist, don't stop the deletion process
+                        Log.w(TAG, "PDF file not found in storage: " + e.getMessage());
                     });
+                }
+
+                if (book.getCoverImageUrl() != null && !book.getCoverImageUrl().isEmpty()) {
+                    StorageReference coverRef = FirebaseStorage.getInstance().getReferenceFromUrl(book.getCoverImageUrl());
+                    coverRef.delete().addOnFailureListener(e -> {
+                        // Just log the error if file doesn't exist, don't stop the deletion process
+                        Log.w(TAG, "Cover image not found in storage: " + e.getMessage());
+                    });
+                }
             })
             .setNegativeButton("Cancel", null)
             .show();
     }
 
+    private void deleteFromFirestore(Book book) {
+        FirebaseFirestore.getInstance()
+            .collection("books")
+            .document(book.getId())
+            .delete()
+            .addOnSuccessListener(aVoid -> {
+                // Find positions in both lists before removing
+                int filteredPosition = filteredList.indexOf(book);
+                int originalPosition = bookList.indexOf(book);
+                
+                // Remove from both lists
+                if (filteredPosition != -1) {
+                    filteredList.remove(filteredPosition);
+                    notifyItemRemoved(filteredPosition);
+                    // Notify adapter of changes in item positions after removal
+                    if (filteredPosition < filteredList.size()) {
+                        notifyItemRangeChanged(filteredPosition, filteredList.size() - filteredPosition);
+                    }
+                }
+                
+                if (originalPosition != -1) {
+                    bookList.remove(originalPosition);
+                }
+                
+                // Delete associated ratings
+                deleteBookRatings(book.getId());
+                
+                Toast.makeText(context, "Book deleted successfully", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Book document deleted successfully");
+            })
+            .addOnFailureListener(e -> {
+                Toast.makeText(context, "Failed to delete book from database", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Failed to delete document from Firestore", e);
+            });
+    }
+
+    // Helper method to delete book ratings
+    private void deleteBookRatings(String bookId) {
+        FirebaseFirestore.getInstance()
+            .collection("books")
+            .document(bookId)
+            .collection("ratings")
+            .get()
+            .addOnSuccessListener(querySnapshot -> {
+                for (DocumentSnapshot ratingDoc : querySnapshot.getDocuments()) {
+                    ratingDoc.getReference().delete()
+                        .addOnFailureListener(e -> 
+                            Log.e(TAG, "Failed to delete rating: " + ratingDoc.getId(), e));
+                }
+            })
+            .addOnFailureListener(e -> 
+                Log.e(TAG, "Failed to fetch ratings for deletion", e));
+    }
 
     @Override
     public int getItemCount() {

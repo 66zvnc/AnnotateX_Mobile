@@ -19,134 +19,144 @@ public class Book implements Parcelable {
     private static final String TAG = "Book";
 
     private String id;
-    private int imageResId = -1;
-    private Bitmap coverImageBitmap;
-    private String coverImageUrl;
-    private String coverImageLocalPath;
+    private String coverUrl;
     private String pdfUrl;
     private String title;
     private String author;
     private String description;
     private String userId;
-    private boolean isPreloaded;
-    private boolean hidden;
-    private String ownerId; // Owner ID field for collaborative books
-    private List<String> collaborators = new ArrayList<>(); // Collaborators field
-    private List<String> annotations = new ArrayList<>(); // Annotations field
-    private String groupId; // New field for group association
-    private Map<String, CollaborationType> collaborations;
+    private int imageResourceId; // For preloaded books
+    private List<String> collaborators; // Add collaborators field
+    private boolean isPreloaded; // Add isPreloaded field
+    private boolean isHidden; // Add isHidden field
 
-    // Add caching fields
-    private static final int CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB cache
-    private static LruCache<String, Bitmap> memoryCache;
-
-    // Initialize cache in static block
-    static {
-        memoryCache = new LruCache<String, Bitmap>(CACHE_SIZE_BYTES) {
-            @Override
-            protected int sizeOf(String key, Bitmap bitmap) {
-                return bitmap.getByteCount();
-            }
-        };
-    }
-
-    public enum CollaborationType {
-        INDIVIDUAL,
-        GROUP
-    }
-
-    // Constructor for user-uploaded books
+    // Constructor for Firestore books
     public Book(String id, String coverUrl, String pdfUrl, String title, String author, String description, String userId) {
         this.id = id;
-        this.coverImageUrl = coverUrl;
+        this.coverUrl = coverUrl;
         this.pdfUrl = pdfUrl;
         this.title = title;
         this.author = author;
         this.description = description;
         this.userId = userId;
-        this.isPreloaded = false;
-        this.hidden = false;
         this.collaborators = new ArrayList<>();
-        this.annotations = new ArrayList<>();
-        this.collaborations = new HashMap<>();
-        
-        Log.d(TAG, "Creating book with coverUrl: " + coverUrl);
+        this.isPreloaded = false;
+        this.isHidden = false;
     }
 
     // Constructor for preloaded books
-    public Book(int imageResId, String pdfUrl, String title, String author, String description) {
-        this.imageResId = imageResId;
+    public Book(int imageResourceId, String pdfUrl, String title, String author, String description) {
+        this.imageResourceId = imageResourceId;
         this.pdfUrl = pdfUrl;
         this.title = title;
         this.author = author;
         this.description = description;
+        this.collaborators = new ArrayList<>();
         this.isPreloaded = true;
-        this.hidden = false;
-        this.collaborators = new ArrayList<>();
-        this.annotations = new ArrayList<>();
-        this.collaborations = new HashMap<>();
+        this.isHidden = false;
     }
 
-    // Default constructor
-    public Book() {
-        this.isPreloaded = false;
-        this.hidden = false;
-        this.collaborators = new ArrayList<>();
-        this.annotations = new ArrayList<>();
-        this.collaborations = new HashMap<>();
-    }
-
+    // Add copy constructor
     public Book(Book other) {
         this.id = other.id;
+        this.coverUrl = other.coverUrl;
+        this.pdfUrl = other.pdfUrl;
         this.title = other.title;
         this.author = other.author;
-        this.collaborators = other.collaborators != null ? new ArrayList<>(other.collaborators) : new ArrayList<>();
-        this.annotations = other.annotations != null ? new ArrayList<>(other.annotations) : new ArrayList<>();
-        this.collaborations = other.collaborations != null ? new HashMap<>(other.collaborations) : new HashMap<>();
+        this.description = other.description;
+        this.userId = other.userId;
+        this.imageResourceId = other.imageResourceId;
+        this.collaborators = new ArrayList<>(other.collaborators);
+        this.isPreloaded = other.isPreloaded;
+        this.isHidden = other.isHidden;
     }
 
-    // Constructor for Parcelable
-    protected Book(Parcel in) {
-        id = in.readString();
-        imageResId = in.readInt();
-        coverImageUrl = in.readString();
-        pdfUrl = in.readString();
-        title = in.readString();
-        author = in.readString();
-        description = in.readString();
-        userId = in.readString();
-        isPreloaded = in.readByte() != 0;
-        hidden = in.readByte() != 0;
-        ownerId = in.readString();
-        collaborators = in.createStringArrayList();
-        annotations = in.createStringArrayList();
-        groupId = in.readString();
-        collaborations = new HashMap<>();
-        in.readMap(collaborations, CollaborationType.class.getClassLoader());
+    // Getters
+    public String getId() { return id; }
+    public String getCoverUrl() { return coverUrl; }
+    public String getPdfUrl() { return pdfUrl; }
+    public String getTitle() { return title; }
+    public String getAuthor() { return author; }
+    public String getDescription() { return description; }
+    public String getUserId() { return userId; }
+    public int getImageResourceId() { return imageResourceId; }
+    public List<String> getCollaborators() { return collaborators; }
+    public boolean isPreloaded() { return isPreloaded; }
+    public boolean isHidden() { return isHidden; }
+    public String getCoverImageUrl() {
+        if (isPreloaded) {
+            return null;
+        }
+        return coverUrl;
+    }
+    public boolean hasCoverImage() {
+        return coverUrl != null && !coverUrl.isEmpty() || imageResourceId != 0;
+    }
+
+    // Setters
+    public void setId(String id) { this.id = id; }
+    public void setCoverUrl(String coverUrl) { this.coverUrl = coverUrl; }
+    public void setPdfUrl(String pdfUrl) { this.pdfUrl = pdfUrl; }
+    public void setTitle(String title) { this.title = title; }
+    public void setAuthor(String author) { this.author = author; }
+    public void setDescription(String description) { this.description = description; }
+    public void setUserId(String userId) { this.userId = userId; }
+    public void setImageResourceId(int imageResourceId) { this.imageResourceId = imageResourceId; }
+    public void setCollaborators(List<String> collaborators) { this.collaborators = collaborators; }
+    public void setPreloaded(boolean preloaded) { isPreloaded = preloaded; }
+    public void setHidden(boolean hidden) { isHidden = hidden; }
+
+    // Helper method for cover image handling
+    public boolean hasResIdCover() {
+        return imageResourceId != 0;
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(id);
-        dest.writeInt(imageResId);
-        dest.writeString(coverImageUrl);
-        dest.writeString(pdfUrl);
-        dest.writeString(title);
-        dest.writeString(author);
-        dest.writeString(description);
-        dest.writeString(userId);
-        dest.writeByte((byte) (isPreloaded ? 1 : 0));
-        dest.writeByte((byte) (hidden ? 1 : 0));
-        dest.writeString(ownerId);
-        dest.writeStringList(collaborators);
-        dest.writeStringList(annotations);
-        dest.writeString(groupId);
-        dest.writeMap(collaborations);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Book book = (Book) o;
+        return id != null && id.equals(book.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
     }
 
     @Override
     public int describeContents() {
         return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(coverUrl);
+        dest.writeString(pdfUrl);
+        dest.writeString(title);
+        dest.writeString(author);
+        dest.writeString(description);
+        dest.writeString(userId);
+        dest.writeInt(imageResourceId);
+        dest.writeStringList(collaborators);
+        dest.writeByte((byte) (isPreloaded ? 1 : 0));
+        dest.writeByte((byte) (isHidden ? 1 : 0));
+    }
+
+    protected Book(Parcel in) {
+        id = in.readString();
+        coverUrl = in.readString();
+        pdfUrl = in.readString();
+        title = in.readString();
+        author = in.readString();
+        description = in.readString();
+        userId = in.readString();
+        imageResourceId = in.readInt();
+        collaborators = new ArrayList<>();
+        in.readStringList(collaborators);
+        isPreloaded = in.readByte() != 0;
+        isHidden = in.readByte() != 0;
     }
 
     public static final Creator<Book> CREATOR = new Creator<Book>() {
@@ -160,242 +170,4 @@ public class Book implements Parcelable {
             return new Book[size];
         }
     };
-
-    // Getters
-    public String getId() {
-        return id;
-    }
-
-    public int getImageResId() {
-        return imageResId;
-    }
-
-    public Bitmap getCoverImageBitmap() {
-        return coverImageBitmap;
-    }
-
-    public String getCoverImageUrl() {
-        if (coverImageUrl != null && !coverImageUrl.isEmpty()) {
-            Log.d(TAG, "Returning coverImageUrl: " + coverImageUrl);
-            return coverImageUrl;
-        }
-        Log.d(TAG, "No cover URL available for book: " + title);
-        return null;
-    }
-
-    public String getCoverImageLocalPath() {
-        return coverImageLocalPath;
-    }
-
-    public String getPdfUrl() {
-        return pdfUrl;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public boolean isPreloaded() {
-        return isPreloaded;
-    }
-
-    public boolean isHidden() {
-        return hidden;
-    }
-
-    public String getOwnerId() {
-        return ownerId;
-    }
-
-    public List<String> getCollaborators() {
-        return collaborators;
-    }
-
-    public List<String> getAnnotations() {
-        return annotations;
-    }
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public Map<String, CollaborationType> getCollaborations() {
-        return collaborations;
-    }
-
-    // Setters
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public void setPreloaded(boolean preloaded) {
-        isPreloaded = preloaded;
-    }
-
-    public void setHidden(boolean hidden) {
-        this.hidden = hidden;
-    }
-
-    public void setCoverImageUrl(String coverImageUrl) {
-        Log.d(TAG, "Updating cover image URL to: " + coverImageUrl);
-        this.coverImageUrl = coverImageUrl != null && !coverImageUrl.trim().isEmpty() ? coverImageUrl : null;
-    }
-
-    public void setCoverImageLocalPath(String coverImageLocalPath) {
-        this.coverImageLocalPath = coverImageLocalPath;
-    }
-
-    public void setOwnerId(String ownerId) {
-        this.ownerId = ownerId;
-    }
-
-    public void setCollaborators(List<String> collaborators) {
-        if (collaborators != null) {
-            this.collaborators = collaborators;
-        } else {
-            this.collaborators = new ArrayList<>();
-        }
-    }
-
-    public void setAnnotations(List<String> annotations) {
-        if (annotations != null) {
-            this.annotations = annotations;
-        } else {
-            this.annotations = new ArrayList<>();
-        }
-    }
-
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-    }
-
-    public void setCollaborations(Map<String, CollaborationType> collaborations) {
-        this.collaborations = collaborations;
-    }
-
-    public void addCollaborator(String collaboratorId) {
-        if (!collaborators.contains(collaboratorId)) {
-            collaborators.add(collaboratorId);
-            Log.d(TAG, "Added collaborator: " + collaboratorId);
-        } else {
-            Log.d(TAG, "Collaborator already exists: " + collaboratorId);
-        }
-    }
-
-    public void addAnnotation(String annotationId) {
-        if (!annotations.contains(annotationId)) {
-            annotations.add(annotationId);
-        }
-    }
-
-    public void removeAnnotation(String annotationId) {
-        annotations.remove(annotationId);
-    }
-
-    // Utility methods
-    public boolean hasBitmapCover() {
-        return coverImageBitmap != null;
-    }
-
-    public boolean hasUrlCover() {
-        return coverImageUrl != null && !coverImageUrl.trim().isEmpty();
-    }
-
-    public boolean hasResIdCover() {
-        return imageResId != -1;
-    }
-
-    // Save the book cover to a local file
-    public void saveCoverImageToLocal(File directory) {
-        if (coverImageBitmap == null || id == null) {
-            Log.w(TAG, "Cannot save cover image: Bitmap or ID is null");
-            return;
-        }
-        File coverFile = new File(directory, id + ".png");
-        try (FileOutputStream out = new FileOutputStream(coverFile)) {
-            coverImageBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-            setCoverImageLocalPath(coverFile.getAbsolutePath());
-            Log.d(TAG, "Cover image saved locally for book: " + title);
-        } catch (Exception e) {
-            Log.e(TAG, "Error saving cover image locally for book: " + title, e);
-        }
-    }
-
-    // Load the book cover from a local file
-    public boolean loadCoverImageFromLocal(File directory) {
-        if (id == null) {
-            Log.w(TAG, "Cannot load cover image: Book ID is null");
-            return false;
-        }
-        File coverFile = new File(directory, id + ".png");
-        if (coverFile.exists()) {
-            coverImageBitmap = BitmapFactory.decodeFile(coverFile.getAbsolutePath());
-            setCoverImageLocalPath(coverFile.getAbsolutePath());
-            Log.d(TAG, "Cover image loaded locally for book: " + title);
-            return true;
-        } else {
-            Log.d(TAG, "No local cover image found for book: " + title);
-            return false;
-        }
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        Book book = (Book) obj;
-        return id != null && id.equals(book.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return id != null ? id.hashCode() : 0;
-    }
-
-    public void addCollaboration(String userId, CollaborationType type) {
-        if (collaborations == null) {
-            collaborations = new HashMap<>();
-        }
-        collaborations.put(userId, type);
-        
-        // Also add to collaborators list if not present
-        if (!collaborators.contains(userId)) {
-            collaborators.add(userId);
-        }
-    }
-
-    public boolean hasCollaborationWith(String userId) {
-        return collaborations != null && collaborations.containsKey(userId);
-    }
-
-    public CollaborationType getCollaborationType(String userId) {
-        return collaborations != null ? collaborations.get(userId) : null;
-    }
-
-    // Add cache methods
-    public void addBitmapToCache(String key, Bitmap bitmap) {
-        if (getBitmapFromCache(key) == null && bitmap != null) {
-            memoryCache.put(key, bitmap);
-        }
-    }
-
-    public Bitmap getBitmapFromCache(String key) {
-        return memoryCache.get(key);
-    }
 }

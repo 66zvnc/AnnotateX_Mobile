@@ -110,8 +110,8 @@ public class CategoryBooksAdapter extends RecyclerView.Adapter<CategoryBooksAdap
                     .into(imageView);
             }
         } else if (book.hasResIdCover()) {
-            Log.d(TAG, "Using resource ID: " + book.getImageResId());
-            imageView.setImageResource(book.getImageResId());
+            Log.d(TAG, "Using resource ID: " + book.getImageResourceId());
+            imageView.setImageResource(book.getImageResourceId());
         } else {
             Log.d(TAG, "No cover available, using default");
             imageView.setImageResource(R.drawable.book_handle);
