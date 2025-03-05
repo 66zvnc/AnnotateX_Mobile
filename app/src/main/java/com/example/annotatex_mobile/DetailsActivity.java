@@ -60,44 +60,45 @@ public class DetailsActivity extends AppCompatActivity {
         
         // Set up click listener for rating container
         binding.ratingContainer.setOnClickListener(v -> {
-            showRatingDialog();
+            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                showRatingDialog();
+            } else {
+                Toast.makeText(this, "Please sign in to rate books", Toast.LENGTH_SHORT).show();
+            }
         });
 
         annotationsFile = new File(getFilesDir(), "annotations.json");
 
-        // Get the Book object passed from the previous Activity
-        Book book = (Book) getIntent().getSerializableExtra("book");
-
+        // Get the Book object from intent
+        Book book = getIntent().getParcelableExtra("book");
         if (book != null) {
             bookId = book.getId();
             
-            // Initialize Firestore collection reference for annotations
-            annotationsCollection = FirebaseFirestore.getInstance()
-                    .collection("books")
-                    .document(book.getId())
-                    .collection("annotations");
-
+            // Set basic book information
             binding.mBookTitle.setText(book.getTitle());
             binding.mAuthorName.setText(book.getAuthor());
             binding.mBookDesc.setText(book.getDescription());
 
-            // Load the book cover using the helper method
+            // Load book cover
             loadBookCover(book);
             
-            // Load the initial rating
+            // Load rating if user is signed in
             if (FirebaseAuth.getInstance().getCurrentUser() != null) {
                 loadBookRating();
             }
 
-            // Add click listener for read book button
+            // Set up read button
             binding.mReadBookBtn.setOnClickListener(v -> {
                 String pdfUrl = book.getPdfUrl();
                 if (pdfUrl != null && !pdfUrl.isEmpty()) {
                     downloadAndOpenPdf(pdfUrl);
                 } else {
-                    Toast.makeText(this, "PDF URL not available", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "PDF not available", Toast.LENGTH_SHORT).show();
                 }
             });
+        } else {
+            Toast.makeText(this, "Error loading book details", Toast.LENGTH_SHORT).show();
+            finish();
         }
 
         // Set up back button
@@ -105,29 +106,33 @@ public class DetailsActivity extends AppCompatActivity {
     }
 
     private void loadBookCover(Book book) {
-        // Check if the book has a Bitmap cover
-        if (book.hasBitmapCover()) {
-            binding.mBookImage.setImageBitmap(book.getCoverImageBitmap());
-        }
-        // Check if the book has a URL cover
-        else if (book.hasUrlCover()) {
-            // Load the cover from a URL using Glide
-            Glide.with(this)
-                    .load(book.getCoverImageUrl())
+        if (book.getCoverImageUrl() != null && !book.getCoverImageUrl().isEmpty()) {
+            // Handle Firebase Storage URLs
+            String coverUrl = book.getCoverImageUrl();
+            if (coverUrl.startsWith("gs://")) {
+                FirebaseStorage.getInstance().getReferenceFromUrl(coverUrl)
+                    .getDownloadUrl()
+                    .addOnSuccessListener(uri -> {
+                        Glide.with(this)
+                            .load(uri)
+                            .placeholder(R.drawable.default_cover)
+                            .error(R.drawable.default_cover)
+                            .into(binding.mBookImage);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Error loading cover image", e);
+                        binding.mBookImage.setImageResource(R.drawable.default_cover);
+                    });
+            } else {
+                Glide.with(this)
+                    .load(coverUrl)
                     .placeholder(R.drawable.default_cover)
                     .error(R.drawable.default_cover)
                     .into(binding.mBookImage);
-        }
-        // Fallback to resource ID if available
-        else if (book.hasResIdCover()) {
-            try {
-                binding.mBookImage.setImageResource(book.getImageResId());
-            } catch (Resources.NotFoundException e) {
-                Log.e(TAG, "Image resource not found", e);
-                binding.mBookImage.setImageResource(R.drawable.default_cover);
             }
+        } else if (book.getImageResId() != 0) {
+            binding.mBookImage.setImageResource(book.getImageResId());
         } else {
-            // If no cover is available, use a default image
             binding.mBookImage.setImageResource(R.drawable.default_cover);
         }
     }
